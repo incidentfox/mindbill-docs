@@ -192,7 +192,7 @@ function ComponentPlayground({
   label = "Synthetic data · edit and run",
 }: PlaygroundProps) {
   return (
-    <div className="playground-shell">
+    <div className="playground-shell" data-copy-page-ignore>
       <div className="playground-title">
         <span>{name}</span>
         <small>{label}</small>
@@ -212,6 +212,109 @@ function ComponentPlayground({
           activeFile: "/App.js",
         }}
       />
+    </div>
+  );
+}
+
+const quickstartComponentCode = `import { ConnectedBillLifecycle } from "@mindbill/react";
+import { knownBillValues } from "./bill-data";
+
+export default function CaseBilling() {
+  return (
+    <ConnectedBillLifecycle
+      create={knownBillValues}
+      sessionEndpoint="/api/mindbill/session"
+      appearance={{ preset: "clinical-blue" }}
+      onBillCreated={(billId) => {
+        // Keep this ID beside your case or report.
+        saveBillId(billId);
+      }}
+    />
+  );
+}`;
+
+const quickstartServerCode = `import { MindBillClient } from "@mindbill/node";
+
+const mindbill = new MindBillClient({
+  apiKey: process.env.MINDBILL_API_KEY,
+});
+
+// POST /api/mindbill/session — any server framework
+export async function POST(request) {
+  const user = await requireSignedInUser(request);
+
+  const permissions = user.role === "billing_admin"
+    ? [
+        "bills:create", "bills:read", "bills:edit", "bills:submit", "bills:act",
+        "documents:read", "documents:write", "payers:read", "eors:read",
+      ]
+    : [
+        "bills:create", "bills:read", "bills:edit",
+        "documents:read", "documents:write", "payers:read",
+      ];
+
+  return Response.json(await mindbill.createBrowserSession({
+    subject: user.id,
+    permissions,
+    allowedOrigin: process.env.APP_ORIGIN,
+    expiresIn: 900,
+  }));
+}`;
+
+const quickstartBillDataCode = `export const knownBillValues = {
+  externalId: "report_9f7a",
+  billingMode: "med_legal",
+  patient: {
+    externalId: "patient_42",
+    firstName: "Alex",
+    lastName: "Morgan",
+    dateOfBirth: "1984-05-17",
+    address: { line1: "100 Main St", city: "Fresno", state: "CA", postalCode: "93721" },
+  },
+  claim: {
+    externalId: "claim_17",
+    claimNumber: "WC-44871",
+    employer: "Example Foods",
+    dateOfInjury: "2026-02-14",
+    claimsAdministrator: { name: "Example Claims Administrator" },
+  },
+  service: { date: "2026-08-26" },
+  billingProvider: { name: "Northstar Evaluations", taxId: "123456789", npi: "1234567893" },
+  renderingProvider: { name: "Morgan Chen, MD", npi: "1234567893", isQme: true },
+  diagnoses: ["M25.512"],
+  serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1 }],
+};`;
+
+export function QuickstartPlayground() {
+  return (
+    <div className="playground-shell quickstart-playground" data-copy-page-ignore>
+      <div className="playground-title">
+        <span>React + server</span>
+        <small>Editable synthetic preview</small>
+      </div>
+      <Sandpack
+        template="react"
+        theme="auto"
+        files={{
+          "/App.js": { code: `export { default } from "./Preview";`, hidden: true },
+          "/Preview.jsx": lifecycleCode,
+          "/CaseBilling.jsx": quickstartComponentCode,
+          "/server.ts": quickstartServerCode,
+          "/bill-data.js": quickstartBillDataCode,
+          "/styles.css": { code: demoCss, hidden: true },
+        }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.15.0" } }}
+        options={{
+          showNavigator: false,
+          showTabs: true,
+          showLineNumbers: true,
+          editorHeight: 680,
+          wrapContent: true,
+          closableTabs: false,
+          activeFile: "/Preview.jsx",
+        }}
+      />
+      <p className="playground-note">Preview uses synthetic data and cannot submit. Open <strong>CaseBilling.jsx</strong>, <strong>server.ts</strong>, and <strong>bill-data.js</strong> for the production integration.</p>
     </div>
   );
 }
