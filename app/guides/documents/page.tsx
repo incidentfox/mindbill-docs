@@ -2,26 +2,29 @@ import type { Metadata } from "next";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 
-export const metadata: Metadata = { title: "Documents" };
+export const metadata: Metadata = { title: "Documents and payer packets" };
 
-const upload = `const billing = createBillLifecycleClient({
-  sessionEndpoint: "/api/mindbill/session",
-});
+const upload = `const response = await fetch(report.downloadUrl);
+const file = await response.blob();
 
-const { billId } = await billing.createBill(bill);
+await mindbill.uploadBillDocument(bill.id, {
+  file,
+  filename: "final-report.pdf",
+  documentType: "final_report",
+  externalId: "document_88",
+  description: "Final medical-legal report",
+}, "attach-document-88");
 
-for (const document of sourceDocuments) {
-  await billing.addAttachment(
-    document.file,
-    document.type,
-    document.description,
-  );
-}
+const { data: documents } = await mindbill.listBillDocuments(bill.id);`;
 
-linkBillToCase(billId);`;
+const remove = `await mindbill.deleteBillDocument(
+  bill.id,
+  documentId,
+  "remove-document-88",
+);`;
 
 const component = `<ConnectedBillLifecycle
-  billId={billId}
+  billId={bill.id}
   sessionEndpoint="/api/mindbill/session"
 />`;
 
@@ -30,32 +33,47 @@ export default function DocumentsPage() {
     <DocPage
       eyebrow="Build"
       title="Build the payer packet"
-      description="Documents are explicit bill resources. Show the proposed payer packet, then let the user intentionally add or remove support before submission."
+      description="A workers’ comp bill is often more than claim data. Attach the reports and forms the payer needs, while keeping unrelated medical records out of the packet."
       toc={[
-        { id: "defaults", label: "Safe defaults" },
-        { id: "components", label: "Use the components" },
-        { id: "upload", label: "Upload a PDF" },
+        { id: "packet", label: "What belongs in the packet" },
+        { id: "upload", label: "Upload documents" },
+        { id: "review", label: "Let the user review" },
         { id: "types", label: "Document types" },
       ]}
-      previous={{ href: "/guides/bills", label: "Create and edit bills" }}
+      previous={{ href: "/guides/bills", label: "The bill resource" }}
       next={{ href: "/guides/lifecycle", label: "Lifecycle and actions" }}
     >
-      <h2 id="defaults">Safe defaults</h2>
+      <h2 id="packet">Choose the billing packet explicitly</h2>
+      <p>For a California medical-legal bill, the payer packet commonly includes the final report, proof of service, required DWC forms, and the current W-9. The exact packet depends on the service and dispute.</p>
       <ul>
-        <li>Default the final report, proof of service, required billing forms, and current W-9 when present.</li>
-        <li>Never silently attach medical records.</li>
-        <li>Keep the attorney report-service packet separate from the payer billing packet.</li>
-        <li>Allow arbitrary supporting PDFs to be added intentionally.</li>
+        <li>Preselect the final report, proof of service, required billing forms, and W-9 when your product already has them.</li>
+        <li>Never silently attach medical records. Add them only when a user intentionally chooses them.</li>
+        <li>Keep documents served on attorneys distinct from documents sent with the payer bill.</li>
+        <li>Show the full packet before submission and let the user add or remove support.</li>
       </ul>
-      <h2 id="components">Let the component manage review</h2>
-      <p>The React and Angular lifecycle components list every payer document, provide preview and removal controls, and accept additional PDFs. Once you have attached your defaults, render the same bill and let the user confirm the final packet.</p>
+      <Callout tone="warning" title="Billing packet is not report service">Serving a report on case parties and submitting a bill to a claims administrator are separate workflows. A document may belong in one packet, both packets, or neither.</Callout>
+
+      <h2 id="upload">Upload documents from your server</h2>
+      <p>Create the private bill draft, then upload each intended document with a semantic type. Use an idempotency key so a retry cannot create duplicate attachments.</p>
+      <CodeBlock code={upload} filename="server/attach-report.ts" />
+      <p>Remove a document while the draft is still being reviewed:</p>
+      <CodeBlock code={remove} filename="server/remove-document.ts" />
+
+      <h2 id="review">Let the user review the packet</h2>
+      <p>The React and Angular lifecycle components list every attached document, provide preview and removal controls, and accept additional PDFs. They operate on the same bill resource created by your server.</p>
       <CodeBlock code={component} filename="CaseBilling.tsx" />
-      <Callout tone="warning" title="No hidden packet changes">The user sees exactly what will be sent. Medical records and editable working drafts are never selected automatically.</Callout>
-      <h2 id="upload">Create and upload with the browser client</h2>
-      <p>Attachment selection stays explicit. Create the private draft in the browser, upload only the source documents you intend to include, then store the returned bill ID.</p>
-      <CodeBlock code={upload} filename="billing.ts" />
+
       <h2 id="types">Document types</h2>
-      <p>Use one of <code>final_report</code>, <code>proof_of_service</code>, <code>letter_of_attestation</code>, <code>form_122</code>, <code>return_to_work_voucher</code>, <code>w9</code>, <code>medical_records</code>, <code>appeal</code>, or <code>other</code>.</p>
+      <div className="term-list compact">
+        <div><code>final_report</code><p>The signed report supporting the billed evaluation.</p></div>
+        <div><code>proof_of_service</code><p>Evidence that the report or required notice was served.</p></div>
+        <div><code>letter_of_attestation</code><p>A declaration or attestation required for the service.</p></div>
+        <div><code>form_122</code><p>California DWC Form 122 when applicable.</p></div>
+        <div><code>return_to_work_voucher</code><p>A return-to-work voucher intentionally included with the bill.</p></div>
+        <div><code>w9</code><p>The billing provider&apos;s current tax form.</p></div>
+        <div><code>medical_records</code><p>Supporting records selected intentionally, never by default.</p></div>
+        <div><code>appeal</code> / <code>other</code><p>Second-review support or another payer-facing PDF.</p></div>
+      </div>
     </DocPage>
   );
 }

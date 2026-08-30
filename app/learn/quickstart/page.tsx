@@ -4,119 +4,150 @@ import { Callout, DocPage, Step, Steps } from "@/components/doc-page";
 
 export const metadata: Metadata = { title: "Quickstart" };
 
-const install = `npm install @mindbill/node @mindbill/react`;
+const install = `npm install @mindbill/node`;
 
-const session = `import { MindBillClient } from "@mindbill/node";
+const client = `import { MindBillClient } from "@mindbill/node";
 
 const mindbill = new MindBillClient({
   apiKey: process.env.MINDBILL_API_KEY!,
-});
-
-// Use any server framework. This is the only required server route.
-app.post("/api/mindbill/session", async (request, response) => {
-  const user = await requireSignedInUser(request);
-  const permissions = billingPermissionsFor(user.role);
-
-  const session = await mindbill.createBrowserSession({
-    subject: user.id,
-    allowedOrigin: "https://your-app.example",
-    permissions,
-    expiresIn: 900,
-  });
-
-  response.json(session);
 });`;
 
-const component = `import { ConnectedBillLifecycle } from "@mindbill/react";
-
-const bill = {
-  externalId: "report_9f7a",
-  billingMode: "med_legal",
-  patient: {
-    externalId: "patient_42",
-    firstName: "Alex",
-    lastName: "Morgan",
-    dateOfBirth: "1984-05-17",
-    address: {
-      line1: "100 Main St",
-      city: "Fresno",
-      state: "CA",
-      postalCode: "93721",
+const create = `const bill = await mindbill.createBill(
+  {
+    externalId: "report_9f7a",
+    billingMode: "med_legal",
+    patient: {
+      externalId: "patient_42",
+      firstName: "Alex",
+      lastName: "Morgan",
+      dateOfBirth: "1984-05-17",
+      address: {
+        line1: "100 Main St",
+        city: "Fresno",
+        state: "CA",
+        postalCode: "93721",
+      },
     },
+    claim: {
+      externalId: "claim_17",
+      claimNumber: "WC-44871",
+      employer: "Example Foods",
+      dateOfInjury: "2026-02-14",
+      claimsAdministrator: { name: "Example Claims Administrator" },
+    },
+    service: { date: "2026-08-26" },
+    billingProvider: {
+      name: "Northstar Medical Evaluators",
+      taxId: "123456789",
+      npi: "1234567893",
+      address: {
+        line1: "200 Office Ave",
+        city: "Fresno",
+        state: "CA",
+        postalCode: "93721",
+      },
+    },
+    renderingProvider: {
+      name: "Morgan Chen, MD",
+      npi: "1234567893",
+      licenseNumber: "A12345",
+      licenseState: "CA",
+      isQme: true,
+    },
+    serviceLocation: {
+      name: "Fresno Exam Office",
+      placeOfServiceCode: "11",
+      address: {
+        line1: "200 Office Ave",
+        city: "Fresno",
+        state: "CA",
+        postalCode: "93721",
+      },
+    },
+    diagnoses: ["M25.512"],
+    serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1 }],
   },
-  claim: {
-    externalId: "claim_17",
-    claimNumber: "WC-44871",
-    employer: "Example Foods",
-    dateOfInjury: "2026-02-14",
+  "create-report_9f7a"
+);
+
+await saveMindBillId("report_9f7a", bill.id);`;
+
+const attach = `const response = await fetch("https://example.test/final-report.pdf");
+const report = await response.blob();
+
+await mindbill.uploadBillDocument(
+  bill.id,
+  {
+    file: report,
+    filename: "final-report.pdf",
+    documentType: "final_report",
+    externalId: "document_88",
   },
-  service: { date: "2026-08-26" },
-  serviceLines: [
-    { code: "ML201", modifiers: ["95"], units: 1 },
-  ],
-} as const;
+  "attach-document_88"
+);`;
 
-export function Billing() {
-  return (
-    <ConnectedBillLifecycle
-      create={bill}
-      sessionEndpoint="/api/mindbill/session"
-      appearance={{ preset: "orange-bright" }}
-      onBillCreated={(billId) => linkBillToCase(billId)}
-    />
-  );
-}`;
+const submit = `const submission = await mindbill.submitBill(
+  bill.id,
+  { route: "ebill" },
+  "submit-report_9f7a"
+);
 
-const webhook = `// Signed webhook payload
-{
-  "id": "evt_0189",
-  "type": "bill.submitted",
-  "billId": "bill_123",
-  "occurredAt": "2026-08-30T17:42:18Z",
-  "data": { "state": "submitted" }
-}`;
+// Sandbox: synthetic 999 and 277CA acknowledgements.
+console.log(submission);`;
+
+const status = `const { data: status } = await mindbill.getBillStatus(bill.id);
+
+console.log(status.state);       // submitted, accepted, processed, paid, ...
+console.log(status.balanceDue);  // normalized across delivery networks`;
 
 export default function QuickstartPage() {
   return (
     <DocPage
       eyebrow="Get started"
-      title="Add billing to your product"
-      description="Mint one short-lived browser session and render the complete billing lifecycle. The component creates the bill directly; your API key never reaches the browser."
+      title="Submit your first sandbox bill"
+      description="Create one California medical-legal bill, attach its report, submit it electronically, and read its normalized status. Sandbox submissions do not reach a payer."
       toc={[
-        { id: "install", label: "Install the SDKs" },
-        { id: "session", label: "Mint a browser session" },
-        { id: "render", label: "Render billing" },
-        { id: "sync", label: "Keep your app in sync" },
+        { id: "install", label: "Install and authenticate" },
+        { id: "create", label: "Create a bill" },
+        { id: "attach", label: "Attach the payer packet" },
+        { id: "submit", label: "Submit" },
+        { id: "status", label: "Read status" },
       ]}
-      next={{ href: "/guides/authentication", label: "Authentication" }}
+      previous={{ href: "/learn/anatomy-of-a-bill", label: "Anatomy of a bill" }}
+      next={{ href: "/learn/routing", label: "Routing and EDI" }}
     >
-      <Callout title="The integration in one sentence">Your server authorizes a user and mints a short-lived session; the native component creates, edits, submits, and tracks the bill directly.</Callout>
+      <Callout title="The integration contract">Your server sends structured bill data and explicit documents. MindBill returns a stable <code>billId</code> that represents submission, acknowledgements, EORs, payments, disputes, corrections, and closure.</Callout>
       <Steps>
-        <Step title="Install the SDKs">
+        <Step title="Install and authenticate">
           <span id="install" />
-          <p>The Node package mints browser sessions. The React package contains native UI, session renewal, and the complete billing client.</p>
+          <p>Use a sandbox API key on your server. API keys are organization-scoped credentials and must never be sent to a browser.</p>
           <CodeBlock code={install} language="bash" filename="Terminal" />
+          <CodeBlock code={client} filename="billing.ts" />
         </Step>
-        <Step title="Add one session route">
-          <span id="session" />
-          <p>Authenticate the user with your existing login, map their role to billing permissions, and mint a token for your exact browser origin. The API key identifies the organization automatically.</p>
-          <CodeBlock code={session} filename="server/mindbill-session.ts" />
-          <Callout tone="warning" title="Never expose the API key">Only the short-lived session reaches the browser. Keep <code>MINDBILL_API_KEY</code> in your server environment.</Callout>
+        <Step title="Create the bill">
+          <span id="create" />
+          <p>Send the snapshot that should appear on the CMS-1500. Use <code>externalId</code> for your report, patient, or claim IDs; store the returned MindBill <code>bill.id</code>.</p>
+          <CodeBlock code={create} filename="create-bill.ts" />
+          <Callout tone="warning" title="Current capability">The public API currently accepts <code>billingMode: &quot;med_legal&quot;</code>. Professional treatment billing is not yet released.</Callout>
         </Step>
-        <Step title="Render billing">
-          <span id="render" />
-          <p>Pass the values you already know. The component creates the private draft, lets the user review every field and attachment, resolves delivery routes, submits the bill, and renders the valid next actions.</p>
-          <CodeBlock code={component} filename="Billing.tsx" />
-          <Callout title="What you store">Keep the stable <code>billId</code> if you want a direct link from your case or report. No provider, location, or payer database synchronization is required.</Callout>
+        <Step title="Attach the payer packet">
+          <span id="attach" />
+          <p>Upload each document intentionally. A typical medical-legal packet includes the final report, proof of service, and W-9. Do not silently attach medical records.</p>
+          <CodeBlock code={attach} filename="attach-report.ts" />
         </Step>
-        <Step title="Keep your app in sync">
-          <span id="sync" />
-          <p><code>onBillCreated</code> is useful for immediate UI updates. Signed webhooks are the durable source for submission, payment, denial, review, resubmission, and closure changes.</p>
-          <CodeBlock code={webhook} language="json" filename="bill.submitted" />
+        <Step title="Submit the bill">
+          <span id="submit" />
+          <p>Submission runs the final scrub, resolves the requested route, records an immutable attempt, and starts the lifecycle. Reuse an idempotency key only when retrying the same logical write.</p>
+          <CodeBlock code={submit} filename="submit-bill.ts" />
+        </Step>
+        <Step title="Read status">
+          <span id="status" />
+          <p>Poll status for an immediate screen, or consume ordered events and signed webhooks for durable synchronization.</p>
+          <CodeBlock code={status} filename="read-status.ts" />
         </Step>
       </Steps>
-      <h2 id="test">Test without sending a live bill</h2>
-      <p>Use a development API key and synthetic data. Sandbox submissions return synthetic acknowledgments without sending anything to a payer.</p>
+      <h2 id="ui">Optional: embed the review UI</h2>
+      <p>If users should review the claim inside your product, create the bill on your server first, then render the React or Angular lifecycle component with its <code>billId</code>. The component handles payer search, documents, delivery choices, submission, EORs, and valid next actions.</p>
     </DocPage>
   );
 }

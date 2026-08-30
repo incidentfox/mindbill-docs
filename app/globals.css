@@ -89,6 +89,48 @@ button { color: inherit; }
 .doc-content a:not(.button-link) { color: var(--accent-text); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset: 3px; }
 .doc-content code:not(pre code) { padding: .12em .38em; border-radius: 5px; background: var(--surface-2); color: var(--text); font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
 .doc-content ul { padding-left: 22px; }
+.action-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 34px; }
+.button-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 17px; border: 1px solid var(--line-strong); border-radius: 9px; color: var(--text) !important; background: var(--bg); font-weight: 750; text-decoration: none !important; }
+.button-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+.button-link.primary { border-color: var(--accent); color: #fff !important; background: var(--accent); }
+.concept-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 24px 0 34px; }
+.concept-card { padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.concept-card b { font-size: 17px; }
+.concept-card p { margin: 7px 0 0; font-size: 14px; line-height: 1.6; }
+.flow { display: flex; align-items: stretch; gap: 10px; margin: 28px 0 10px; }
+.flow-node { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; justify-content: center; padding: 17px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); }
+.flow-node.accent { border-color: var(--accent); background: var(--accent-soft); }
+.flow-node small { color: var(--faint); font-size: 11px; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
+.flow-node strong { font-size: 14px; line-height: 1.35; }
+.flow-arrow { align-self: center; color: var(--faint); font-size: 20px; }
+.flow-return { margin-top: 10px !important; padding: 10px 14px; border-radius: 8px; color: var(--accent-text) !important; background: var(--accent-soft); font-size: 14px !important; text-align: center; }
+.lifecycle-flow { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 34px; }
+.lifecycle-flow > * { padding: 9px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--surface); font-size: 13px; font-weight: 700; }
+.term-list, .comparison-table, .data-table { margin: 24px 0 36px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; }
+.term-list > div { display: grid; grid-template-columns: minmax(150px, .7fr) 1.6fr; gap: 24px; padding: 18px 20px; border-top: 1px solid var(--line); }
+.term-list > div:first-child { border-top: 0; }
+.term-list b { color: var(--text); }
+.term-list p { margin: 0; font-size: 15px; }
+.term-list.compact > div { padding-block: 13px; }
+.comparison-table > div, .data-table > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.comparison-table.three > div, .data-table > div { grid-template-columns: .75fr 1fr 1.35fr; }
+.data-table.networks > div { grid-template-columns: .55fr 1.45fr; }
+.comparison-table > div > *, .data-table > div > * { margin: 0; padding: 15px 18px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); font-size: 14px; line-height: 1.55; }
+.comparison-table > div > *:first-child, .data-table > div > *:first-child { border-left: 0; }
+.comparison-table > div:first-child > *, .data-table > div:first-child > * { border-top: 0; }
+.table-head { background: var(--surface-2); }
+.table-head b { color: var(--text); font-size: 12px !important; letter-spacing: .06em; text-transform: uppercase; }
+.plain-steps { margin: 24px 0 36px; padding: 0; list-style: none; counter-reset: plain-step; }
+.plain-steps > * { position: relative; margin: 0; padding: 16px 18px 16px 58px; border-top: 1px solid var(--line); counter-increment: plain-step; }
+.plain-steps > *:first-child { border-top: 0; }
+.plain-steps > *::before { content: counter(plain-step); position: absolute; left: 15px; top: 15px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--accent-text); background: var(--accent-soft); font-size: 12px; font-weight: 800; }
+.plain-steps > * > :first-child { margin-top: 0; }
+.format-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0 34px; }
+.format-pair > * { margin: 0; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.pricing-card { margin: 24px 0 36px; padding: 26px; border: 1px solid var(--accent); border-radius: 14px; background: var(--accent-soft); }
+.pricing-card span { display: block; color: var(--accent-text); font-size: 12px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+.pricing-card strong { display: block; margin-top: 8px; font-size: 30px; letter-spacing: -.03em; }
+.pricing-card p { margin: 8px 0 0; }
 .page-toc { position: sticky; top: calc(var(--header-height) + 36px); align-self: start; padding-left: 18px; border-left: 1px solid var(--line); }
 .page-toc p { margin: 0 0 10px; color: var(--text); font-size: 12px; font-weight: 750; }
 .page-toc a { display: block; margin: 9px 0; color: var(--faint); font-size: 13px; line-height: 1.35; }
@@ -185,6 +227,12 @@ button { color: inherit; }
   .playground-shell .sp-stack { min-height: 360px; }
   .endpoint-row { grid-template-columns: 72px 1fr; gap: 8px; }
   .endpoint-row span:last-child { grid-column: 2; }
+  .concept-grid, .format-pair { grid-template-columns: 1fr; }
+  .flow { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+  .term-list > div { grid-template-columns: 1fr; gap: 6px; }
+  .comparison-table, .data-table { overflow-x: auto; }
+  .comparison-table > div, .comparison-table.three > div, .data-table > div, .data-table.networks > div { min-width: 620px; }
   .page-pagination { grid-template-columns: 1fr; }
   .mobile-nav-overlay { display: block; }
   .mobile-nav { display: block; width: min(330px, 88vw); height: 100%; padding: 16px 20px 40px; overflow-y: auto; background: var(--bg); box-shadow: var(--shadow); }
@@ -194,4 +242,3 @@ button { color: inherit; }
   .search-results em { display: none; }
   .search-results button { grid-template-columns: 24px 1fr; }
 }
-
