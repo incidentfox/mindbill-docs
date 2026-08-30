@@ -141,6 +141,48 @@ export default function App() {
   </main>;
 }`;
 
+const lifecycleActionsCode = `import { useState } from "react";
+import { BillLifecycleActions } from "@mindbill/react";
+
+const actions = [
+  { id: "view_eor", label: "View EOR", enabled: true },
+  { id: "second_review", label: "Submit second review", enabled: true, primary: true },
+  { id: "post_payment", label: "Post payment", enabled: false, reason: "No payable EOR line remains." },
+  { id: "close", label: "Close bill", enabled: true },
+];
+
+export default function App() {
+  const [message, setMessage] = useState("Choose an available action.");
+  return <main className="demo">
+    <h2>Denied · $2,015.00 due</h2>
+    <p>{message}</p>
+    <BillLifecycleActions
+      actions={actions}
+      showUnavailable
+      appearance={{ preset: "orange-bright" }}
+      onAction={(action) => setMessage(action.label + " selected")}
+    />
+  </main>;
+}`;
+
+const activityTimelineCode = `import { BillActivityTimeline } from "@mindbill/react";
+
+const events = [
+  { id: "evt_4", type: "bill.denied", createdAt: "2026-08-25T17:42:18Z", description: "Medical necessity or frequency" },
+  { id: "evt_3", type: "eor.received", createdAt: "2026-08-25T17:41:02Z", description: "EOR-1038.pdf received" },
+  { id: "evt_2", type: "bill.accepted", createdAt: "2026-08-13T09:16:00Z" },
+  { id: "evt_1", type: "bill.submitted", createdAt: "2026-08-12T16:08:00Z", actor: "Taylor R." },
+];
+
+export default function App() {
+  return <main className="demo">
+    <BillActivityTimeline
+      events={events}
+      appearance={{ preset: "clinical-blue" }}
+    />
+  </main>;
+}`;
+
 const hostedReviewCode = `import { useState } from "react";
 import { MindBillBillReview } from "@mindbill/react";
 
@@ -201,7 +243,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.15.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.16.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -228,6 +270,14 @@ export default function CaseBilling() {
       onBillCreated={(billId) => {
         // Keep this ID beside your case or report.
         saveBillId(billId);
+      }}
+      onBillIdChange={(billId, previousBillId) => {
+        // A corrected bill may replace the previous bill ID.
+        replaceStoredBillId(previousBillId, billId);
+      }}
+      onChanged={(bill) => {
+        // Immediate UI and analytics only. Webhooks are authoritative.
+        updateLocalBillingSummary(bill.lifecycle);
       }}
     />
   );
@@ -297,13 +347,13 @@ export function QuickstartPlayground() {
         theme="auto"
         files={{
           "/App.js": { code: `export { default } from "./Preview";`, hidden: true },
-          "/Preview.jsx": lifecycleCode,
+          "/Preview.jsx": reviewCode,
           "/CaseBilling.jsx": quickstartComponentCode,
           "/server.ts": quickstartServerCode,
           "/bill-data.js": quickstartBillDataCode,
           "/styles.css": { code: demoCss, hidden: true },
         }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.15.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.16.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -321,6 +371,14 @@ export function QuickstartPlayground() {
 
 export function LifecyclePlayground() {
   return <ComponentPlayground name="ConnectedBillLifecycle" code={lifecycleCode} height={720} />;
+}
+
+export function LifecycleActionsPlayground() {
+  return <ComponentPlayground name="BillLifecycleActions" code={lifecycleActionsCode} height={520} />;
+}
+
+export function ActivityTimelinePlayground() {
+  return <ComponentPlayground name="BillActivityTimeline" code={activityTimelineCode} height={560} />;
 }
 
 export function ConnectedStatusPlayground() {

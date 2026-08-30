@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
+import {
+  ActivityTimelinePlayground,
+  LifecycleActionsPlayground,
+} from "@/components/playground";
 
 export const metadata: Metadata = { title: "Billing lifecycle and actions" };
 
@@ -73,6 +77,7 @@ export default function LifecyclePage() {
         { id: "states", label: "From submission to payment" },
         { id: "status", label: "Read status and EORs" },
         { id: "actions", label: "Take the next action" },
+        { id: "history", label: "Show bill history" },
         { id: "reviews", label: "SBR and IBR" },
         { id: "events", label: "Events and webhooks" },
       ]}
@@ -93,13 +98,23 @@ export default function LifecyclePage() {
       <CodeBlock code={read} filename="server/read-lifecycle.ts" />
 
       <h2 id="actions">Take the next action</h2>
-      <ul>
-        <li><strong>Rejected:</strong> start a correction, edit the replacement draft, and submit it again.</li>
-        <li><strong>EOR received:</strong> show the original EOR and record check or EFT payment.</li>
-        <li><strong>Denied or underpaid:</strong> add support and request Second Bill Review.</li>
-        <li><strong>Any stage:</strong> close the bill with an auditable reason.</li>
-      </ul>
+      <p>Read <code>lifecycle.actions</code> instead of reproducing payer rules in your application. MindBill returns only the actions that make sense for the current bill and explains why an unavailable action is disabled.</p>
+      <div className="data-table networks">
+        <div className="table-head"><b>Bill state</b><b>Typical next actions</b></div>
+        <div><code>private</code><span>Edit and submit.</span></div>
+        <div><code>rejected</code><span>Correct and resubmit, or close.</span></div>
+        <div><code>accepted / processed</code><span>Track the response, or close.</span></div>
+        <div><code>denied / partially_paid</code><span>View EOR, post payment, request Second Bill Review, or close.</span></div>
+        <div><code>second_review</code><span>Track SBR; request IBR when MindBill reports eligibility.</span></div>
+        <div><code>paid / closed</code><span>Read EOR and history; no collection action remains.</span></div>
+      </div>
+      <LifecycleActionsPlayground />
       <CodeBlock code={actions} filename="server/bill-actions.ts" />
+
+      <h2 id="history">Show bill history</h2>
+      <p><code>BillActivityTimeline</code> turns the signed events stored by your webhook handler into a native timeline. Pass the newest events first; the component owns presentation, while your server remains the durable event store.</p>
+      <ActivityTimelinePlayground />
+      <Callout title="Why the timeline is not connected by bill ID">The browser API intentionally exposes current lifecycle state, EORs, and valid actions. Ordered history arrives through signed webhooks. Persist those events if your product needs an audit timeline.</Callout>
 
       <h2 id="reviews">Second Bill Review before IBR</h2>
       <p>California payment disputes generally begin with Second Bill Review. If the dispute remains eligible after SBR, the provider may proceed to Independent Bill Review. Medical-legal SBR uses the DWC SBR-1 process and supporting documents.</p>
@@ -107,7 +122,7 @@ export default function LifecyclePage() {
       <Callout tone="warning" title="Deadlines matter">Your application should surface the dates and payer instructions returned with the EOR. MindBill provides the workflow primitives, but the provider remains responsible for timely and accurate review requests.</Callout>
 
       <h2 id="events">Use events for durable synchronization</h2>
-      <p>Component callbacks keep the current screen responsive. Signed webhooks or the ordered event feed should update your database in the background. Store the event ID before processing so a retry is harmless.</p>
+      <p>Component callbacks keep the current screen responsive. Signed webhooks should update your database in the background. Store the event ID before processing so a retry is harmless, then render those records with <code>BillActivityTimeline</code> if users need the history.</p>
       <CodeBlock code={event} language="json" filename="bill.denied.json" />
     </DocPage>
   );

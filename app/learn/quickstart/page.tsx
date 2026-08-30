@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage, Step, Steps } from "@/components/doc-page";
 import { QuickstartPlayground } from "@/components/playground";
@@ -45,43 +46,65 @@ const billing = createBillLifecycleClient({
 
 const { billId, data } = await billing.createBill(knownBillValues);`;
 
+const callbacks = `<ConnectedBillLifecycle
+  create={knownBillValues}
+  sessionEndpoint="/api/mindbill/session"
+  onBillCreated={(billId) => saveBillId(caseId, billId)}
+  onBillIdChange={(billId, previousBillId) =>
+    replaceBillId(caseId, previousBillId, billId)
+  }
+  onChanged={(bill) => {
+    updateBillingSummary(bill.lifecycle); // immediate UI
+    analytics.track("billing_changed", { state: bill.lifecycle.state });
+  }}
+/>`;
+
 export default function QuickstartPage() {
   return (
     <DocPage
       eyebrow="Get started"
-      title="Add billing with React"
-      description="Mint one short-lived browser session on your server, then render the complete bill review and lifecycle in your product."
+      title="Create, submit, and track a bill"
+      description="Add one authorization route and one connected React component. Users review the bill, attach payer documents, submit through the available route, and handle every later response in the same surface."
       toc={[
         { id: "install", label: "Install" },
-        { id: "authorize", label: "Create a session route" },
-        { id: "render", label: "Render the lifecycle" },
-        { id: "sync", label: "Keep the bill ID" },
+        { id: "authorize", label: "Authorize the browser" },
+        { id: "render", label: "Render bill creation" },
+        { id: "callbacks", label: "Handle callbacks" },
+        { id: "sync", label: "Synchronize events" },
         { id: "api-only", label: "Without React" },
       ]}
       previous={{ href: "/learn/anatomy-of-a-bill", label: "Anatomy of a bill" }}
       next={{ href: "/learn/routing", label: "Routing and EDI" }}
     >
-      <Callout title="The server only authorizes">Keep the organization API key on your server. Your route checks the signed-in user and mints an origin-bound session for that user&apos;s role. The React component creates the bill and returns its ID.</Callout>
+      <Callout title="One user flow, one bill ID">The component creates a private bill record, uploads selected documents, opens the review form, and submits only when the user confirms a delivery route. Your product stores the returned <code>billId</code>; MindBill owns routing and the later lifecycle.</Callout>
       <Steps>
         <Step title="Install React and the server client">
           <span id="install" />
           <CodeBlock code={install} language="bash" filename="Terminal" />
         </Step>
-        <Step title="Create one session route">
+        <Step title="Authorize the browser">
           <span id="authorize" />
           <p>Use any server framework. The API key fixes the organization, <code>subject</code> identifies your user, and <code>permissions</code> come from your own role-based access control.</p>
           <CodeBlock code={server} filename="server/mindbill-session.ts" />
           <Callout tone="warning" title="Do not put the API key in frontend code">Only the short-lived, exact-origin session reaches the browser. MindBill enforces both the organization boundary and the permissions on every request.</Callout>
         </Step>
-        <Step title="Render the lifecycle">
+        <Step title="Render bill creation and review">
           <span id="render" />
           <p>Pass every value your product already knows. They become the editable snapshot that prints on the <a href="https://www.nucc.org/images/stories/PDF/1500_claim_form_2012_02.pdf">CMS-1500</a> and travels in the <a href="https://www.cms.gov/files/document/mln006976-medicare-billing-cms-1500-837p.pdf">837P</a>.</p>
           <QuickstartPlayground />
-          <p>The first tab is a safe live preview. Use the other tabs for the connected React component, server route, and bill data. Pass <code>billId</code> instead of <code>create</code> when reopening a bill.</p>
+          <p>The first tab is a safe, editable preview of the review form. The production tabs show the connected component, server route, and bill snapshot. Pass <code>billId</code> instead of <code>create</code> when reopening a bill.</p>
+          <Callout title="No separate draft workflow is required">A private bill record exists so documents and edits have somewhere durable to live, but nothing reaches a payer until the user presses Submit bill. The connected component hides that orchestration.</Callout>
         </Step>
-        <Step title="Keep the bill ID">
+        <Step title="Use callbacks for the current screen">
+          <span id="callbacks" />
+          <p><code>onBillCreated</code> gives you the stable ID. <code>onBillIdChange</code> reports a replacement after correction. <code>onChanged</code> is useful for optimistic UI and browser analytics.</p>
+          <CodeBlock code={callbacks} filename="CaseBilling.tsx" />
+          <Callout tone="warning" title="Browser callbacks are not your ledger">They can be interrupted or forged. Use them to make the product feel immediate, then use signed webhooks or ordered events for durable server state.</Callout>
+        </Step>
+        <Step title="Synchronize payer activity">
           <span id="sync" />
-          <p>Store the <code>billId</code> returned by <code>onBillCreated</code> beside your case or report. Signed webhooks keep server-side status current after acknowledgements, EORs, payments, or denials arrive.</p>
+          <p>Store each event ID before applying it, ignore duplicates, and process organization sequence order. Events report submission, acceptance, rejection, EOR, denial, payment, review, lien, and closure after the browser is gone.</p>
+          <p><Link href="/api-reference/events">Read the event and webhook contract →</Link></p>
         </Step>
       </Steps>
       <h2 id="api-only">Use the same flow without React</h2>

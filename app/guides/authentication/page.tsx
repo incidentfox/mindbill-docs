@@ -60,6 +60,7 @@ export default function AuthenticationPage() {
       description="An API key fixes the organization. A short-lived browser session identifies the signed-in user, carries role permissions, and is valid only on your exact origin."
       toc={[
         { id: "boundaries", label: "Security boundaries" },
+        { id: "permissions", label: "Permission reference" },
         { id: "roles", label: "Map roles" },
         { id: "session", label: "Mint a session" },
         { id: "resource", label: "Optional bill restriction" },
@@ -75,6 +76,21 @@ export default function AuthenticationPage() {
         <div><b>Origin and time</b><p>The token works only from one exact HTTPS origin and expires quickly.</p></div>
       </div>
       <Callout title="No bill must exist first">The normal browser session is organization- and user-scoped. A permitted component can create a new bill and later reopen existing bills. You do not create a bill on the server merely to authorize the UI.</Callout>
+
+      <h2 id="permissions">Permission reference</h2>
+      <p>A session may contain any subset of these permissions. MindBill checks them together with the API key&apos;s organization on every browser request.</p>
+      <div className="data-table networks">
+        <div className="table-head"><b>Permission</b><b>Allows</b></div>
+        <div><code>bills:create</code><span>Create a private bill from a structured snapshot.</span></div>
+        <div><code>bills:read</code><span>Read bill review data, status, balances, and available actions.</span></div>
+        <div><code>bills:edit</code><span>Edit claim, patient, provider, service, diagnosis, and line-item fields before submission.</span></div>
+        <div><code>bills:submit</code><span>Resolve a delivery destination and submit or resubmit a bill.</span></div>
+        <div><code>bills:act</code><span>Post payment, close, correct, or start payer-review actions allowed by the bill state.</span></div>
+        <div><code>documents:read</code><span>List and open payer-packet documents.</span></div>
+        <div><code>documents:write</code><span>Upload and remove payer-packet documents before submission or review.</span></div>
+        <div><code>payers:read</code><span>Search the claims-administrator directory and resolve available delivery routes.</span></div>
+        <div><code>eors:read</code><span>Read normalized EOR data and original payer documents when available.</span></div>
+      </div>
 
       <h2 id="roles">Map your roles to billing permissions</h2>
       <p>Your application remains authoritative for sign-in and roles. Map those roles to the least set of MindBill permissions they need.</p>

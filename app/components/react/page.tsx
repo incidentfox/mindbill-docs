@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 import {
+  ActivityTimelinePlayground,
   ConnectedStatusPlayground,
   HostedReviewPlayground,
   HostedTimelinePlayground,
   LifecyclePlayground,
+  LifecycleActionsPlayground,
   ReviewFormPlayground,
   StatusPlayground,
 } from "@/components/playground";
@@ -99,6 +101,22 @@ const presentational = `import { BillStatusSummary } from "@mindbill/react";
   actions={[{ id: "eor", label: "View EOR", onClick: openEor }]}
 />`;
 
+const actionBar = `import { BillLifecycleActions } from "@mindbill/react";
+
+<BillLifecycleActions
+  actions={bill.lifecycle.actions}
+  onAction={(action) => openAction(action.id)}
+  showUnavailable
+/>`;
+
+const timeline = `import { BillActivityTimeline } from "@mindbill/react";
+
+// Load these from the signed webhook events stored by your server.
+<BillActivityTimeline
+  events={billEvents}
+  appearance={{ preset: "orange-bright" }}
+/>`;
+
 const clients = `import {
   buildBillReviewSaveInput,
   createBillLifecycleClient,
@@ -138,6 +156,7 @@ export default function ReactPage() {
         { id: "lifecycle", label: "Complete lifecycle" },
         { id: "custom", label: "Custom lifecycle UI" },
         { id: "status", label: "Status surfaces" },
+        { id: "actions", label: "Actions and history" },
         { id: "forms", label: "Controlled forms" },
         { id: "clients", label: "Browser clients" },
         { id: "hosted", label: "Hosted wrappers" },
@@ -155,6 +174,8 @@ export default function ReactPage() {
         <div><code>useBillStatus</code><span>You want custom status UI.</span><span>Yes</span></div>
         <div><code>BillReviewForm</code><span>You own data loading but want MindBill&apos;s review form.</span><span>No</span></div>
         <div><code>BillStatusSummary</code><span>You need a presentational status card.</span><span>No</span></div>
+        <div><code>BillLifecycleActions</code><span>You need state-aware actions in your own layout.</span><span>No</span></div>
+        <div><code>BillActivityTimeline</code><span>You want to render signed events stored by your server.</span><span>No</span></div>
         <div><code>MindBillBillReview</code><span>You prefer the hosted review surface.</span><span>Hosted</span></div>
         <div><code>MindBillBillTimeline</code><span>You prefer the hosted timeline surface.</span><span>Hosted</span></div>
       </div>
@@ -182,6 +203,14 @@ export default function ReactPage() {
       <p><code>BillStatusSummary</code> is the data-only version when your app already has the status.</p>
       <CodeBlock code={presentational} filename="StatusCard.tsx" />
       <StatusPlayground />
+
+      <h2 id="actions">Actions and history</h2>
+      <p><code>BillLifecycleActions</code> renders the action list returned with lifecycle data. Keep the server response authoritative: do not recreate denial, payment, review, or resubmission eligibility in frontend conditionals.</p>
+      <CodeBlock code={actionBar} filename="BillActions.tsx" />
+      <LifecycleActionsPlayground />
+      <p><code>BillActivityTimeline</code> renders durable bill events from your webhook store. Browser callbacks are appropriate for immediate UI and analytics; signed events are the source of truth after the page closes.</p>
+      <CodeBlock code={timeline} filename="BillHistory.tsx" />
+      <ActivityTimelinePlayground />
 
       <h2 id="forms">Controlled review form</h2>
       <p><code>BillReviewForm</code> renders the native review, payer search, attachments, delivery dialog, and submission UI while your callbacks supply data.</p>
