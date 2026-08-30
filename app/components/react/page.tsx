@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
-import { StatusPlayground } from "@/components/playground";
+import {
+  ConnectedStatusPlayground,
+  HostedReviewPlayground,
+  HostedTimelinePlayground,
+  LifecyclePlayground,
+  ReviewFormPlayground,
+  StatusPlayground,
+} from "@/components/playground";
 
 export const metadata: Metadata = { title: "React components" };
 
@@ -25,7 +32,6 @@ app.post("/api/mindbill/session", async (req, res) => {
 });`;
 
 const lifecycle = `import { ConnectedBillLifecycle } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 
 export function CaseBilling({ caseRecord }: { caseRecord: CaseRecord }) {
   return (
@@ -155,7 +161,7 @@ export default function ReactPage() {
 
       <h2 id="setup">Setup</h2>
       <CodeBlock code={install} language="bash" filename="Terminal" />
-      <p>Import the stylesheet once. Add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session.</p>
+      <p>Install the package, then add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session. Components ship their own styles.</p>
       <CodeBlock code={session} filename="server/session.ts" />
       <Callout title="Your API key stays server-side">The session fixes the organization, user, origin, expiry, and role permissions. It may create a bill; it does not need to be scoped to an existing bill.</Callout>
 
@@ -163,6 +169,7 @@ export default function ReactPage() {
       <p>Pass a bill snapshot for a new bill or <code>billId</code> for an existing one.</p>
       <CodeBlock code={lifecycle} filename="CaseBilling.tsx" />
       <p>The component includes payer matching, editable CMS-1500 data, documents, delivery destinations, submission, status, EORs, payments, reviews, correction, and closure. Procedure rows always leave one empty keyboard-ready row.</p>
+      <LifecyclePlayground />
 
       <h2 id="custom">Custom lifecycle UI</h2>
       <p><code>useBillLifecycle</code> exposes the same connected state and mutations: create, refresh, payer search, delivery options, save, submit, attachments, EOR, payment, review, correction, and close.</p>
@@ -171,6 +178,7 @@ export default function ReactPage() {
       <h2 id="status">Status surfaces</h2>
       <p><code>ConnectedBillStatus</code> loads and refreshes authoritative status. <code>useBillStatus</code> exposes the same client state for a custom layout.</p>
       <CodeBlock code={status} filename="BillStatus.tsx" />
+      <ConnectedStatusPlayground />
       <p><code>BillStatusSummary</code> is the data-only version when your app already has the status.</p>
       <CodeBlock code={presentational} filename="StatusCard.tsx" />
       <StatusPlayground />
@@ -178,14 +186,17 @@ export default function ReactPage() {
       <h2 id="forms">Controlled review form</h2>
       <p><code>BillReviewForm</code> renders the native review, payer search, attachments, delivery dialog, and submission UI while your callbacks supply data.</p>
       <CodeBlock code={controlledReview} filename="ReviewForm.tsx" />
+      <ReviewFormPlayground />
 
       <h2 id="clients">Browser clients</h2>
       <p>Use the framework-neutral clients outside React rendering or inside your own state layer.</p>
       <CodeBlock code={clients} filename="billing-client.ts" />
 
       <h2 id="hosted">Hosted wrappers</h2>
-      <p><code>MindBillBillReview</code> and <code>MindBillBillTimeline</code> wrap the hosted review and timeline when native composition is not practical.</p>
+      <p><code>MindBillBillReview</code> and <code>MindBillBillTimeline</code> wrap the hosted review and timeline when native composition is not practical. Their editors below run the real wrapper; replace the sample token and URL with a short-lived session to load private billing data.</p>
       <CodeBlock code={hosted} filename="HostedBilling.tsx" />
+      <HostedReviewPlayground />
+      <HostedTimelinePlayground />
 
       <h2 id="utilities">Appearance and utilities</h2>
       <div className="term-list compact">

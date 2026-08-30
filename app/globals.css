@@ -162,6 +162,7 @@ button { color: inherit; }
 .playground-shell .sp-wrapper { --sp-colors-accent: var(--accent) !important; }
 .playground-shell .sp-layout { border: 0; border-radius: 0; min-height: 460px; }
 .playground-shell .sp-stack { min-width: 0; }
+.playground-shell .sp-preview-container { background: #f5f8f9; }
 
 .component-catalog > div { grid-template-columns: 1fr 1.55fr .58fr; }
 .component-api > div { grid-template-columns: .9fr 1fr 1.4fr; }
