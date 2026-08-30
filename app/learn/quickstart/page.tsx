@@ -92,7 +92,6 @@ const snapshot = `export const knownBillValues = {
 };`;
 
 const component = `import { ConnectedBillLifecycle } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 import { knownBillValues } from "./known-bill-values";
 
 export function CaseBilling() {
