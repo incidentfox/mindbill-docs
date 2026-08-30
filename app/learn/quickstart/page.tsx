@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage, Step, Steps } from "@/components/doc-page";
+import { QuickstartPlayground } from "@/components/playground";
 
 export const metadata: Metadata = { title: "Quickstart" };
 
@@ -36,78 +37,6 @@ export async function POST(request: Request) {
   return Response.json(session);
 }`;
 
-const snapshot = `export const knownBillValues = {
-  externalId: "report_9f7a",
-  billingMode: "med_legal",
-  patient: {
-    externalId: "patient_42",
-    firstName: "Alex",
-    lastName: "Morgan",
-    dateOfBirth: "1984-05-17",
-    address: {
-      line1: "100 Main St",
-      city: "Fresno",
-      state: "CA",
-      postalCode: "93721",
-    },
-  },
-  claim: {
-    externalId: "claim_17",
-    claimNumber: "WC-44871",
-    employer: "Example Foods",
-    dateOfInjury: "2026-02-14",
-    claimsAdministrator: { name: "Example Claims Administrator" },
-  },
-  service: { date: "2026-08-26" },
-  billingProvider: {
-    name: "Northstar Medical Evaluators",
-    taxId: "123456789",
-    npi: "1234567893",
-    address: {
-      line1: "200 Office Ave",
-      city: "Fresno",
-      state: "CA",
-      postalCode: "93721",
-    },
-  },
-  renderingProvider: {
-    name: "Morgan Chen, MD",
-    npi: "1234567893",
-    licenseNumber: "A12345",
-    licenseState: "CA",
-    isQme: true,
-  },
-  serviceLocation: {
-    name: "Fresno Exam Office",
-    placeOfServiceCode: "11",
-    address: {
-      line1: "200 Office Ave",
-      city: "Fresno",
-      state: "CA",
-      postalCode: "93721",
-    },
-  },
-  diagnoses: ["M25.512"],
-  serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1 }],
-};`;
-
-const component = `import { ConnectedBillLifecycle } from "@mindbill/react";
-import { knownBillValues } from "./known-bill-values";
-
-export function CaseBilling() {
-  return (
-    <ConnectedBillLifecycle
-      create={knownBillValues}
-      sessionEndpoint="/api/mindbill/session"
-      appearance={{ preset: "clinical-blue" }}
-      onBillCreated={(billId) => {
-        // Immediate UI navigation or optimistic association.
-        console.log("Created", billId);
-      }}
-    />
-  );
-}`;
-
 const browser = `import { createBillLifecycleClient } from "@mindbill/browser";
 
 const billing = createBillLifecycleClient({
@@ -120,50 +49,43 @@ export default function QuickstartPage() {
   return (
     <DocPage
       eyebrow="Get started"
-      title="Submit your first sandbox bill"
-      description="Pass the CMS-1500 values and payer documents your product already has. The component lets a user review, submit, and manage the bill without leaving your product."
+      title="Add billing with React"
+      description="Mint one short-lived browser session on your server, then render the complete bill review and lifecycle in your product."
       toc={[
         { id: "install", label: "Install" },
-        { id: "authorize", label: "Authorize the browser" },
-        { id: "snapshot", label: "Map known values" },
-        { id: "render", label: "Render billing" },
-        { id: "sync", label: "Synchronize status" },
+        { id: "authorize", label: "Create a session route" },
+        { id: "render", label: "Render the lifecycle" },
+        { id: "sync", label: "Keep the bill ID" },
         { id: "api-only", label: "Without React" },
       ]}
       previous={{ href: "/learn/anatomy-of-a-bill", label: "Anatomy of a bill" }}
       next={{ href: "/learn/routing", label: "Routing and EDI" }}
     >
-      <Callout title="One small server route">Keep one organization-scoped API key on your server. Your authenticated route maps the current user&apos;s role to billing permissions and returns a short-lived token for the exact browser origin. The browser creates and manages bills without receiving the permanent key.</Callout>
+      <Callout title="The server only authorizes">Keep the organization API key on your server. Your route checks the signed-in user and mints an origin-bound session for that user&apos;s role. The React component creates the bill and returns its ID.</Callout>
       <Steps>
-        <Step title="Install the component and server client">
+        <Step title="Install React and the server client">
           <span id="install" />
           <CodeBlock code={install} language="bash" filename="Terminal" />
         </Step>
-        <Step title="Authorize the signed-in user">
+        <Step title="Create one session route">
           <span id="authorize" />
-          <p>Add one authenticated route in any server framework. The API key fixes the organization, <code>subject</code> identifies your user, and <code>permissions</code> represent the user&apos;s role.</p>
+          <p>Use any server framework. The API key fixes the organization, <code>subject</code> identifies your user, and <code>permissions</code> come from your own role-based access control.</p>
           <CodeBlock code={server} filename="server/mindbill-session.ts" />
           <Callout tone="warning" title="Do not put the API key in frontend code">Only the short-lived, exact-origin session reaches the browser. MindBill enforces both the organization boundary and the permissions on every request.</Callout>
         </Step>
-        <Step title="Map the values you already know">
-          <span id="snapshot" />
-          <p>A bill is the snapshot that should print on the <a href="https://www.nucc.org/images/stories/PDF/1500_claim_form_2012_02.pdf">CMS-1500</a> and travel in the <a href="https://www.cms.gov/files/document/mln006976-medicare-billing-cms-1500-837p.pdf">837P</a>. Prefill every value already present in your case or report system; the user edits only what is missing or wrong.</p>
-          <CodeBlock code={snapshot} filename="known-bill-values.ts" />
-          <Callout title="Choose the billing mode"><code>billingMode: &quot;med_legal&quot;</code> applies California medical-legal rules. Use <code>billingMode: &quot;professional&quot;</code> for treatment or professional claims; each service line then needs its exact <code>serviceDate</code> and <code>charge</code>.</Callout>
-        </Step>
-        <Step title="Render the complete lifecycle">
+        <Step title="Render the lifecycle">
           <span id="render" />
-          <p>The component creates the private draft in the browser, returns its stable <code>billId</code>, and owns payer search, packet review, submission, status, EORs, payment posting, reviews, corrections, and closure.</p>
-          <CodeBlock code={component} filename="CaseBilling.tsx" />
-          <p>Pass <code>billId</code> instead of <code>create</code> when reopening an existing bill.</p>
+          <p>Pass every value your product already knows. They become the editable snapshot that prints on the <a href="https://www.nucc.org/images/stories/PDF/1500_claim_form_2012_02.pdf">CMS-1500</a> and travels in the <a href="https://www.cms.gov/files/document/mln006976-medicare-billing-cms-1500-837p.pdf">837P</a>.</p>
+          <QuickstartPlayground />
+          <p>The first tab is a safe live preview. Use the other tabs for the connected React component, server route, and bill data. Pass <code>billId</code> instead of <code>create</code> when reopening a bill.</p>
         </Step>
-        <Step title="Synchronize durable status">
+        <Step title="Keep the bill ID">
           <span id="sync" />
-          <p>Use <code>onBillCreated</code> for immediate UI state. Use ordered events or signed webhooks for authoritative server synchronization because acknowledgements, EORs, payments, and denials can arrive after the browser session ends.</p>
+          <p>Store the <code>billId</code> returned by <code>onBillCreated</code> beside your case or report. Signed webhooks keep server-side status current after acknowledgements, EORs, payments, or denials arrive.</p>
         </Step>
       </Steps>
       <h2 id="api-only">Use the same flow without React</h2>
-      <p>The framework-neutral browser package uses the same session route. Angular ships its own native lifecycle component. Your server may also call the REST API directly when there is no end-user review step.</p>
+      <p>The framework-neutral browser package uses the same session route. Angular ships a native lifecycle component. Your server may call the REST API directly when no user review is required.</p>
       <CodeBlock code={`npm install @mindbill/browser`} language="bash" filename="Terminal" />
       <CodeBlock code={browser} filename="billing.ts" />
     </DocPage>

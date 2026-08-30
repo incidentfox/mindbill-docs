@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { CopyPageButton } from "./copy-page-button";
 
 export function DocPage({
   eyebrow,
@@ -20,11 +21,12 @@ export function DocPage({
 }) {
   return (
     <div className="doc-grid">
-      <article className="doc-article">
+      <article className="doc-article" data-doc-article>
         <header className="doc-header">
           {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
           <h1>{title}</h1>
           <p>{description}</p>
+          <div className="doc-header-actions"><CopyPageButton /></div>
         </header>
         <div className="doc-content">{children}</div>
         <nav className="page-pagination" aria-label="Pagination">
@@ -50,4 +52,3 @@ export function Steps({ children }: { children: React.ReactNode }) {
 export function Step({ title, children }: { title: string; children: React.ReactNode }) {
   return <li><h2>{title}</h2><div>{children}</div></li>;
 }
-

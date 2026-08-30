@@ -7,10 +7,9 @@ export async function CodeBlock({ code, language = "typescript", filename }: { c
     themes: { light: "github-light", dark: "github-dark" },
   });
   return (
-    <div className="code-block">
+    <div className="code-block" data-code-language={language}>
       <div className="code-toolbar"><span>{filename ?? language}</span><CopyButton value={code.trim()} /></div>
       <div className="shiki-wrap" dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
 }
-
