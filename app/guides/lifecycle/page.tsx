@@ -4,6 +4,7 @@ import { Callout, DocPage } from "@/components/doc-page";
 import {
   ActivityTimelinePlayground,
   LifecycleActionsPlayground,
+  LifecyclePlayground,
 } from "@/components/playground";
 
 export const metadata: Metadata = { title: "Billing lifecycle and actions" };
@@ -96,6 +97,8 @@ export default function LifecyclePage() {
       <h2 id="status">Read status and EORs</h2>
       <p>The status endpoint is suitable for a case header, receivables list, or background reconciliation job. The EOR endpoint returns normalized line items plus the original PDF when available.</p>
       <CodeBlock code={read} filename="server/read-lifecycle.ts" />
+      <p>The connected workspace combines that read model with native dialogs for every available action.</p>
+      <LifecyclePlayground />
 
       <h2 id="actions">Take the next action</h2>
       <p>Read <code>lifecycle.actions</code> instead of reproducing payer rules in your application. MindBill returns only the actions that make sense for the current bill and explains why an unavailable action is disabled.</p>
@@ -112,9 +115,9 @@ export default function LifecyclePage() {
       <CodeBlock code={actions} filename="server/bill-actions.ts" />
 
       <h2 id="history">Show bill history</h2>
-      <p><code>BillActivityTimeline</code> turns the signed events stored by your webhook handler into a native timeline. Pass the newest events first; the component owns presentation, while your server remains the durable event store.</p>
+      <p>The connected lifecycle response includes newest-first <code>activity</code>. <code>BillActivityTimeline</code> renders it directly, or accepts the same records from your own webhook-backed store.</p>
       <ActivityTimelinePlayground />
-      <Callout title="Why the timeline is not connected by bill ID">The browser API intentionally exposes current lifecycle state, EORs, and valid actions. Ordered history arrives through signed webhooks. Persist those events if your product needs an audit timeline.</Callout>
+      <Callout title="Read for UI, webhooks for durable sync">The bill endpoint is enough to render the current screen. Signed webhooks remain the authoritative way to update your database after the browser closes.</Callout>
 
       <h2 id="reviews">Second Bill Review before IBR</h2>
       <p>California payment disputes generally begin with Second Bill Review. If the dispute remains eligible after SBR, the provider may proceed to Independent Bill Review. Medical-legal SBR uses the DWC SBR-1 process and supporting documents.</p>
@@ -122,7 +125,7 @@ export default function LifecyclePage() {
       <Callout tone="warning" title="Deadlines matter">Your application should surface the dates and payer instructions returned with the EOR. MindBill provides the workflow primitives, but the provider remains responsible for timely and accurate review requests.</Callout>
 
       <h2 id="events">Use events for durable synchronization</h2>
-      <p>Component callbacks keep the current screen responsive. Signed webhooks should update your database in the background. Store the event ID before processing so a retry is harmless, then render those records with <code>BillActivityTimeline</code> if users need the history.</p>
+      <p>Component callbacks keep the current screen responsive. Signed webhooks should update your database in the background. Store the event ID before processing so a retry is harmless.</p>
       <CodeBlock code={event} language="json" filename="bill.denied.json" />
     </DocPage>
   );

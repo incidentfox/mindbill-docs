@@ -84,12 +84,12 @@ export default function AngularPage() {
       <p>Pass <code>create</code> for a new bill or <code>billId</code> for an existing bill.</p>
       <CodeBlock code={angular} filename="case-billing.component.ts" />
       <CodeBlock code={existing} language="html" filename="existing-bill.component.html" />
-      <Callout title="Included">CMS-1500 review, payer matching, keyboard-first procedure rows, documents, delivery destinations, submission, status, EORs, payments, reviews, correction, and closure.</Callout>
+      <Callout title="Included">CMS-1500 review, payer matching, keyboard-first procedure rows, documents, delivery destinations, submission, lifecycle progress, bill snapshot, payer contacts, original EOR PDFs, payment ledger, activity history, state-aware actions, and built-in dialogs for correction, review, payment, and closure.</Callout>
 
       <h2 id="inputs">Inputs and outputs</h2>
       <div className="data-table component-api">
         <div className="table-head"><b>Name</b><b>Type</b><b>Purpose</b></div>
-        <div><code>create</code><code>CreateBillRequest</code><span>Known values for a new private draft.</span></div>
+        <div><code>create</code><code>CreateBillRequest</code><span>Known values for a new bill. Nothing is transmitted until submission.</span></div>
         <div><code>billId</code><code>string</code><span>Open an existing bill.</span></div>
         <div><code>sessionEndpoint</code><code>string</code><span>Your authenticated session route.</span></div>
         <div><code>getSession</code><code>function</code><span>Optional custom session loader.</span></div>

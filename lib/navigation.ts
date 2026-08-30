@@ -97,6 +97,14 @@ export const navigation: DocLink[] = [
     keywords: ["api key", "token", "origin", "security", "session"],
   },
   {
+    href: "/guides/sandbox",
+    label: "Sandbox and live access",
+    description: "Create test keys, accept the BAA, and promote an integration to live traffic.",
+    group: "Build",
+    icon: KeyRound,
+    keywords: ["sandbox", "api key", "baa", "production", "live access"],
+  },
+  {
     href: "/components/react",
     label: "React",
     description: "Native components with sessions, API calls, and state-aware actions.",
@@ -123,7 +131,7 @@ export const navigation: DocLink[] = [
   {
     href: "/api-reference/create-bill",
     label: "Create a bill",
-    description: "Create a private draft from CMS-1500 data.",
+    description: "Create a private bill record from CMS-1500 data.",
     group: "Reference",
     icon: FileText,
     keywords: ["create", "bill", "draft", "cms-1500"],
