@@ -34,7 +34,7 @@ export default function AnatomyPage() {
       </div>
 
       <h2 id="formats">CMS-1500 and 837P are two views of the same claim</h2>
-      <p>The CMS-1500 is the familiar paper form. The 837P is the X12 electronic transaction used to send professional claims. It is a hierarchical EDI document with loops, segments, qualifiers, control numbers, and implementation-guide constraints.</p>
+      <p>The <a href="https://www.nucc.org/images/stories/PDF/1500_claim_form_2012_02.pdf">CMS-1500</a> is the familiar paper form. The <a href="https://www.cms.gov/files/document/mln006976-medicare-billing-cms-1500-837p.pdf">837P</a> is the X12 electronic transaction used to send professional claims. It is a hierarchical EDI document with loops, segments, qualifiers, control numbers, and implementation-guide constraints.</p>
       <div className="format-pair">
         <div><span>Developer input</span><strong>Typed JSON</strong><code>claim.claimNumber</code><code>serviceLines[0].code</code></div>
         <i>→</i>

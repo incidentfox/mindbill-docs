@@ -147,7 +147,7 @@ export default function QuickstartPage() {
         </Step>
         <Step title="Map the values you already know">
           <span id="snapshot" />
-          <p>A bill is the snapshot that should print on the CMS-1500 and travel in the 837P. Prefill every value already present in your case or report system; the user edits only what is missing or wrong.</p>
+          <p>A bill is the snapshot that should print on the <a href="https://www.nucc.org/images/stories/PDF/1500_claim_form_2012_02.pdf">CMS-1500</a> and travel in the <a href="https://www.cms.gov/files/document/mln006976-medicare-billing-cms-1500-837p.pdf">837P</a>. Prefill every value already present in your case or report system; the user edits only what is missing or wrong.</p>
           <CodeBlock code={snapshot} filename="known-bill-values.ts" />
           <Callout title="Choose the billing mode"><code>billingMode: &quot;med_legal&quot;</code> applies California medical-legal rules. Use <code>billingMode: &quot;professional&quot;</code> for treatment or professional claims; each service line then needs its exact <code>serviceDate</code> and <code>charge</code>.</Callout>
         </Step>
