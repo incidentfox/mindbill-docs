@@ -12,8 +12,8 @@ importers:
         specifier: 2.20.0
         version: 2.20.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@mindbill/react':
-        specifier: 0.15.0
-        version: 0.15.0(react@19.2.8)
+        specifier: 0.16.0
+        version: 0.16.0(react@19.2.8)
       lucide-react:
         specifier: 1.37.0
         version: 1.37.0(react@19.2.8)
@@ -438,8 +438,8 @@ packages:
   '@mindbill/embed@0.6.0':
     resolution: {integrity: sha512-xWBMiqv0OX/DLsJshboGNWBRg/YZnAxLCKK/GP5KjtT+AkawhFdkd8HphaGPD8QL8IkVpA3YB5l/OKSbK7+dkQ==}
 
-  '@mindbill/react@0.15.0':
-    resolution: {integrity: sha512-Z/WmXmZ6fbJPXBQy0Dg7OPCaSfIj1SWRJ8kB6qDZKPBGARMkE+gBvaVu+TYMQxXW40IHAUT71bIcN8fU0TJ6aA==}
+  '@mindbill/react@0.16.0':
+    resolution: {integrity: sha512-uiLga7d2QcjbIDFgzWq28ACVZ3U5GE+szoxIWn5DKrDsClO3Np7txYqd7A0LpH2YnL9rMf3ga2iNab2Rcm5DLA==}
     peerDependencies:
       react: '>=18'
 
@@ -2602,7 +2602,7 @@ snapshots:
 
   '@mindbill/embed@0.6.0': {}
 
-  '@mindbill/react@0.15.0(react@19.2.8)':
+  '@mindbill/react@0.16.0(react@19.2.8)':
     dependencies:
       '@mindbill/browser': 0.3.0
       '@mindbill/embed': 0.6.0
