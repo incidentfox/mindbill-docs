@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage, Step, Steps } from "@/components/doc-page";
-import { QuickstartPlayground } from "@/components/playground";
+import { LifecyclePlayground, QuickstartPlayground } from "@/components/playground";
 
 export const metadata: Metadata = { title: "Quickstart" };
 
@@ -69,6 +69,7 @@ export default function QuickstartPage() {
         { id: "install", label: "Install" },
         { id: "authorize", label: "Authorize the browser" },
         { id: "render", label: "Render bill creation" },
+        { id: "lifecycle", label: "Handle the lifecycle" },
         { id: "callbacks", label: "Handle callbacks" },
         { id: "sync", label: "Synchronize events" },
         { id: "api-only", label: "Without React" },
@@ -94,6 +95,12 @@ export default function QuickstartPage() {
           <QuickstartPlayground />
           <p>The first tab is a safe, editable preview of the review form. The production tabs show the connected component, server route, and bill snapshot. Pass <code>billId</code> instead of <code>create</code> when reopening a bill.</p>
           <Callout title="No separate draft workflow is required">A private bill record exists so documents and edits have somewhere durable to live, but nothing reaches a payer until the user presses Submit bill. The connected component hides that orchestration.</Callout>
+        </Step>
+        <Step title="Keep the complete lifecycle in your product">
+          <span id="lifecycle" />
+          <p>After submission, the same component becomes the bill workspace. It shows progress, the frozen bill snapshot, payer contacts, EORs and original PDFs, payments, history, and only the actions valid for the current state.</p>
+          <LifecyclePlayground />
+          <p>Correction, resubmission, Second Bill Review, IBR or lien follow-up, payment posting, and closure open built-in dialogs. You can override callbacks and presentation, but you do not have to rebuild billing rules or modal flows.</p>
         </Step>
         <Step title="Use callbacks for the current screen">
           <span id="callbacks" />

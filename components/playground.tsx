@@ -130,6 +130,21 @@ const lifecycle = {
     ],
   },
   eors: [{ id: "eor_1", filename: "EOR-1038.pdf", description: "Explanation of Review", addedAt: "2026-08-25", contentUrl: "#eor" }],
+  activity: [
+    { id: "evt_3", type: "bill.denied", createdAt: "2026-08-25T17:42:18Z", description: "Medical necessity or frequency" },
+    { id: "evt_2", type: "eor.received", createdAt: "2026-08-25T17:41:02Z", description: "EOR-1038.pdf received" },
+    { id: "evt_1", type: "bill.submitted", createdAt: "2026-07-27T16:08:00Z", actor: "Taylor R." },
+  ],
+  payments: [],
+  remittance: { payerReportedPaid: 0, totalPaid: 0, balanceDue: 2015, denialReason: "Medical necessity or frequency" },
+  delivery: {
+    payerName: "Republic Indemnity",
+    contacts: {
+      adjusterName: "Jordan Lee", adjusterPhone: "(213) 555-0188",
+      adjusterEmail: "jordan.lee@example.test", faxNumber: "(213) 555-0199",
+      mailingAddress: "PO Box 19600, Irvine, CA 92623",
+    },
+  },
 };
 
 export default function App() {
@@ -180,6 +195,88 @@ export default function App() {
       events={events}
       appearance={{ preset: "clinical-blue" }}
     />
+  </main>;
+}`;
+
+const lifecycleProgressCode = `import { BillLifecycleProgress } from "@mindbill/react";
+
+export default function App() {
+  return <main className="demo">
+    <BillLifecycleProgress
+      state="second_review"
+      nativeStatus="Second Bill Review submitted"
+      submittedAt="2026-07-27T16:08:00Z"
+      agingDays={29}
+      appearance={{ preset: "orange-bright" }}
+    />
+  </main>;
+}`;
+
+const snapshotCode = `import { BillSnapshotSummary } from "@mindbill/react";
+
+${fixture}
+
+export default function App() {
+  return <main className="demo">
+    <BillSnapshotSummary
+      bill={review.bill}
+      patient={review.patient}
+      injury={review.injury}
+      delivery={{ payerName: "Republic Indemnity", contacts: {} }}
+      appearance={{ preset: "clinical-blue" }}
+    />
+  </main>;
+}`;
+
+const remittanceCode = `import { BillRemittanceCard } from "@mindbill/react";
+
+export default function App() {
+  return <main className="demo">
+    <BillRemittanceCard
+      remittance={{
+        payerReportedPaid: 503.75,
+        totalPaid: 503.75,
+        balanceDue: 1511.25,
+        denialReason: "Payment reduced pending additional documentation.",
+      }}
+      appearance={{ preset: "orange-bright" }}
+    />
+  </main>;
+}`;
+
+const payerContactCode = `import { BillPayerContactCard } from "@mindbill/react";
+
+export default function App() {
+  return <main className="demo">
+    <BillPayerContactCard
+      delivery={{
+        payerName: "Republic Indemnity",
+        contacts: {
+          adjusterName: "Jordan Lee",
+          adjusterPhone: "(213) 555-0188",
+          adjusterEmail: "jordan.lee@example.test",
+          faxNumber: "(213) 555-0199",
+          mailingAddress: "PO Box 19600, Irvine, CA 92623",
+        },
+      }}
+      appearance={{ preset: "clinical-blue" }}
+    />
+  </main>;
+}`;
+
+const paymentLedgerCode = `import { BillPaymentLedger } from "@mindbill/react";
+
+const payments = [{
+  id: "payment_1", method: "check", checkNumber: "4811505",
+  status: "deposited", depositDate: "2026-08-25", checkReceived: true,
+  receivedDate: "2026-08-23", amount: 503.75, feeAmount: null,
+  feeReason: null, source: "paper", postedAt: "2026-08-25T17:42:18Z",
+  updatedAt: null, note: "Partial payment",
+}];
+
+export default function App() {
+  return <main className="demo">
+    <BillPaymentLedger payments={payments} appearance={{ preset: "orange-bright" }} />
   </main>;
 }`;
 
@@ -243,7 +340,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.16.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.17.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -353,7 +450,7 @@ export function QuickstartPlayground() {
           "/bill-data.js": quickstartBillDataCode,
           "/styles.css": { code: demoCss, hidden: true },
         }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.16.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.17.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -379,6 +476,26 @@ export function LifecycleActionsPlayground() {
 
 export function ActivityTimelinePlayground() {
   return <ComponentPlayground name="BillActivityTimeline" code={activityTimelineCode} height={560} />;
+}
+
+export function LifecycleProgressPlayground() {
+  return <ComponentPlayground name="BillLifecycleProgress" code={lifecycleProgressCode} />;
+}
+
+export function SnapshotPlayground() {
+  return <ComponentPlayground name="BillSnapshotSummary" code={snapshotCode} />;
+}
+
+export function RemittancePlayground() {
+  return <ComponentPlayground name="BillRemittanceCard" code={remittanceCode} />;
+}
+
+export function PayerContactPlayground() {
+  return <ComponentPlayground name="BillPayerContactCard" code={payerContactCode} />;
+}
+
+export function PaymentLedgerPlayground() {
+  return <ComponentPlayground name="BillPaymentLedger" code={paymentLedgerCode} height={560} />;
 }
 
 export function ConnectedStatusPlayground() {

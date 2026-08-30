@@ -8,6 +8,11 @@ import {
   HostedTimelinePlayground,
   LifecyclePlayground,
   LifecycleActionsPlayground,
+  LifecycleProgressPlayground,
+  SnapshotPlayground,
+  RemittancePlayground,
+  PayerContactPlayground,
+  PaymentLedgerPlayground,
   ReviewFormPlayground,
   StatusPlayground,
 } from "@/components/playground";
@@ -59,7 +64,7 @@ function BillingToolbar({ billId }: { billId: string }) {
 
   return (
     <>
-      <strong>{bill.data?.status.state}</strong>
+      <strong>{bill.data?.lifecycle.state}</strong>
       <button onClick={() => bill.closeBill({ reason: "Completed" })}>
         Close bill
       </button>
@@ -111,11 +116,39 @@ const actionBar = `import { BillLifecycleActions } from "@mindbill/react";
 
 const timeline = `import { BillActivityTimeline } from "@mindbill/react";
 
-// Load these from the signed webhook events stored by your server.
+// ConnectedBillLifecycle already passes bill.activity here internally.
 <BillActivityTimeline
-  events={billEvents}
+  events={bill.activity}
   appearance={{ preset: "orange-bright" }}
 />`;
+
+const progress = `import { BillLifecycleProgress } from "@mindbill/react";
+
+<BillLifecycleProgress
+  state={bill.lifecycle.state}
+  nativeStatus={bill.lifecycle.nativeStatus}
+  submittedAt={bill.lifecycle.submittedAt}
+  agingDays={bill.lifecycle.agingDays}
+/>`;
+
+const snapshot = `import { BillSnapshotSummary } from "@mindbill/react";
+
+<BillSnapshotSummary
+  bill={bill.bill}
+  patient={bill.patient}
+  injury={bill.injury}
+  delivery={bill.delivery}
+/>`;
+
+const remittance = `import {
+  BillRemittanceCard,
+  BillPayerContactCard,
+  BillPaymentLedger,
+} from "@mindbill/react";
+
+<BillRemittanceCard remittance={bill.remittance} />
+<BillPayerContactCard delivery={bill.delivery} />
+<BillPaymentLedger payments={bill.payments} />`;
 
 const clients = `import {
   buildBillReviewSaveInput,
@@ -156,6 +189,7 @@ export default function ReactPage() {
         { id: "lifecycle", label: "Complete lifecycle" },
         { id: "custom", label: "Custom lifecycle UI" },
         { id: "status", label: "Status surfaces" },
+        { id: "surfaces", label: "Lifecycle surfaces" },
         { id: "actions", label: "Actions and history" },
         { id: "forms", label: "Controlled forms" },
         { id: "clients", label: "Browser clients" },
@@ -175,7 +209,12 @@ export default function ReactPage() {
         <div><code>BillReviewForm</code><span>You own data loading but want MindBill&apos;s review form.</span><span>No</span></div>
         <div><code>BillStatusSummary</code><span>You need a presentational status card.</span><span>No</span></div>
         <div><code>BillLifecycleActions</code><span>You need state-aware actions in your own layout.</span><span>No</span></div>
-        <div><code>BillActivityTimeline</code><span>You want to render signed events stored by your server.</span><span>No</span></div>
+        <div><code>BillLifecycleProgress</code><span>You need the horizontal bill lifecycle.</span><span>No</span></div>
+        <div><code>BillSnapshotSummary</code><span>You need a compact CMS-1500 snapshot.</span><span>No</span></div>
+        <div><code>BillRemittanceCard</code><span>You need payer-reported, posted, and balance amounts.</span><span>No</span></div>
+        <div><code>BillPayerContactCard</code><span>You need payer and adjuster follow-up contacts.</span><span>No</span></div>
+        <div><code>BillPaymentLedger</code><span>You need posted payment history.</span><span>No</span></div>
+        <div><code>BillActivityTimeline</code><span>You want to render the bill&apos;s complete history.</span><span>No</span></div>
         <div><code>MindBillBillReview</code><span>You prefer the hosted review surface.</span><span>Hosted</span></div>
         <div><code>MindBillBillTimeline</code><span>You prefer the hosted timeline surface.</span><span>Hosted</span></div>
       </div>
@@ -189,7 +228,7 @@ export default function ReactPage() {
       <h2 id="lifecycle">Complete lifecycle</h2>
       <p>Pass a bill snapshot for a new bill or <code>billId</code> for an existing one.</p>
       <CodeBlock code={lifecycle} filename="CaseBilling.tsx" />
-      <p>The component includes payer matching, editable CMS-1500 data, documents, delivery destinations, submission, status, EORs, payments, reviews, correction, and closure. Procedure rows always leave one empty keyboard-ready row.</p>
+      <p>The component includes payer matching, editable CMS-1500 data, documents, delivery destinations, submission, lifecycle progress, EOR details and original PDFs, payer contacts, payments, history, Second Review, correction/resubmission, IBR or lien actions when eligible, and closure. Its actions open complete dialogs; procedure rows always leave one empty keyboard-ready row.</p>
       <LifecyclePlayground />
 
       <h2 id="custom">Custom lifecycle UI</h2>
@@ -204,11 +243,22 @@ export default function ReactPage() {
       <CodeBlock code={presentational} filename="StatusCard.tsx" />
       <StatusPlayground />
 
+      <h2 id="surfaces">Lifecycle surfaces</h2>
+      <p>These presentational exports use fields already returned by the lifecycle endpoint. Compose them only when the complete connected workspace is more UI than you need.</p>
+      <CodeBlock code={progress} filename="BillProgress.tsx" />
+      <LifecycleProgressPlayground />
+      <CodeBlock code={snapshot} filename="BillSnapshot.tsx" />
+      <SnapshotPlayground />
+      <CodeBlock code={remittance} filename="BillFollowUp.tsx" />
+      <RemittancePlayground />
+      <PayerContactPlayground />
+      <PaymentLedgerPlayground />
+
       <h2 id="actions">Actions and history</h2>
       <p><code>BillLifecycleActions</code> renders the action list returned with lifecycle data. Keep the server response authoritative: do not recreate denial, payment, review, or resubmission eligibility in frontend conditionals.</p>
       <CodeBlock code={actionBar} filename="BillActions.tsx" />
       <LifecycleActionsPlayground />
-      <p><code>BillActivityTimeline</code> renders durable bill events from your webhook store. Browser callbacks are appropriate for immediate UI and analytics; signed events are the source of truth after the page closes.</p>
+      <p><code>BillActivityTimeline</code> renders <code>bill.activity</code> from the connected lifecycle response. Webhooks remain the durable server-side signal for your own database and analytics.</p>
       <CodeBlock code={timeline} filename="BillHistory.tsx" />
       <ActivityTimelinePlayground />
 
