@@ -57,7 +57,7 @@ export default function HomePage() {
       <Callout title="California medical-legal billing is live">
         The public API currently supports California medical-legal bills, including QME and AME workflows. Professional treatment billing is planned but is not yet available through the public API. Requests with <code>billingMode: &quot;professional&quot;</code> return a capability error rather than silently creating an unsupported bill.
       </Callout>
-      <p>Start with the <Link href="/learn/quickstart">REST quickstart</Link>. React and Angular components are optional UI for reviewing and managing a bill after your server creates it.</p>
+      <p>Start with the <Link href="/learn/quickstart">browser-first quickstart</Link>. React and Angular components can create and manage the bill directly with a short-lived session; server-only REST remains available for headless workflows.</p>
     </DocPage>
   );
 }

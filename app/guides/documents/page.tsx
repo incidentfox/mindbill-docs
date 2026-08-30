@@ -23,8 +23,27 @@ const remove = `await mindbill.deleteBillDocument(
   "remove-document-88",
 );`;
 
+const browserUpload = `import { createBillLifecycleClient } from "@mindbill/browser";
+
+const billing = createBillLifecycleClient({
+  sessionEndpoint: "/api/mindbill/session",
+});
+
+const { billId } = await billing.createBill(knownBillValues);
+
+for (const document of defaultPayerDocuments) {
+  await billing.addAttachment(
+    document.file,
+    document.type,
+    document.description,
+  );
+}
+
+// Persist billId in your product, then open the same bill in the component.
+setBillId(billId);`;
+
 const component = `<ConnectedBillLifecycle
-  billId={bill.id}
+  billId={billId}
   sessionEndpoint="/api/mindbill/session"
 />`;
 
@@ -53,15 +72,18 @@ export default function DocumentsPage() {
       </ul>
       <Callout tone="warning" title="Billing packet is not report service">Serving a report on case parties and submitting a bill to a claims administrator are separate workflows. A document may belong in one packet, both packets, or neither.</Callout>
 
-      <h2 id="upload">Upload documents from your server</h2>
-      <p>Create the private bill draft, then upload each intended document with a semantic type. Use an idempotency key so a retry cannot create duplicate attachments.</p>
+      <h2 id="upload">Upload documents</h2>
+      <p>The structured create request and document bytes are separate calls. In a browser-first integration, create the private draft and immediately attach the intended payer documents with the same short-lived session:</p>
+      <CodeBlock code={browserUpload} filename="create-bill-with-documents.ts" />
+      <p>If your files must stay on the server, the Node SDK provides the same document operations. Use an idempotency key so a retry cannot create duplicate attachments.</p>
       <CodeBlock code={upload} filename="server/attach-report.ts" />
       <p>Remove a document while the draft is still being reviewed:</p>
       <CodeBlock code={remove} filename="server/remove-document.ts" />
 
       <h2 id="review">Let the user review the packet</h2>
-      <p>The React and Angular lifecycle components list every attached document, provide preview and removal controls, and accept additional PDFs. They operate on the same bill resource created by your server.</p>
+      <p>The React and Angular lifecycle components list every attached document, provide preview and removal controls, and accept additional PDFs. After creating and attaching defaults, pass the returned <code>billId</code> to open that draft for review.</p>
       <CodeBlock code={component} filename="CaseBilling.tsx" />
+      <Callout title="Creation and upload are sequential today">The bill ID is returned before documents are uploaded. Keep that ID even if a later upload fails, then retry only the missing document. The lifecycle component will show the resulting packet.</Callout>
 
       <h2 id="types">Document types</h2>
       <div className="term-list compact">
