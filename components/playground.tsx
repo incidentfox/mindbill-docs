@@ -37,7 +37,7 @@ export function StatusPlayground() {
         template="react"
         theme="auto"
         files={{ "/App.js": statusCode }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.14.2" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.15.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
