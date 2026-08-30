@@ -103,8 +103,8 @@ export default function BillsPage() {
       <CodeBlock code={list} filename="server/find-bills.ts" />
 
       <h2 id="availability">Billing-mode availability</h2>
-      <p><code>med_legal</code> is available for California medical-legal billing. The <code>professional</code> treatment-billing mode is reserved in the API but is not yet generally available.</p>
-      <Callout tone="warning" title="Do not send treatment bills yet">A request with <code>billingMode: &quot;professional&quot;</code> currently returns a capability error instead of silently producing an unsupported claim.</Callout>
+      <p>Use <code>med_legal</code> for California medical-legal bills, including QME and AME workflows. Use <code>professional</code> for treatment or other professional claims.</p>
+      <Callout title="Professional lines are exact snapshots">Each professional service line needs its own <code>serviceDate</code> and <code>charge</code>. MindBill preserves those values while normalizing routing, acknowledgements, EORs, payments, denials, and follow-up actions.</Callout>
     </DocPage>
   );
 }

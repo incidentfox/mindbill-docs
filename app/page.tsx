@@ -14,7 +14,7 @@ export default function HomePage() {
         { id: "what", label: "What MindBill does" },
         { id: "why", label: "Why this API exists" },
         { id: "lifecycle", label: "One bill lifecycle" },
-        { id: "availability", label: "Current availability" },
+        { id: "availability", label: "Billing modes" },
       ]}
       next={{ href: "/learn/workers-comp-billing", label: "Workers' comp billing" }}
     >
@@ -53,9 +53,9 @@ export default function HomePage() {
       </div>
       <p>The lifecycle is not always linear. A clearinghouse rejection can require a corrected replacement. An underpayment or denial can require Second Bill Review and, when eligible, Independent Bill Review. The API exposes the valid next actions without making every partner rebuild that rules engine.</p>
 
-      <h2 id="availability">Current availability</h2>
-      <Callout title="California medical-legal billing is live">
-        The public API currently supports California medical-legal bills, including QME and AME workflows. Professional treatment billing is planned but is not yet available through the public API. Requests with <code>billingMode: &quot;professional&quot;</code> return a capability error rather than silently creating an unsupported bill.
+      <h2 id="availability">Billing modes</h2>
+      <Callout title="Medical-legal and professional billing share one lifecycle">
+        Use <code>med_legal</code> for California QME and AME workflows. Use <code>professional</code> for treatment and other professional claims. Both modes use the same bill, document, submission, status, EOR, payment, denial, and follow-up APIs.
       </Callout>
       <p>Start with the <Link href="/learn/quickstart">browser-first quickstart</Link>. React and Angular components can create and manage the bill directly with a short-lived session; server-only REST remains available for headless workflows.</p>
     </DocPage>
