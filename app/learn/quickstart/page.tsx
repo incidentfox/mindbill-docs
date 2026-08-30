@@ -120,8 +120,8 @@ export default function QuickstartPage() {
   return (
     <DocPage
       eyebrow="Get started"
-      title="Add billing with one server route"
-      description="Authorize the signed-in user once, then let the native component create, review, submit, and manage workers’ compensation bills directly from your product."
+      title="Submit your first sandbox bill"
+      description="Pass the CMS-1500 values and payer documents your product already has. The component lets a user review, submit, and manage the bill without leaving your product."
       toc={[
         { id: "install", label: "Install" },
         { id: "authorize", label: "Authorize the browser" },
@@ -133,7 +133,7 @@ export default function QuickstartPage() {
       previous={{ href: "/learn/anatomy-of-a-bill", label: "Anatomy of a bill" }}
       next={{ href: "/learn/routing", label: "Routing and EDI" }}
     >
-      <Callout title="The only required server integration">Keep one organization-scoped API key on your server. Your authenticated session route maps the current user&apos;s role to billing permissions and returns a short-lived token for the exact browser origin. The browser can then create and manage bills; it never receives the permanent API key.</Callout>
+      <Callout title="One small server route">Keep one organization-scoped API key on your server. Your authenticated route maps the current user&apos;s role to billing permissions and returns a short-lived token for the exact browser origin. The browser creates and manages bills without receiving the permanent key.</Callout>
       <Steps>
         <Step title="Install the component and server client">
           <span id="install" />
@@ -149,7 +149,7 @@ export default function QuickstartPage() {
           <span id="snapshot" />
           <p>A bill is the snapshot that should print on the CMS-1500 and travel in the 837P. Prefill every value already present in your case or report system; the user edits only what is missing or wrong.</p>
           <CodeBlock code={snapshot} filename="known-bill-values.ts" />
-          <Callout tone="warning" title="Current capability">The public API currently accepts <code>billingMode: &quot;med_legal&quot;</code>. Professional treatment billing is not yet released.</Callout>
+          <Callout title="Choose the billing mode"><code>billingMode: &quot;med_legal&quot;</code> applies California medical-legal rules. Use <code>billingMode: &quot;professional&quot;</code> for treatment or professional claims; each service line then needs its exact <code>serviceDate</code> and <code>charge</code>.</Callout>
         </Step>
         <Step title="Render the complete lifecycle">
           <span id="render" />
