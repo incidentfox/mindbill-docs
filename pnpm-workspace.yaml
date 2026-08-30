@@ -1,0 +1,7 @@
+allowBuilds:
+  es5-ext: set this to true or false
+  unrs-resolver: set this to true or false
+minimumReleaseAgeExclude:
+  - '@mindbill/browser@0.2.1'
+  - '@mindbill/react@0.14.2'
+  - lucide-react@1.37.0
