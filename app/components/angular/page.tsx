@@ -6,7 +6,14 @@ export const metadata: Metadata = { title: "Angular components" };
 
 const install = `npm install @mindbill/angular @mindbill/node`;
 
-const angular = `import { Component } from "@angular/core";
+const create = `const bill = await mindbill.createBill(
+  toBillSnapshot(caseRecord),
+  \`create-bill-\${caseRecord.id}\`,
+);
+
+await saveMindBillId(caseRecord.id, bill.id);`;
+
+const angular = `import { Component, Input } from "@angular/core";
 import { MindBillBillLifecycleComponent } from "@mindbill/angular";
 
 @Component({
@@ -15,41 +22,39 @@ import { MindBillBillLifecycleComponent } from "@mindbill/angular";
   imports: [MindBillBillLifecycleComponent],
   template: \`
     <mindbill-bill-lifecycle
-      [create]="bill"
+      [billId]="billId"
       sessionEndpoint="/api/mindbill/session"
       [appearance]="{ preset: 'clinical-blue' }"
-      (billCreated)="linkBill($event.billId)"
+      (billIdChange)="billId = $event"
+      (submitted)="onSubmitted($event)"
+      (billingError)="onBillingError($event)"
     />
   \`,
 })
 export class CaseBillingComponent {
-  bill = this.caseService.toBillingSnapshot();
+  @Input({ required: true }) billId!: string;
 
-  linkBill(billId: string) {
-    this.caseService.linkBill(billId);
-  }
+  onSubmitted(event: unknown) { console.log(event); }
+  onBillingError(error: unknown) { console.error(error); }
 }`;
-
-const existing = `<mindbill-bill-lifecycle
-  [billId]="billId"
-  sessionEndpoint="/api/mindbill/session"
-  [appearance]="{ preset: 'clinical-blue' }"
-/>
-`;
 
 const express = `import { MindBillClient } from "@mindbill/node";
 
 const mindbill = new MindBillClient({
-  apiKey: process.env["MINDBILL_API_KEY"]!,
+  apiKey: process.env.MINDBILL_API_KEY!,
+  organizationId: process.env.MINDBILL_ORG_ID!,
 });
 
 app.post("/api/mindbill/session", async (req, res) => {
   const user = await requireSignedInUser(req);
+  const { billId } = req.body;
+
+  await assertUserCanAccessBill(user, billId);
 
   res.json(await mindbill.createBrowserSession({
-    subject: user.id,
-    allowedOrigin: process.env["APP_ORIGIN"]!,
-    permissions: billingPermissionsFor(user.role),
+    component: "bill-review",
+    billId,
+    allowedOrigin: process.env.APP_ORIGIN!,
     expiresIn: 900,
   }));
 });`;
@@ -59,26 +64,30 @@ export default function AngularPage() {
     <DocPage
       eyebrow="Components"
       title="Angular"
-      description="The standalone Angular component provides the same native bill creation, API client, trailing procedure row, delivery dialog, and state-aware actions as React."
+      description="Use the same connected bill lifecycle as a native standalone Angular component—without React or an iframe."
       toc={[
         { id: "install", label: "Install" },
-        { id: "component", label: "Create and render" },
-        { id: "existing", label: "Open an existing bill" },
-        { id: "session", label: "Add one server route" },
+        { id: "create", label: "Create a bill" },
+        { id: "component", label: "Render the lifecycle" },
+        { id: "session", label: "Mint a session" },
       ]}
       previous={{ href: "/components/react", label: "React components" }}
       next={{ href: "/api-reference", label: "REST API" }}
     >
       <h2 id="install">Install</h2>
       <CodeBlock code={install} language="bash" filename="Terminal" />
-      <h2 id="component">Create and render the lifecycle</h2>
-      <p>Pass your existing case values through <code>create</code>. The component creates the private draft directly and emits the stable bill ID for your application to link.</p>
+
+      <h2 id="create">1. Create the bill on your server</h2>
+      <p>Map your case to a bill snapshot once, create the private draft, and save the returned bill ID with your own record.</p>
+      <CodeBlock code={create} filename="server/create-bill.ts" />
+
+      <h2 id="component">2. Render the lifecycle</h2>
+      <p>The component loads and edits the existing bill, handles documents and routing, and changes its actions as acknowledgements, EORs, payments, denials, and reviews arrive.</p>
       <CodeBlock code={angular} filename="case-billing.component.ts" />
       <Callout title="Native Angular">This is a standalone Angular component with ordinary inputs and outputs. It does not wrap React or render an iframe.</Callout>
-      <h2 id="existing">Open an existing bill</h2>
-      <CodeBlock code={existing} language="html" filename="case-billing.component.html" />
-      <h2 id="session">Add one server route</h2>
-      <p>The same organization-and-user session model works with Express, Nest, .NET, Java, Rails, Django, Go, or any other backend.</p>
+
+      <h2 id="session">3. Add one server route</h2>
+      <p>The route authenticates your user, checks access to the requested bill, and returns a short-lived session scoped to that bill and browser origin. The same pattern works with Express, Nest, .NET, Java, Rails, Django, Go, or any other backend.</p>
       <CodeBlock code={express} filename="server.ts" />
     </DocPage>
   );

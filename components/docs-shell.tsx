@@ -31,10 +31,10 @@ export function DocsShell({ children }: { children: React.ReactNode }) {
       <header className="topbar">
         <div className="topbar-inner">
           <button className="mobile-menu-button" type="button" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
-          <Link className="wordmark" href="/learn/quickstart"><span>mindbill</span><i>/docs</i></Link>
+          <Link className="wordmark" href="/"><span>mindbill</span><i>/docs</i></Link>
           <SearchDialog />
           <nav className="top-links" aria-label="Primary">
-            <Link className={pathname.startsWith("/learn") || pathname.startsWith("/guides") ? "active" : ""} href="/learn/quickstart">Learn</Link>
+            <Link className={pathname === "/" || pathname.startsWith("/learn") || pathname.startsWith("/guides") ? "active" : ""} href="/learn/workers-comp-billing">Learn</Link>
             <Link className={pathname.startsWith("/components") ? "active" : ""} href="/components/react">Components</Link>
             <Link className={pathname.startsWith("/api-reference") ? "active" : ""} href="/api-reference">API</Link>
           </nav>
@@ -46,7 +46,7 @@ export function DocsShell({ children }: { children: React.ReactNode }) {
       {mobileOpen ? (
         <div className="mobile-nav-overlay" onMouseDown={() => setMobileOpen(false)}>
           <aside className="mobile-nav" role="dialog" aria-modal="true" aria-label="Documentation navigation" onMouseDown={(event) => event.stopPropagation()}>
-            <div><Link className="wordmark" href="/learn/quickstart"><span>mindbill</span><i>/docs</i></Link><button className="icon-button" type="button" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X size={20} /></button></div>
+            <div><Link className="wordmark" href="/"><span>mindbill</span><i>/docs</i></Link><button className="icon-button" type="button" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X size={20} /></button></div>
             {sidebar}
           </aside>
         </div>

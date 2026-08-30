@@ -2,20 +2,16 @@ import type { Metadata } from "next";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 
-export const metadata: Metadata = { title: "Create and edit bills" };
+export const metadata: Metadata = { title: "The bill resource" };
 
-const create = `import { createBillLifecycleClient } from "@mindbill/browser";
-
-const billing = createBillLifecycleClient({
-  sessionEndpoint: "/api/mindbill/session",
-});
-
-const { billId, data } = await billing.createBill({
+const create = `const created = await mindbill.createBill({
   externalId: "report_9f7a",
   billingMode: "med_legal",
   patient: {
+    externalId: "patient_42",
     firstName: "Alex",
     lastName: "Morgan",
+    dateOfBirth: "1984-03-12",
     address: {
       line1: "100 Main St",
       city: "Fresno",
@@ -24,36 +20,52 @@ const { billId, data } = await billing.createBill({
     },
   },
   claim: {
+    externalId: "injury_81",
     claimNumber: "WC-44871",
-    employer: "Example Foods",
+    employer: "Example Foods, Inc.",
+    dateOfInjury: "2026-02-14",
+    injuryState: "CA",
+    claimsAdministrator: { name: "Example Claims Administrator" },
   },
   service: { date: "2026-08-26" },
+  billingProvider: {
+    name: "Northstar Evaluations",
+    taxId: "123456789",
+    npi: "1234567890",
+    address: { line1: "200 Market St", city: "Fresno", state: "CA", postalCode: "93721" },
+  },
+  renderingProvider: {
+    name: "Morgan Chen, MD",
+    npi: "1098765432",
+    licenseNumber: "A12345",
+    licenseState: "CA",
+  },
+  serviceLocation: {
+    name: "Fresno Exam Office",
+    placeOfServiceCode: "11",
+    address: { line1: "300 Pine Ave", city: "Fresno", state: "CA", postalCode: "93721" },
+  },
+  diagnoses: ["M25.562"],
   serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1 }],
-});`;
+}, "create-report-9f7a");
 
-const update = `const billing = createBillLifecycleClient({
-  billId,
-  sessionEndpoint: "/api/mindbill/session",
-});
+const billId = created.id;`;
 
-await billing.saveReview({
-  ...currentReview,
+const update = `await mindbill.updateBill(billId, {
   claim: {
-    ...currentReview.claim,
     claimNumber: "WC-44871-A",
     employer: "Example Foods, Inc.",
   },
   serviceLines: [
-    { id: "line_1", code: "ML201", modifiers: ["95"], units: 1 },
+    { code: "ML201", modifiers: ["95"], units: 1 },
     { code: "MLPRR", modifiers: [], units: 3 },
   ],
-});`;
+}, "update-report-9f7a-v2");`;
 
-const list = `// Optional server-side reporting or reconciliation.
-const page = await mindbill.listBills({
+const list = `const page = await mindbill.listBills({
   externalId: "report_9f7a",
   patientExternalId: "patient_42",
-  state: "submitted",
+  claimExternalId: "injury_81",
   limit: 25,
 });`;
 
@@ -61,32 +73,38 @@ export default function BillsPage() {
   return (
     <DocPage
       eyebrow="Build"
-      title="Create and edit bills"
-      description="A bill is the primary resource. Browser components create it directly from the exact CMS-1500 snapshot and return one stable bill ID."
+      title="The bill resource"
+      description="A bill is an immutable-at-submission snapshot of the people, claim, services, diagnoses, providers, and locations that must appear on the claim."
       toc={[
-        { id: "snapshot", label: "Snapshot-first data" },
-        { id: "create", label: "Create in the browser" },
+        { id: "snapshot", label: "Snapshot model" },
+        { id: "create", label: "Create a draft" },
         { id: "update", label: "Edit a draft" },
-        { id: "query", label: "Query from the server" },
-        { id: "modes", label: "Billing modes" },
+        { id: "query", label: "Find bills" },
+        { id: "availability", label: "Availability" },
       ]}
       previous={{ href: "/guides/authentication", label: "Authentication" }}
       next={{ href: "/guides/documents", label: "Documents" }}
     >
-      <h2 id="snapshot">Snapshot-first data</h2>
-      <p>Send patient, claim, practice, clinician, location, diagnosis, and service values on the bill. Add your IDs as <code>externalId</code> when you want to find the bill from your own case or report.</p>
-      <Callout title="No synchronization contract">Profiles are optional conveniences. Updating a doctor or location later never mutates a past bill; each bill remains an auditable snapshot.</Callout>
-      <h2 id="create">Create directly from the browser</h2>
-      <p>The framework-neutral browser client uses the short-lived session from your server. React and Angular call this client internally.</p>
-      <CodeBlock code={create} filename="billing.ts" />
-      <h2 id="update">Edit a draft</h2>
-      <p>Open the stable bill ID and save only after the user reviews the prefilled values. The same editor handles rejected-bill corrections before resubmission.</p>
-      <CodeBlock code={update} filename="billing.ts" />
-      <h2 id="query">Query from the server when useful</h2>
-      <p>Server-side bill creation is optional. Use the permanent-key client for reporting, background reconciliation, or bulk workflows that do not involve an interactive user.</p>
-      <CodeBlock code={list} filename="server/reporting.ts" />
-      <h2 id="modes">Billing modes</h2>
-      <p>Use <code>med_legal</code> for QME, AME, IME, and other evaluation work. Use <code>professional</code> for treatment billing and ordinary CMS-1500 service lines. The same bill, document, status, and lifecycle APIs apply to both.</p>
+      <h2 id="snapshot">Send the exact billing snapshot</h2>
+      <p>Workers&apos; compensation bills carry more claim context than an ordinary patient invoice. Send the patient, injury, claims administrator, employer, billing and rendering providers, place of service, diagnoses, and service lines that should print on the CMS-1500 and travel in the 837P.</p>
+      <p>Reusable provider or location records are optional. Each submitted bill freezes its own values so later profile changes cannot rewrite billing history.</p>
+      <Callout title="Keep your relationships with external IDs">Add your report, case, patient, and injury IDs. You can later query MindBill using those identifiers without duplicating your entire application database.</Callout>
+
+      <h2 id="create">Create a private draft</h2>
+      <p>Create the bill from your server. Use an idempotency key tied to the logical operation so a network retry cannot create a duplicate.</p>
+      <CodeBlock code={create} filename="server/create-bill.ts" />
+
+      <h2 id="update">Correct a draft before submission</h2>
+      <p>Patch the bill while it is editable. The React and Angular review components use the same resource and let a user correct prefilled values before sending.</p>
+      <CodeBlock code={update} filename="server/update-bill.ts" />
+
+      <h2 id="query">Find bills from your own records</h2>
+      <p>Store the stable MindBill bill ID when convenient, or find bills later using your external identifiers.</p>
+      <CodeBlock code={list} filename="server/find-bills.ts" />
+
+      <h2 id="availability">Billing-mode availability</h2>
+      <p><code>med_legal</code> is available for California medical-legal billing. The <code>professional</code> treatment-billing mode is reserved in the API but is not yet generally available.</p>
+      <Callout tone="warning" title="Do not send treatment bills yet">A request with <code>billingMode: &quot;professional&quot;</code> currently returns a capability error instead of silently producing an unsupported claim.</Callout>
     </DocPage>
   );
 }
