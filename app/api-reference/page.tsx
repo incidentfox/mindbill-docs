@@ -23,7 +23,7 @@ const endpoints: Endpoint[] = [
   { method: "POST", path: "/bills/{billId}/reviews/{reviewId}/submissions", description: "Submit a review." },
   { method: "GET", path: "/events", description: "Read ordered lifecycle events." },
   { method: "GET", path: "/webhook-deliveries", description: "Inspect webhook delivery attempts." },
-  { method: "POST", path: "/browser-sessions", description: "Mint a bill-bound component session." },
+  { method: "POST", path: "/browser-sessions", description: "Mint an organization/user/permission-scoped browser session." },
 ];
 
 const session = `POST /partner/v2/browser-sessions
@@ -31,8 +31,17 @@ Authorization: Bearer mb_live_••••
 Content-Type: application/json
 
 {
-  "component": "bill-review",
-  "billId": "bill_123",
+  "subject": "user_42",
+  "permissions": [
+    "bills:create",
+    "bills:read",
+    "bills:edit",
+    "bills:submit",
+    "documents:read",
+    "documents:write",
+    "payers:read",
+    "eors:read"
+  ],
   "allowedOrigin": "https://your-app.example",
   "expiresIn": 900
 }`;
@@ -95,10 +104,10 @@ export default function ApiReferencePage() {
       <p>Every material lifecycle transition produces an ordered event: submission, clearinghouse acknowledgement, payer acceptance, EOR, payment, denial, review, correction, and closure. Poll <code>GET /events</code> from a cursor or receive signed webhooks, then persist only the fields your product needs.</p>
       <Callout title="MindBill stays authoritative">Treat browser callbacks as immediate UI feedback. Use the event feed or signed webhooks for durable synchronization because payer responses can arrive long after the original user session ends.</Callout>
 
-      <h2 id="sessions">Browser sessions are for an existing bill</h2>
-      <p>Your server creates the bill and authorizes the signed-in user. It can then mint a short-lived, origin-bound session for a React or Angular component. The session is deliberately bound to one bill, so a leaked browser token cannot enumerate the organization.</p>
+      <h2 id="sessions">Browser sessions can create and manage bills</h2>
+      <p>Your server authenticates the signed-in user, maps their role to billing permissions, and mints a short-lived, exact-origin session. The API key fixes the organization. The browser can then create or open bills allowed by that user&apos;s permissions.</p>
       <CodeBlock code={session} language="http" filename="Browser session request" />
-      <Callout title="Why the server creates the bill">The server already knows the organization, authenticated user, and source record. Creating the bill there establishes ownership once. The component session then grants the narrow browser access needed to review and act on that bill—without exposing your API key.</Callout>
+      <Callout title="Optional resource restriction">Add <code>resource: &#123; billId &#125;</code> only for an unusually narrow existing-bill surface. A bill-restricted session cannot include <code>bills:create</code>. The normal native lifecycle uses organization, subject, role permissions, origin, and expiry.</Callout>
 
       <h2 id="writes">Make every mutation idempotent</h2>
       <p>The Node SDK requires an idempotency key for create, update, upload, submit, review, payment, correction, and close operations. For direct REST calls, send <code>Idempotency-Key</code> and reuse it only when retrying the same logical transaction.</p>

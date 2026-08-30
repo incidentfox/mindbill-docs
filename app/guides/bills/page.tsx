@@ -91,11 +91,11 @@ export default function BillsPage() {
       <Callout title="Keep your relationships with external IDs">Add your report, case, patient, and injury IDs. You can later query MindBill using those identifiers without duplicating your entire application database.</Callout>
 
       <h2 id="create">Create a private draft</h2>
-      <p>Create the bill from your server. Use an idempotency key tied to the logical operation so a network retry cannot create a duplicate.</p>
+      <p>This example uses the server SDK for a headless workflow. The React, Angular, and framework-neutral browser clients can create the same resource directly with a short-lived session. Use an idempotency key tied to the logical operation so a network retry cannot create a duplicate.</p>
       <CodeBlock code={create} filename="server/create-bill.ts" />
 
       <h2 id="update">Correct a draft before submission</h2>
-      <p>Patch the bill while it is editable. The React and Angular review components use the same resource and let a user correct prefilled values before sending.</p>
+      <p>Patch the bill while it is editable. The connected React and Angular components perform this call themselves and let a user correct prefilled values before sending.</p>
       <CodeBlock code={update} filename="server/update-bill.ts" />
 
       <h2 id="query">Find bills from your own records</h2>
