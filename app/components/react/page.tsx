@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 import {
@@ -253,6 +254,7 @@ export default function ReactPage() {
       <CodeBlock code={customLifecycle} filename="BillingToolbar.tsx" />
 
       <h2 id="status">Status surfaces</h2>
+      <p><Link href="/components/react/lifecycle-demo">Open the full lifecycle demo</Link> to inspect every state or walk one synthetic bill from Sent through payment and closure.</p>
       <p><code>ConnectedBillStatus</code> loads and refreshes authoritative status. <code>useBillStatus</code> exposes the same client state for a custom layout.</p>
       <CodeBlock code={status} filename="BillStatus.tsx" />
       <ConnectedStatusPlayground />

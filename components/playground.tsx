@@ -331,12 +331,110 @@ export default function App() {
   </main>;
 }`;
 
+const statusGalleryCode = `import { BillStatusSummary } from "@mindbill/react";
+
+const states = [
+  ["submitted", "Sent", 0, 2015],
+  ["accepted", "Accepted", 0, 2015],
+  ["processed", "Processed", 503.75, 1511.25],
+  ["rejected", "Rejected", 0, 2015],
+  ["denied", "Denied", 0, 2015],
+  ["second_review", "Second review sent", 0, 2015],
+  ["closed", "Closed", 2015, 0],
+];
+
+export default function App() {
+  return <main className="gallery-demo">
+    {states.map(([status, label, paid, balance]) => (
+      <section key={status}>
+        <span className="state-label">{label}</span>
+        <BillStatusSummary
+          status={status}
+          submittedAt="2026-08-31T16:08:00Z"
+          agingDays={status === "closed" ? 18 : 4}
+          totalCharge={2015}
+          totalPaid={paid}
+          balanceDue={balance}
+          appearance={{ preset: "orange-bright" }}
+        />
+      </section>
+    ))}
+  </main>;
+}`;
+
+const fullLifecycleCode = `import { useMemo, useState } from "react";
+import { ConnectedBillLifecycle } from "@mindbill/react";
+
+${fixture}
+
+const steps = ["submitted", "accepted", "processed", "paid", "closed"];
+const labels = { submitted: "Sent", accepted: "Accepted", processed: "Processed", paid: "Payment posted", closed: "Closed" };
+
+export default function App() {
+  const [step, setStep] = useState("submitted");
+  const index = steps.indexOf(step);
+  const paid = step === "paid" || step === "closed" ? 2015 : 0;
+  const state = step === "paid" ? "processed" : step;
+  const data = useMemo(() => ({
+    ...review,
+    environment: "sandbox",
+    bill: { ...review.bill, status: labels[step], totalPaid: paid, balanceDue: 2015 - paid },
+    lifecycle: {
+      state,
+      nativeStatus: labels[step],
+      submittedAt: "2026-08-31T16:08:00Z",
+      agingDays: step === "closed" ? 18 : 4,
+      updatedAt: "2026-09-04T14:30:00Z",
+      actions: [],
+    },
+    eors: index >= 2 ? [{ id: "eor_1", filename: "EOR-1038.pdf", description: "Explanation of Review", addedAt: "2026-09-04T14:30:00Z", contentUrl: "#eor" }] : [],
+    payments: paid ? [{ id: "payment_1", method: "check", checkNumber: "4811505", status: "deposited", amount: 2015, source: "paper", postedAt: "2026-09-06T12:15:00Z" }] : [],
+    remittance: { payerReportedPaid: index >= 2 ? 2015 : null, totalPaid: paid, balanceDue: 2015 - paid },
+    delivery: { payerName: "Republic Indemnity", channel: "electronic", clearinghouse: "Jopari", contacts: {} },
+    activity: [
+      ...(step === "closed" ? [{ id: "evt_close", type: "bill.closed", createdAt: "2026-09-18T17:00:00Z", description: "Bill closed after payment was reconciled" }] : []),
+      ...(paid ? [{ id: "evt_pay", type: "payment.posted", createdAt: "2026-09-06T12:15:00Z", description: "$2,015.00 payment posted" }] : []),
+      ...(index >= 2 ? [{ id: "evt_eor", type: "eor.received", createdAt: "2026-09-04T14:30:00Z", description: "EOR received with full allowance" }] : []),
+      ...(index >= 1 ? [{ id: "evt_accept", type: "bill.accepted", createdAt: "2026-09-01T09:16:00Z", description: "Claims administrator accepted the submission" }] : []),
+      { id: "evt_submit", type: "bill.submitted", createdAt: "2026-08-31T16:08:00Z", description: "Electronically sent to Republic Indemnity" },
+    ],
+  }), [step, index, paid, state]);
+
+  return <main className="journey-demo">
+    <header>
+      <div><small>Interactive sandbox journey</small><h1>Bill #1038</h1></div>
+      <strong>{labels[step]}</strong>
+    </header>
+    <nav aria-label="Demo lifecycle controls">
+      {steps.map((item) => <button key={item} className={item === step ? "active" : ""} onClick={() => setStep(item)}>{labels[item]}</button>)}
+    </nav>
+    <ConnectedBillLifecycle
+      key={step}
+      billId="bill_demo_1038"
+      enabled={false}
+      initialData={data}
+      appearance={{ preset: "orange-bright" }}
+    />
+  </main>;
+}`;
+
 const demoCss = `body { margin: 0; background: #f5f8f9; }
 .demo { padding: 24px; max-width: 760px; margin: 0 auto; font-family: Inter, system-ui, sans-serif; color: #203743; }
 .demo > p, .notice { color: #657982; }
 .review-demo { min-width: 920px; padding: 18px; font-family: Inter, system-ui, sans-serif; }
 .notice { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dbe6ea; border-radius: 8px; background: white; }
 .error { color: #b42318 !important; }
+.gallery-demo { display: grid; gap: 18px; padding: 24px; background: #fffaf6; font-family: Inter, system-ui, sans-serif; }
+.gallery-demo section { position: relative; }
+.state-label { display: inline-block; margin: 0 0 8px 4px; color: #9c3b09; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.journey-demo { padding: 24px; background: #fffaf6; color: #090f1f; font-family: Inter, system-ui, sans-serif; }
+.journey-demo > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 auto 16px; max-width: 1040px; }
+.journey-demo h1 { margin: 3px 0 0; font-size: 30px; }
+.journey-demo small { color: #9c3b09; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.journey-demo > header > strong { padding: 8px 13px; border-radius: 999px; background: #ffeadf; color: #a33700; }
+.journey-demo > nav { display: flex; flex-wrap: wrap; gap: 8px; max-width: 1040px; margin: 0 auto 20px; }
+.journey-demo > nav button { border: 1px solid #e4d5ca; border-radius: 999px; padding: 9px 14px; background: white; color: #4d443f; font: inherit; font-weight: 700; cursor: pointer; }
+.journey-demo > nav button.active { border-color: #f4510b; background: #f4510b; color: white; }
 * { box-sizing: border-box; }`;
 
 function ComponentPlayground({
@@ -355,7 +453,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.18.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.21.3" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -476,7 +574,7 @@ export function QuickstartPlayground() {
           "/bill-data.js": quickstartBillDataCode,
           "/styles.css": { code: demoCss, hidden: true },
         }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.18.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.21.3" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -556,4 +654,12 @@ export function HostedTimelinePlayground() {
       label="Live wrapper · add a session to connect"
     />
   );
+}
+
+export function StatusGalleryPlayground() {
+  return <ComponentPlayground name="Lifecycle status gallery" code={statusGalleryCode} height={760} label="Seven synthetic states · edit and run" />;
+}
+
+export function FullLifecyclePlayground() {
+  return <ComponentPlayground name="Complete bill journey" code={fullLifecycleCode} height={820} label="Mocked sandbox API · click each lifecycle state" />;
 }
