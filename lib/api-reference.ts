@@ -40,14 +40,14 @@ const billId: ApiField = {
   name: "billId",
   type: "string",
   required: true,
-  description: "The MindBill bill identifier returned when the draft is created.",
+  description: "The MindBill bill identifier returned after atomic submission.",
 };
 
 const documentId: ApiField = {
   name: "documentId",
   type: "string",
   required: true,
-  description: "The bill document identifier returned when the file was uploaded.",
+  description: "The document identifier returned with the atomically submitted bill.",
 };
 
 const reviewId: ApiField = {
@@ -92,9 +92,9 @@ const createBillFields: ApiField[] = [
   { name: "renderingProvider", type: "RenderingProviderSnapshot", description: "Clinician identity: name, NPI, taxonomy, specialty, license, and QME/AME flags." },
   { name: "serviceLocation", type: "ServiceLocationSnapshot", description: "Facility name, address, and place-of-service code printed in box 32." },
   { name: "diagnoses", type: "string[]", description: "ICD-10 diagnosis codes in the order referenced by service-line diagnosis pointers." },
-  { name: "serviceLines[].code", type: "string", description: "Procedure or service code, such as ML201 or 99205." },
+  { name: "serviceLines[].code", type: "string", required: true, description: "Procedure or service code, such as ML201 or 99205." },
   { name: "serviceLines[].modifiers", type: "string[]", description: "Procedure modifiers without hyphens." },
-  { name: "serviceLines[].units", type: "number", description: "Positive unit count.", constraint: "> 0" },
+  { name: "serviceLines[].units", type: "number", required: true, description: "Positive unit count.", constraint: "> 0" },
   { name: "serviceLines[].serviceDate", type: "string", description: "Line-level date of service. Required for professional/treatment billing.", constraint: "YYYY-MM-DD" },
   { name: "serviceLines[].charge", type: "number", description: "Exact billed charge for a professional service line." },
   { name: "serviceLines[].diagnosisPointers", type: "number[]", description: "One-based indexes into diagnoses, matching CMS-1500 box 24E." },
@@ -120,30 +120,39 @@ const createCurl = `curl https://app.mindbill.org/partner/v2/bills \\
   --header "Content-Type: application/json" \\
   --header "Idempotency-Key: report_9f7a" \\
   --data '{
-    "externalId": "report_9f7a",
-    "billingMode": "med_legal",
-    "patient": {
-      "externalId": "patient_42",
-      "firstName": "Alex",
-      "lastName": "Morgan",
-      "dateOfBirth": "1984-05-17",
-      "address": {
-        "line1": "100 Main St",
-        "city": "Fresno",
-        "state": "CA",
-        "postalCode": "93721"
-      }
+    "bill": {
+      "externalId": "report_9f7a",
+      "billingMode": "med_legal",
+      "patient": {
+        "externalId": "patient_42",
+        "firstName": "Alex",
+        "lastName": "Morgan",
+        "dateOfBirth": "1984-05-17",
+        "address": {
+          "line1": "100 Main St",
+          "city": "Fresno",
+          "state": "CA",
+          "postalCode": "93721"
+        }
+      },
+      "claim": {
+        "externalId": "claim_17",
+        "claimNumber": "WC-44871",
+        "employer": "Example Foods",
+        "dateOfInjury": "2026-02-14",
+        "claimsAdministrator": { "name": "Example Claims Administrator" }
+      },
+      "service": { "date": "2026-08-26" },
+      "diagnoses": ["M25.512"],
+      "serviceLines": [{ "code": "ML201", "modifiers": ["95"], "units": 1 }]
     },
-    "claim": {
-      "externalId": "claim_17",
-      "claimNumber": "WC-44871",
-      "employer": "Example Foods",
-      "dateOfInjury": "2026-02-14",
-      "claimsAdministrator": { "name": "Example Claims Administrator" }
-    },
-    "service": { "date": "2026-08-26" },
-    "diagnoses": ["M25.512"],
-    "serviceLines": [{ "code": "ML201", "modifiers": ["95"], "units": 1 }]
+    "submission": { "route": "ebill" },
+    "documents": [{
+      "filename": "final-report.pdf",
+      "documentType": "final_report",
+      "contentBase64": "$FINAL_REPORT_BASE64",
+      "externalId": "document_73"
+    }]
   }'`;
 
 const createNode = `import { MindBillClient } from "@mindbill/node";
@@ -152,31 +161,40 @@ const mindbill = new MindBillClient({
   apiKey: process.env.MINDBILL_API_KEY!,
 });
 
-const bill = await mindbill.createBill({
-  externalId: "report_9f7a",
-  billingMode: "med_legal",
-  patient: {
-    externalId: "patient_42",
-    firstName: "Alex",
-    lastName: "Morgan",
-    dateOfBirth: "1984-05-17",
-    address: {
-      line1: "100 Main St",
-      city: "Fresno",
-      state: "CA",
-      postalCode: "93721",
+const bill = await mindbill.createAndSubmitBill({
+  bill: {
+    externalId: "report_9f7a",
+    billingMode: "med_legal",
+    patient: {
+      externalId: "patient_42",
+      firstName: "Alex",
+      lastName: "Morgan",
+      dateOfBirth: "1984-05-17",
+      address: {
+        line1: "100 Main St",
+        city: "Fresno",
+        state: "CA",
+        postalCode: "93721",
+      },
     },
+    claim: {
+      externalId: "claim_17",
+      claimNumber: "WC-44871",
+      employer: "Example Foods",
+      dateOfInjury: "2026-02-14",
+      claimsAdministrator: { name: "Example Claims Administrator" },
+    },
+    service: { date: "2026-08-26" },
+    diagnoses: ["M25.512"],
+    serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1 }],
   },
-  claim: {
-    externalId: "claim_17",
-    claimNumber: "WC-44871",
-    employer: "Example Foods",
-    dateOfInjury: "2026-02-14",
-    claimsAdministrator: { name: "Example Claims Administrator" },
-  },
-  service: { date: "2026-08-26" },
-  diagnoses: ["M25.512"],
-  serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1 }],
+  submission: { route: "ebill" },
+  documents: [{
+    filename: "final-report.pdf",
+    documentType: "final_report",
+    contentBase64: finalReportBytes.toString("base64"),
+    externalId: "document_73",
+  }],
 }, "report_9f7a");`;
 
 export const apiEndpoints: ApiEndpoint[] = [
@@ -185,34 +203,51 @@ export const apiEndpoints: ApiEndpoint[] = [
     group: "Bills",
     method: "POST",
     path: "/bills",
-    title: "Create a bill",
-    summary: "Create a private bill draft from the CMS-1500 values your product already knows.",
-    useWhen: "Use this server-side for API-only workflows, or let a browser session with bills:create call the same operation through a MindBill component.",
+    title: "Create and submit a bill",
+    summary: "Atomically validate, create, attach the payer packet, and submit an immutable bill snapshot.",
+    useWhen: "Call once after the user reviews the complete bill form and presses Submit. A failed request creates no public bill.",
     permissions: ["Server API key", "Browser: bills:create"],
     idempotent: true,
-    requestFields: createBillFields,
+    requestFields: [
+      ...createBillFields.map((field) => ({ ...field, name: `bill.${field.name}` })),
+      { name: "submission.route", type: '"ebill" | "fax" | "mail" | "email"', description: "Chosen delivery route. Omit to use MindBill routing." },
+      { name: "submission.destination", type: "object", description: "Optional intentional fax, email, or mail destination override." },
+      { name: "documents[]", type: "BillSubmissionDocument[]", description: "Complete payer packet included atomically with the submitted bill." },
+      { name: "documents[].filename", type: "string", description: "Filename shown in the payer packet." },
+      { name: "documents[].documentType", type: "BillDocumentType", description: "Document classification such as final_report, proof_of_service, w9, or other." },
+      { name: "documents[].contentBase64", type: "string", description: "Base64-encoded document bytes." },
+      { name: "documents[].externalId", type: "string", description: "Your stable source-document identifier." },
+    ],
     responseFields: billResponseFields,
     examples: [
-      { label: "cURL", language: "bash", filename: "Create a bill", code: createCurl },
-      { label: "Node.js", language: "typescript", filename: "create-bill.ts", code: createNode },
+      { label: "cURL", language: "bash", filename: "Create and submit a bill", code: createCurl },
+      { label: "Node.js", language: "typescript", filename: "submit-bill.ts", code: createNode },
     ],
     responseStatus: "201 Created",
     responseExample: `{
   "id": "bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D",
   "externalId": "report_9f7a",
-  "state": "incomplete",
+  "state": "submitted",
   "billingMode": "med_legal",
   "billNumber": 1038,
   "patient": { "firstName": "Alex", "lastName": "Morgan", "address": { "line1": "100 Main St", "city": "Fresno", "state": "CA", "postalCode": "93721" } },
   "claim": { "claimNumber": "WC-44871", "employer": "Example Foods", "dateOfInjury": "2026-02-14", "diagnoses": ["M25.512"] },
   "service": { "date": "2026-08-26", "endDate": null, "authorizationNumber": null },
   "serviceLines": [{ "id": "line_01", "code": "ML201", "modifiers": ["95"], "units": 1, "allowed": 2015 }],
-  "documents": [],
+  "documents": [{
+    "id": "doc_01J6Y7J2E7D3J5F9Q8K4M6N1P0",
+    "externalId": "document_456",
+    "filename": "final-report.pdf",
+    "documentType": "final_report",
+    "source": "partner_api",
+    "addedAt": "2026-08-26T18:42:15.000Z",
+    "contentUrl": "https://app.mindbill.org/partner/v2/bills/bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D/documents/doc_01J6Y7J2E7D3J5F9Q8K4M6N1P0/content"
+  }],
   "amounts": { "charged": 2015, "paid": 0, "balance": 2015 }
 }`,
     notes: [
       { title: "Snapshot, not synchronization", body: "Provider, location, patient, and claim values are frozen on the bill. You may keep your own canonical database, use MindBill profiles for repeated values, or mix both approaches." },
-      { title: "The bill is still private", body: "Creating a bill does not transmit it. Attach the explicit payer packet, review delivery options, and submit in a separate operation." },
+      { title: "No public draft", body: "Pre-submission edits stay in your product. Success returns an immutable submitted bill; validation or packet-preparation failure creates no public bill." },
     ],
   },
   {
@@ -250,121 +285,13 @@ export const apiEndpoints: ApiEndpoint[] = [
     path: "/bills/{billId}",
     title: "Retrieve a bill",
     summary: "Read the complete frozen claim snapshot and payer packet for one bill.",
-    useWhen: "Use this to reopen a bill editor or inspect the source values behind a status record.",
+    useWhen: "Inspect the exact immutable snapshot and payer packet behind a lifecycle or receivables record.",
     permissions: ["Server API key", "Browser: bills:read"],
     pathFields: [billId],
     responseFields: billResponseFields,
     examples: [{ label: "cURL", language: "bash", filename: "Retrieve a bill", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID \\
   --header "Authorization: Bearer $MINDBILL_API_KEY"` }],
     responseExample: `{ "id": "bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D", "externalId": "report_9f7a", "state": "submitted", "billingMode": "med_legal", "documents": [], "amounts": { "charged": 2015, "paid": 0, "balance": 2015 } }`,
-  },
-  {
-    slug: "update-bill",
-    group: "Bills",
-    method: "PATCH",
-    path: "/bills/{billId}",
-    title: "Update a bill",
-    summary: "Patch bill values before submission or while correcting a rejected bill.",
-    useWhen: "Send only fields that changed. Existing submitted claim snapshots remain immutable unless the lifecycle is in a correction state.",
-    permissions: ["Server API key", "Browser: bills:edit"],
-    idempotent: true,
-    pathFields: [billId],
-    requestFields: createBillFields.filter((field) => !["patient.firstName", "patient.lastName", "patient.address.line1", "patient.address.city", "patient.address.state", "patient.address.postalCode", "claim.claimNumber", "service.date"].includes(field.name)).concat([
-      { name: "patient", type: "Partial<PatientSnapshot>", description: "Patient fields to update. Address may also be partial." },
-      { name: "claim", type: "Partial<ClaimSnapshot>", description: "Claim and payer fields to update." },
-      { name: "service", type: "Partial<ServiceSnapshot>", description: "Service fields to update." },
-    ]),
-    responseFields: billResponseFields,
-    examples: [{ label: "cURL", language: "bash", filename: "Update a bill", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID \\
-  --request PATCH \\
-  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
-  --header "Content-Type: application/json" \\
-  --header "Idempotency-Key: correction_42" \\
-  --data '{ "claim": { "employer": "Example Foods, Inc." } }'` }],
-    responseExample: `{ "id": "bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D", "state": "incomplete", "claim": { "employer": "Example Foods, Inc." }, "amounts": { "charged": 2015, "paid": 0, "balance": 2015 } }`,
-  },
-  {
-    slug: "delivery-options",
-    group: "Lifecycle",
-    method: "GET",
-    path: "/bills/{billId}/delivery-options",
-    title: "Get delivery options",
-    summary: "Resolve the actual e-bill, fax, mail, and email routes available for this payer.",
-    useWhen: "Call this immediately before submission so the user can review the recommended route and intentionally override its destination.",
-    permissions: ["Server API key", "Browser: bills:submit"],
-    pathFields: [billId],
-    responseFields: [
-      { name: "payerName", type: "string", required: true, description: "Resolved payer or claims administrator." },
-      { name: "recommended", type: "BillDeliveryOption", required: true, description: "Highest-confidence available delivery route." },
-      { name: "options", type: "BillDeliveryOption[]", required: true, description: "All available routes. Each includes route, detail, confidence, fallback, and optional destination metadata." },
-      { name: "contacts.faxNumber", type: "string", description: "Known payer fax number." },
-      { name: "contacts.claimsEmail", type: "string", description: "Known claims billing email." },
-      { name: "contacts.portalUrl", type: "string", description: "Known payer portal URL." },
-      { name: "contacts.mailingAddress", type: "string", description: "Known physical billing address." },
-    ],
-    examples: [{ label: "cURL", language: "bash", filename: "Resolve delivery", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/delivery-options \\
-  --header "Authorization: Bearer $MINDBILL_API_KEY"` }],
-    responseExample: `{
-  "payerName": "Example Claims Administrator",
-  "recommended": { "route": "ebill", "label": "E-bill", "detail": "Electronic payer ID 12345", "fallback": false, "confidence": "high", "payerName": "Example Claims Administrator", "payerId": "12345" },
-  "options": [
-    { "route": "ebill", "label": "E-bill", "detail": "Electronic payer ID 12345", "fallback": false, "confidence": "high", "payerName": "Example Claims Administrator", "payerId": "12345" },
-    { "route": "fax", "label": "Fax", "detail": "(213) 555-0199", "fallback": true, "confidence": "medium", "payerName": "Example Claims Administrator", "target": "+12135550199" }
-  ],
-  "contacts": { "faxNumber": "+12135550199", "mailingAddress": "PO Box 19600, Irvine, CA 92623" }
-}`,
-    notes: [{ title: "Resolve at submission time", body: "Payer routing can change. Treat saved destinations as hints, not a permanent routing table." }],
-  },
-  {
-    slug: "submit-bill",
-    group: "Lifecycle",
-    method: "POST",
-    path: "/bills/{billId}/submissions",
-    title: "Submit a bill",
-    summary: "Transmit the reviewed bill and its explicit payer packet.",
-    useWhen: "Submit only after the user has reviewed bill values, attachments, and a delivery option. Omitting route uses the recommended option.",
-    permissions: ["Server API key", "Browser: bills:submit"],
-    idempotent: true,
-    pathFields: [billId],
-    requestFields: [
-      { name: "route", type: '"ebill" | "fax" | "mail" | "email"', description: "Chosen delivery route. Omit to use the current recommendation." },
-      { name: "destination.faxNumber", type: "string", description: "Intentional fax override when route is fax." },
-      { name: "destination.email", type: "string", description: "Intentional email override when route is email." },
-      { name: "destination.mailingAddress", type: "string", description: "Intentional physical-address override when route is mail." },
-      { name: "attention", type: "string", description: "Recipient or adjuster name printed on the cover sheet." },
-      { name: "subject", type: "string", description: "Email or fax subject override." },
-      { name: "note", type: "string", description: "Delivery note retained with the submission." },
-    ],
-    responseFields: [
-      { name: "ok", type: "true", description: "Present on sandbox submissions." },
-      { name: "sandbox", type: "true", description: "Indicates simulated delivery in sandbox." },
-      { name: "billId", type: "string", description: "Submitted bill identifier." },
-      { name: "controlNumber", type: "string", description: "Sandbox transmission control number." },
-      { name: "state", type: '"submitted"', description: "Normalized submission state." },
-      { name: "acknowledgments", type: "Array<999 | 277CA>", description: "Simulated electronic acknowledgements in sandbox." },
-      { name: "bill", type: "Bill", description: "Updated bill on a live submission." },
-      { name: "transmissionState", type: "string", description: "Live transmission state." },
-      { name: "uploaded", type: "string[]", description: "Documents included in live transmission." },
-    ],
-    examples: [{ label: "cURL", language: "bash", filename: "Submit a bill", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/submissions \\
-  --request POST \\
-  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
-  --header "Content-Type: application/json" \\
-  --header "Idempotency-Key: submit_$BILL_ID" \\
-  --data '{ "route": "ebill" }'` }],
-    responseStatus: "200 OK",
-    responseExample: `{
-  "ok": true,
-  "sandbox": true,
-  "billId": "bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D",
-  "controlNumber": "TEST-0001842",
-  "state": "submitted",
-  "acknowledgments": [
-    { "type": "999", "status": "accepted" },
-    { "type": "277CA", "status": "accepted" }
-  ]
-}`,
-    notes: [{ title: "Submission is asynchronous after acceptance", body: "A successful request records the transmission. Later acknowledgements, payer responses, EORs, denials, and payments arrive as lifecycle events." }],
   },
   {
     slug: "bill-status",
@@ -443,13 +370,13 @@ export const apiEndpoints: ApiEndpoint[] = [
     method: "POST",
     path: "/bills/{billId}/actions",
     title: "Perform a bill action",
-    summary: "Close, post payment, start correction, or submit a second review from one state-aware operation.",
+    summary: "Close, post payment, or start a payer review from one state-aware operation.",
     useWhen: "Available actions depend on bill state. The React and Angular lifecycle components already render only valid actions.",
     permissions: ["Server API key", "Browser: bills:act"],
     idempotent: true,
     pathFields: [billId],
     requestFields: [
-      { name: "action", type: '"close" | "post_payment" | "second_review" | "start_correction"', required: true, description: "Lifecycle action to perform." },
+      { name: "action", type: '"close" | "post_payment" | "second_review"', required: true, description: "Lifecycle action to perform." },
       { name: "reason", type: "string", description: "Required for close and second_review." },
       { name: "amount", type: "number", description: "Payment amount for post_payment." },
       { name: "method", type: '"check" | "eft"', description: "Payment method for post_payment." },
@@ -462,7 +389,6 @@ export const apiEndpoints: ApiEndpoint[] = [
     ],
     responseFields: [
       { name: "ok", type: "true", required: true, description: "Action accepted." },
-      { name: "replacementBillId", type: "string", description: "New correction bill identifier when start_correction creates one." },
       { name: "data", type: "object | null", required: true, description: "Action-specific result." },
     ],
     examples: [{ label: "cURL", language: "bash", filename: "Post a payment", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/actions \\
@@ -480,49 +406,13 @@ export const apiEndpoints: ApiEndpoint[] = [
     responseExample: `{ "ok": true, "data": { "amount": 1600, "balanceDue": 415 } }`,
   },
   {
-    slug: "documents",
-    group: "Documents",
-    method: "POST",
-    path: "/bills/{billId}/documents",
-    title: "Upload a bill document",
-    summary: "Add one intentional PDF to the payer billing packet.",
-    useWhen: "Default sensible billing documents such as the final report, proof of service, W-9, and required forms. Never silently add medical records.",
-    permissions: ["Server API key", "Browser: documents:write"],
-    idempotent: true,
-    pathFields: [billId],
-    requestFields: [
-      { name: "file", type: "binary", required: true, description: "Document bytes.", constraint: "multipart/form-data" },
-      { name: "filename", type: "string", required: true, description: "Filename shown in packet review." },
-      { name: "documentType", type: "BillDocumentType", required: true, description: "final_report, proof_of_service, letter_of_attestation, form_122, return_to_work_voucher, w9, medical_records, appeal, or other." },
-      { name: "externalId", type: "string", description: "Your document identifier." },
-      { name: "description", type: "string", description: "Human-readable packet description." },
-    ],
-    responseFields: [
-      { name: "data.id", type: "string", required: true, description: "MindBill document identifier." },
-      { name: "data.documentType", type: "BillDocumentType", required: true, description: "Document classification." },
-      { name: "data.filename", type: "string", required: true, description: "Stored filename." },
-      { name: "data.contentUrl", type: "string", required: true, description: "Authorized content URL." },
-    ],
-    examples: [{ label: "cURL", language: "bash", filename: "Attach a final report", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/documents \\
-  --request POST \\
-  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
-  --header "Idempotency-Key: report_pdf_9f7a" \\
-  --form "file=@final-report.pdf;type=application/pdf" \\
-  --form "filename=final-report.pdf" \\
-  --form "documentType=final_report" \\
-  --form "externalId=document_73"` }],
-    responseStatus: "201 Created",
-    responseExample: `{ "data": { "id": "doc_01J6Z1", "externalId": "document_73", "filename": "final-report.pdf", "description": null, "documentType": "final_report", "source": "partner_api", "addedAt": "2026-08-29T18:20:00.000Z", "contentUrl": "https://app.mindbill.org/..." } }`,
-    notes: [{ title: "Packet boundary", body: "The payer billing packet is separate from any attorney report-service packet. The bill document list is the source of truth for what MindBill will transmit." }],
-  },
-  {
     slug: "list-documents",
     group: "Documents",
     method: "GET",
     path: "/bills/{billId}/documents",
     title: "List bill documents",
     summary: "List every document currently included in the payer billing packet.",
-    useWhen: "Render packet review before submission or reconcile documents uploaded from another workflow.",
+    useWhen: "Inspect or reconcile the exact document packet frozen onto a submitted bill.",
     permissions: ["Server API key", "Browser: documents:read"],
     pathFields: [billId],
     responseFields: [
@@ -567,27 +457,6 @@ export const apiEndpoints: ApiEndpoint[] = [
     responseStatus: "200 PDF",
     responseExample: "Binary PDF response.",
     responseLanguage: "text",
-  },
-  {
-    slug: "delete-document",
-    group: "Documents",
-    method: "DELETE",
-    path: "/bills/{billId}/documents/{documentId}",
-    title: "Remove a bill document",
-    summary: "Remove one document from a draft payer billing packet.",
-    useWhen: "A user intentionally excludes a preselected document or removes an incorrect upload before submission.",
-    permissions: ["Server API key", "Browser: documents:write"],
-    idempotent: true,
-    pathFields: [billId, documentId],
-    responseFields: [],
-    examples: [{ label: "cURL", language: "bash", filename: "Remove a document", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/documents/$DOCUMENT_ID \\
-  --request DELETE \\
-  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
-  --header "Idempotency-Key: remove_document_73"` }],
-    responseStatus: "204 No Content",
-    responseExample: "No response body.",
-    responseLanguage: "text",
-    notes: [{ title: "Draft packets only", body: "A submitted packet is immutable. Start the state-appropriate correction or review workflow to send changed evidence after submission." }],
   },
   {
     slug: "reviews",
@@ -774,13 +643,13 @@ export const apiEndpoints: ApiEndpoint[] = [
     path: "/browser-sessions",
     title: "Create a browser session",
     summary: "Exchange a server API key for a short-lived, organization-bound browser token.",
-    useWhen: "Use one authenticated route in your server so React, Angular, or the framework-neutral browser client can create and manage bills without exposing the permanent API key.",
+    useWhen: "Use one authenticated route for connected post-submit lifecycle UI, or when a browser client needs an explicitly granted public operation without exposing the permanent API key.",
     permissions: ["Server API key only"],
     idempotent: true,
     requestFields: [
       { name: "subject", type: "string", required: true, description: "Stable identifier for the signed-in user in your system." },
       { name: "allowedOrigin", type: "string", required: true, description: "Exact browser origin. Paths, query strings, fragments, and credentials are rejected.", constraint: "HTTPS; HTTP loopback allowed in sandbox" },
-      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/edit/submit/act, documents:read/write, payers:read, and eors:read." },
+      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, and eors:read." },
       { name: "resource.billId", type: "string", description: "Optional least-privilege restriction to one existing bill. Cannot be combined with bills:create." },
       { name: "expiresIn", type: "number", description: "Session lifetime in seconds.", constraint: "Integer 60–3600" },
     ],
@@ -821,7 +690,7 @@ export async function POST(request: Request) {
   --data '{
     "subject": "user_42",
     "allowedOrigin": "https://your-product.example",
-    "permissions": ["bills:create", "bills:read", "bills:edit", "bills:submit", "documents:read", "documents:write", "payers:read"]
+    "permissions": ["bills:create", "bills:read", "documents:read", "payers:read"]
   }'` },
     ],
     responseStatus: "201 Created",
@@ -829,14 +698,14 @@ export async function POST(request: Request) {
   "sessionId": "session_01J6Z8",
   "organizationId": "org_01J4",
   "subject": "user_42",
-  "permissions": ["bills:create", "bills:read", "bills:edit", "bills:submit", "documents:read", "documents:write", "payers:read"],
+  "permissions": ["bills:create", "bills:read", "documents:read", "payers:read"],
   "resource": null,
   "token": "mb_browser_…",
   "expiresAt": "2026-08-29T19:15:00.000Z"
 }`,
     notes: [
-      { title: "Organization and role are separate boundaries", body: "The API key fixes the organization. Your session route authenticates the user and maps their application role to permissions. A session does not need a bill ID when the user is allowed to create bills." },
-      { title: "Trust events, not the browser callback", body: "Use onBillCreated for immediate UI state. Persist durable lifecycle changes from ordered events or signed webhooks because payer responses can arrive after the browser closes." },
+      { title: "Organization and role are separate boundaries", body: "The API key fixes the organization. Your session route authenticates the user and maps their application role to permissions. A bill-restricted post-submit session cannot include bills:create." },
+      { title: "Trust events, not the browser callback", body: "Use the atomic submission response for immediate UI state. Persist durable lifecycle changes from ordered events or signed webhooks because payer responses can arrive after the browser closes." },
     ],
   },
 ];

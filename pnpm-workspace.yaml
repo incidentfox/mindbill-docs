@@ -3,5 +3,5 @@ allowBuilds:
   unrs-resolver: true
 minimumReleaseAgeExclude:
   - '@mindbill/browser@0.4.0'
-  - '@mindbill/react@0.17.0'
+  - '@mindbill/react@0.18.0'
   - lucide-react@1.37.0

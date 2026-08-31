@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s · MindBill docs",
   },
   description:
-    "Create, review, submit, and track workers' compensation medical bills from your product.",
+    "Review, submit, and track workers' compensation medical bills from your product.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "MindBill developer docs",
@@ -37,4 +37,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
-

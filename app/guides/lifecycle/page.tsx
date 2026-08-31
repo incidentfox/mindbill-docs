@@ -15,10 +15,15 @@ const { data: eor } = await mindbill.getBillEor(billId);
 console.log(status.state, status.balanceDue);
 console.log(eor.lineItems, eor.documents);`;
 
-const actions = `// A clearinghouse rejection: create an editable correction draft.
-const correction = await mindbill.performBillAction(
-  billId,
-  { action: "start_correction" },
+const actions = `// A clearinghouse rejection: submit a new corrected snapshot.
+const correction = await mindbill.createAndSubmitBill({
+  bill: {
+    ...correctedBillInput,
+    externalId: "bill-123-correction-1",
+  },
+  submission: { route: "ebill" },
+  documents: correctedPacket,
+},
   "correct-bill-123-v1",
 );
 
@@ -73,7 +78,7 @@ export default function LifecyclePage() {
     <DocPage
       eyebrow="Build"
       title="Follow the whole bill lifecycle"
-      description="Submission is the beginning, not the end. MindBill normalizes acknowledgments, EORs, payments, denials, reviews, corrections, and closure behind one bill ID."
+      description="Submission is the beginning, not the end. MindBill normalizes acknowledgments, EORs, payments, denials, reviews, corrected replacements, and closure."
       toc={[
         { id: "states", label: "From submission to payment" },
         { id: "status", label: "Read status and EORs" },
@@ -104,8 +109,7 @@ export default function LifecyclePage() {
       <p>Read <code>lifecycle.actions</code> instead of reproducing payer rules in your application. MindBill returns only the actions that make sense for the current bill and explains why an unavailable action is disabled.</p>
       <div className="data-table networks">
         <div className="table-head"><b>Bill state</b><b>Typical next actions</b></div>
-        <div><code>private</code><span>Edit and submit.</span></div>
-        <div><code>rejected</code><span>Correct and resubmit, or close.</span></div>
+        <div><code>rejected</code><span>Submit a new corrected snapshot, or close.</span></div>
         <div><code>accepted / processed</code><span>Track the response, or close.</span></div>
         <div><code>denied / partially_paid</code><span>View EOR, post payment, request Second Bill Review, or close.</span></div>
         <div><code>second_review</code><span>Track SBR; request IBR when MindBill reports eligibility.</span></div>

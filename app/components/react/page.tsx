@@ -13,26 +13,33 @@ import {
   RemittancePlayground,
   PayerContactPlayground,
   PaymentLedgerPlayground,
-  ReviewFormPlayground,
   StatusPlayground,
+  SubmissionFormPlayground,
 } from "@/components/playground";
 
 export const metadata: Metadata = { title: "React components" };
 
 const install = `npm install @mindbill/react @mindbill/node`;
 
-const session = `import { MindBillClient } from "@mindbill/node";
+const submissionForm = `import { BillSubmissionForm } from "@mindbill/react";
 
-const mindbill = new MindBillClient({
-  apiKey: process.env.MINDBILL_API_KEY!,
-});
+<BillSubmissionForm
+  initialBill={toBillSnapshot(caseRecord)}
+  attachments={caseDocuments}
+  submitLabel="Submit bill"
+  onSubmit={async (value) => {
+    const submitted = await submitBill(value);
+    rememberBillId(submitted.id);
+  }}
+/>`;
 
-app.post("/api/mindbill/session", async (req, res) => {
+const session = `app.post("/api/mindbill/session", async (req, res) => {
   const user = await requireSignedInUser(req);
 
   res.json(await mindbill.createBrowserSession({
     subject: user.id,
-    permissions: billingPermissionsFor(user.role),
+    permissions: ["bills:read", "bills:act", "documents:read", "eors:read"],
+    resource: { billId: await authorizedBillId(req) },
     allowedOrigin: process.env.APP_ORIGIN!,
     expiresIn: 900,
   }));
@@ -40,13 +47,12 @@ app.post("/api/mindbill/session", async (req, res) => {
 
 const lifecycle = `import { ConnectedBillLifecycle } from "@mindbill/react";
 
-export function CaseBilling({ caseRecord }: { caseRecord: CaseRecord }) {
+export function SubmittedBill({ billId }: { billId: string }) {
   return (
     <ConnectedBillLifecycle
-      create={toBillSnapshot(caseRecord)}
+      billId={billId}
       sessionEndpoint="/api/mindbill/session"
       appearance={{ preset: "orange-bright" }}
-      onBillCreated={(billId) => rememberBillId(billId)}
     />
   );
 }`;
@@ -80,20 +86,6 @@ const status = `import { ConnectedBillStatus } from "@mindbill/react";
   refreshInterval={30_000}
 />`;
 
-const controlledReview = `import { BillReviewForm } from "@mindbill/react";
-
-<BillReviewForm
-  data={review}
-  onSave={(input) => api.save(input)}
-  onSubmit={(input, delivery) => api.submit(input, delivery)}
-  onGetDeliveryOptions={() => api.getDeliveryOptions()}
-  onSearchClaimsAdministrators={(query) => api.searchPayers(query)}
-  onAddAttachment={(file, type, description) =>
-    api.addAttachment(file, type, description)
-  }
-  onRemoveAttachment={(documentId) => api.removeAttachment(documentId)}
-/>`;
-
 const presentational = `import { BillStatusSummary } from "@mindbill/react";
 
 <BillStatusSummary
@@ -116,7 +108,6 @@ const actionBar = `import { BillLifecycleActions } from "@mindbill/react";
 
 const timeline = `import { BillActivityTimeline } from "@mindbill/react";
 
-// ConnectedBillLifecycle already passes bill.activity here internally.
 <BillActivityTimeline
   events={bill.activity}
   appearance={{ preset: "orange-bright" }}
@@ -151,24 +142,18 @@ const remittance = `import {
 <BillPaymentLedger payments={bill.payments} />`;
 
 const clients = `import {
-  buildBillReviewSaveInput,
   createBillLifecycleClient,
   createBillStatusClient,
 } from "@mindbill/react";
 
 const lifecycle = createBillLifecycleClient({
+  billId,
   sessionEndpoint: "/api/mindbill/session",
 });
-
-const created = await lifecycle.createBill(snapshot);
-await lifecycle.addAttachment(file, "proof_of_service");
-await lifecycle.submitBill(
-  buildBillReviewSaveInput(created.data),
-  { route: "ebill" },
-);
+const bill = await lifecycle.getLifecycle();
 
 const status = await createBillStatusClient({
-  billId: created.billId,
+  billId,
   sessionEndpoint: "/api/mindbill/session",
 }).getStatus();`;
 
@@ -182,16 +167,16 @@ export default function ReactPage() {
     <DocPage
       eyebrow="Components"
       title="React"
-      description="Use the complete connected workflow or compose the same API client, hooks, forms, and status surfaces into your own UI."
+      description="Use MindBill's complete pre-submission form, then render the connected lifecycle for the immutable submitted bill."
       toc={[
         { id: "choose", label: "Choose an export" },
-        { id: "setup", label: "Setup" },
+        { id: "form", label: "Submission form" },
+        { id: "setup", label: "Post-submit setup" },
         { id: "lifecycle", label: "Complete lifecycle" },
         { id: "custom", label: "Custom lifecycle UI" },
         { id: "status", label: "Status surfaces" },
         { id: "surfaces", label: "Lifecycle surfaces" },
         { id: "actions", label: "Actions and history" },
-        { id: "forms", label: "Controlled forms" },
         { id: "clients", label: "Browser clients" },
         { id: "hosted", label: "Hosted wrappers" },
         { id: "utilities", label: "Utilities" },
@@ -202,37 +187,43 @@ export default function ReactPage() {
       <h2 id="choose">Choose an export</h2>
       <div className="data-table component-catalog">
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
-        <div><code>ConnectedBillLifecycle</code><span>You want the full create-to-close workflow.</span><span>Yes</span></div>
-        <div><code>useBillLifecycle</code><span>You want custom lifecycle UI.</span><span>Yes</span></div>
+        <div><code>BillSubmissionForm</code><span>You want the complete form, validation, attachments, and Submit action.</span><span>No</span></div>
+        <div><code>ConnectedBillLifecycle</code><span>You want the complete post-submission workflow.</span><span>Yes</span></div>
+        <div><code>useBillLifecycle</code><span>You want custom post-submission lifecycle UI.</span><span>Yes</span></div>
         <div><code>ConnectedBillStatus</code><span>You need compact status and valid next actions.</span><span>Yes</span></div>
         <div><code>useBillStatus</code><span>You want custom status UI.</span><span>Yes</span></div>
-        <div><code>BillReviewForm</code><span>You own data loading but want MindBill&apos;s review form.</span><span>No</span></div>
         <div><code>BillStatusSummary</code><span>You need a presentational status card.</span><span>No</span></div>
         <div><code>BillLifecycleActions</code><span>You need state-aware actions in your own layout.</span><span>No</span></div>
         <div><code>BillLifecycleProgress</code><span>You need the horizontal bill lifecycle.</span><span>No</span></div>
-        <div><code>BillSnapshotSummary</code><span>You need a compact CMS-1500 snapshot.</span><span>No</span></div>
+        <div><code>BillSnapshotSummary</code><span>You need a compact submitted CMS-1500 snapshot.</span><span>No</span></div>
         <div><code>BillRemittanceCard</code><span>You need payer-reported, posted, and balance amounts.</span><span>No</span></div>
         <div><code>BillPayerContactCard</code><span>You need payer and adjuster follow-up contacts.</span><span>No</span></div>
         <div><code>BillPaymentLedger</code><span>You need posted payment history.</span><span>No</span></div>
         <div><code>BillActivityTimeline</code><span>You want to render the bill&apos;s complete history.</span><span>No</span></div>
-        <div><code>MindBillBillReview</code><span>You prefer the hosted review surface.</span><span>Hosted</span></div>
+        <div><code>MindBillBillReview</code><span>You prefer the hosted post-submission review surface.</span><span>Hosted</span></div>
         <div><code>MindBillBillTimeline</code><span>You prefer the hosted timeline surface.</span><span>Hosted</span></div>
       </div>
 
-      <h2 id="setup">Setup</h2>
+      <h2 id="form">Complete submission form</h2>
+      <p><code>BillSubmissionForm</code> owns which fields exist and which are required. It renders red asterisks, validates the values, lets users review prefilled documents and add uploads, and renders the Submit button. It does not create a MindBill draft or require browser credentials.</p>
       <CodeBlock code={install} language="bash" filename="Terminal" />
-      <p>Install the package, then add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session. Components ship their own styles.</p>
-      <CodeBlock code={session} filename="server/session.ts" />
-      <Callout title="Your API key stays server-side">The session fixes the organization, user, origin, expiry, and role permissions. It may create a bill; it does not need to be scoped to an existing bill.</Callout>
+      <CodeBlock code={submissionForm} filename="CaseBilling.tsx" />
+      <SubmissionFormPlayground />
+      <Callout title="One callback, one atomic submission">Your <code>onSubmit</code> handler sends the form value to your server. The server calls <code>createAndSubmitBill</code>; only a successful request returns a bill ID.</Callout>
 
-      <h2 id="lifecycle">Complete lifecycle</h2>
-      <p>Pass a bill snapshot for a new bill or <code>billId</code> for an existing one.</p>
-      <CodeBlock code={lifecycle} filename="CaseBilling.tsx" />
-      <p>The component includes payer matching, editable CMS-1500 data, documents, delivery destinations, submission, lifecycle progress, EOR details and original PDFs, payer contacts, payments, history, Second Review, correction/resubmission, IBR or lien actions when eligible, and closure. Its actions open complete dialogs; procedure rows always leave one empty keyboard-ready row.</p>
+      <h2 id="setup">Post-submission setup</h2>
+      <p>Once a bill exists, add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session restricted to that submitted bill.</p>
+      <CodeBlock code={session} filename="server/session.ts" />
+      <Callout title="Your API key stays server-side">The session fixes the organization, user, bill, origin, expiry, and post-submission permissions.</Callout>
+
+      <h2 id="lifecycle">Complete post-submission lifecycle</h2>
+      <p>Pass the returned <code>billId</code>. <code>ConnectedBillLifecycle</code> never creates or edits a pre-submission draft.</p>
+      <CodeBlock code={lifecycle} filename="SubmittedBill.tsx" />
+      <p>The component includes lifecycle progress, the frozen bill snapshot, EOR details and original PDFs, payer contacts, payments, history, Second Review, correction, IBR or lien actions when eligible, and closure.</p>
       <LifecyclePlayground />
 
       <h2 id="custom">Custom lifecycle UI</h2>
-      <p><code>useBillLifecycle</code> exposes the same connected state and mutations: create, refresh, payer search, delivery options, save, submit, attachments, EOR, payment, review, correction, and close.</p>
+      <p><code>useBillLifecycle</code> exposes the same authoritative submitted state and post-submission actions.</p>
       <CodeBlock code={customLifecycle} filename="BillingToolbar.tsx" />
 
       <h2 id="status">Status surfaces</h2>
@@ -255,35 +246,31 @@ export default function ReactPage() {
       <PaymentLedgerPlayground />
 
       <h2 id="actions">Actions and history</h2>
-      <p><code>BillLifecycleActions</code> renders the action list returned with lifecycle data. Keep the server response authoritative: do not recreate denial, payment, review, or resubmission eligibility in frontend conditionals.</p>
+      <p><code>BillLifecycleActions</code> renders the action list returned with lifecycle data. Keep the server response authoritative.</p>
       <CodeBlock code={actionBar} filename="BillActions.tsx" />
       <LifecycleActionsPlayground />
-      <p><code>BillActivityTimeline</code> renders <code>bill.activity</code> from the connected lifecycle response. Webhooks remain the durable server-side signal for your own database and analytics.</p>
+      <p><code>BillActivityTimeline</code> renders <code>bill.activity</code>. Webhooks remain the durable server-side signal for your own database and analytics.</p>
       <CodeBlock code={timeline} filename="BillHistory.tsx" />
       <ActivityTimelinePlayground />
 
-      <h2 id="forms">Controlled review form</h2>
-      <p><code>BillReviewForm</code> renders the native review, payer search, attachments, delivery dialog, and submission UI while your callbacks supply data.</p>
-      <CodeBlock code={controlledReview} filename="ReviewForm.tsx" />
-      <ReviewFormPlayground />
-
       <h2 id="clients">Browser clients</h2>
-      <p>Use the framework-neutral clients outside React rendering or inside your own state layer.</p>
+      <p>Use the framework-neutral clients for submitted bill reads and lifecycle actions outside React rendering or inside your own state layer.</p>
       <CodeBlock code={clients} filename="billing-client.ts" />
 
       <h2 id="hosted">Hosted wrappers</h2>
-      <p><code>MindBillBillReview</code> and <code>MindBillBillTimeline</code> wrap the hosted review and timeline when native composition is not practical. Their editors below run the real wrapper; replace the sample token and URL with a short-lived session to load private billing data.</p>
+      <p><code>MindBillBillReview</code> and <code>MindBillBillTimeline</code> wrap hosted post-submission surfaces when native composition is not practical.</p>
       <CodeBlock code={hosted} filename="HostedBilling.tsx" />
       <HostedReviewPlayground />
       <HostedTimelinePlayground />
 
       <h2 id="utilities">Appearance and utilities</h2>
       <div className="term-list compact">
+        <div><b><code>BILL_SUBMISSION_REQUIRED_FIELDS</code></b><p>The canonical required fields used by <code>BillSubmissionForm</code>.</p></div>
+        <div><b><code>validateBillSubmission</code></b><p>Run the same submission validation outside the rendered form.</p></div>
         <div><b><code>mindBillThemePresets</code></b><p><code>mindbill</code>, <code>qme-companion</code>, <code>orange-bright</code>, and <code>clinical-blue</code>.</p></div>
         <div><b><code>resolveMindBillAppearance</code></b><p>Resolve a preset plus token overrides.</p></div>
         <div><b><code>mindBillAppearanceStyle</code></b><p>Convert appearance tokens to CSS custom properties.</p></div>
         <div><b><code>ensureTrailingProcedureLine</code></b><p>Keep exactly one empty procedure row after populated rows.</p></div>
-        <div><b><code>buildBillReviewSaveInput</code></b><p>Convert controlled review state to the save payload.</p></div>
       </div>
     </DocPage>
   );

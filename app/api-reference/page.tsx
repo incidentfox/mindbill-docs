@@ -30,10 +30,10 @@ export default function ApiReferencePage() {
         { id: "errors", label: "Errors" },
       ]}
       previous={{ href: "/components/angular", label: "Angular components" }}
-      next={{ href: "/api-reference/create-bill", label: "Create a bill" }}
+      next={{ href: "/api-reference/create-bill", label: "Create and submit a bill" }}
     >
       <div className="api-base-url"><small>Base URL</small><code>https://app.mindbill.org/partner/v2</code></div>
-      <p>Use the REST API from your server, or mint a short-lived browser session and let the React, Angular, or browser SDK call these same operations. All resources are isolated to the organization attached to the credential.</p>
+      <p>Use the REST API from your server to create and submit a bill atomically. After submission, a short-lived browser session lets React, Angular, or browser SDK surfaces read the bill and perform allowed lifecycle actions. All resources are isolated to the organization attached to the credential.</p>
 
       <h2 id="conventions">Conventions</h2>
       <h3>Authentication</h3>
@@ -41,7 +41,7 @@ export default function ApiReferencePage() {
       <CodeBlock code={authenticate} language="bash" filename="Request" />
       <h3>Idempotency</h3>
       <p>Send a stable <code>Idempotency-Key</code> on every mutation. Reusing a key with the same request safely returns the original result; reusing it with a different request is rejected.</p>
-      <Callout title="Creating is not submitting">A bill starts as a private draft. Add the explicit payer packet, resolve delivery options, and submit it in a separate operation.</Callout>
+      <Callout title="Create and submit are atomic">The public API has no draft bill. Send the reviewed snapshot, delivery route, and payer packet together. Success creates an immutable bill whose first status is <code>submitted</code>; failure creates no public bill.</Callout>
 
       {endpointGroups.map((group) => {
         const endpoints = apiEndpoints.filter((endpoint) => endpoint.group === group);

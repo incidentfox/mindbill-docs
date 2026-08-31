@@ -8,29 +8,71 @@ export const metadata: Metadata = { title: "Quickstart" };
 
 const install = `npm install @mindbill/react @mindbill/node`;
 
-const server = `import { MindBillClient } from "@mindbill/node";
+const component = `import { BillSubmissionForm, ConnectedBillLifecycle } from "@mindbill/react";
+
+export function CaseBilling({ workItemId, initialBill, caseDocuments, billId, onSubmitted }) {
+  if (billId) {
+    return (
+      <ConnectedBillLifecycle
+        billId={billId}
+        sessionEndpoint="/api/mindbill/session"
+      />
+    );
+  }
+
+  return (
+    <BillSubmissionForm
+      initialBill={initialBill}
+      attachments={caseDocuments}
+      submitLabel="Submit bill"
+      onSubmit={async (value) => {
+        const response = await fetch("/api/mindbill/bills", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": "bill-" + workItemId,
+          },
+          body: JSON.stringify(value),
+        });
+        if (!response.ok) throw new Error("Bill submission failed");
+        onSubmitted(await response.json());
+      }}
+    />
+  );
+}`;
+
+const submitRoute = `import { MindBillClient } from "@mindbill/node";
 
 const mindbill = new MindBillClient({
   apiKey: process.env.MINDBILL_API_KEY!,
 });
 
-// Any server framework: POST /api/mindbill/session
 export async function POST(request: Request) {
   const user = await requireSignedInUser(request);
+  const value = await request.json();
+  const idempotencyKey = request.headers.get("Idempotency-Key");
+  if (!idempotencyKey) {
+    return Response.json({ error: "Idempotency-Key is required" }, { status: 400 });
+  }
 
-  const permissions = user.role === "billing_admin"
-    ? [
-        "bills:create", "bills:read", "bills:edit", "bills:submit", "bills:act",
-        "documents:read", "documents:write", "payers:read", "eors:read",
-      ]
-    : [
-        "bills:create", "bills:read", "bills:edit",
-        "documents:read", "documents:write", "payers:read",
-      ];
+  const bill = await mindbill.createAndSubmitBill({
+    bill: value.bill,
+    submission: { route: "ebill" },
+    documents: await resolveDocuments(user, value),
+  }, idempotencyKey);
+
+  return Response.json({ id: bill.id, state: bill.state });
+}`;
+
+const sessionRoute = `export async function POST(request: Request) {
+  const user = await requireSignedInUser(request);
 
   const session = await mindbill.createBrowserSession({
     subject: user.id,
-    permissions,
+    permissions: [
+      "bills:read", "bills:act", "documents:read", "eors:read",
+    ],
+    resource: { billId: await billIdForSignedInCase(request) },
     allowedOrigin: process.env.APP_ORIGIN!,
     expiresIn: 900,
   });
@@ -38,38 +80,38 @@ export async function POST(request: Request) {
   return Response.json(session);
 }`;
 
-const browser = `import { createBillLifecycleClient } from "@mindbill/browser";
-
-const billing = createBillLifecycleClient({
-  sessionEndpoint: "/api/mindbill/session",
-});
-
-const { billId, data } = await billing.createBill(knownBillValues);`;
-
 const callbacks = `<ConnectedBillLifecycle
-  create={knownBillValues}
+  billId={billId}
   sessionEndpoint="/api/mindbill/session"
-  onBillCreated={(billId) => saveBillId(caseId, billId)}
-  onBillIdChange={(billId, previousBillId) =>
-    replaceBillId(caseId, previousBillId, billId)
+  onBillIdChange={(replacementId, previousId) =>
+    replaceBillId(caseId, previousId, replacementId)
   }
   onChanged={(bill) => {
-    updateBillingSummary(bill.lifecycle); // immediate UI
+    updateBillingSummary(bill.lifecycle);
     analytics.track("billing_changed", { state: bill.lifecycle.state });
   }}
 />`;
+
+const apiOnly = `const bill = await mindbill.createAndSubmitBill({
+  bill: billingSnapshot,
+  submission: { route: "ebill" },
+  documents: payerPacket,
+}, "submit-report-9f7a");
+
+await saveBillId(bill.id);`;
 
 export default function QuickstartPage() {
   return (
     <DocPage
       eyebrow="Get started"
-      title="Create, submit, and track a bill"
-      description="Add one authorization route and one connected React component. Users review the bill, attach payer documents, submit through the available route, and handle every later response in the same surface."
+      title="Submit and track a bill"
+      description="Add one native submission form and one server call. MindBill owns the billing fields, validation, attachments, Submit action, and every post-submission state."
       toc={[
         { id: "install", label: "Install" },
-        { id: "authorize", label: "Authorize the browser" },
-        { id: "render", label: "Render bill creation" },
-        { id: "lifecycle", label: "Handle the lifecycle" },
+        { id: "render", label: "Render the form" },
+        { id: "submit", label: "Submit atomically" },
+        { id: "lifecycle", label: "Track the lifecycle" },
+        { id: "authorize", label: "Authorize post-submit UI" },
         { id: "callbacks", label: "Handle callbacks" },
         { id: "sync", label: "Synchronize events" },
         { id: "api-only", label: "Without React" },
@@ -77,47 +119,49 @@ export default function QuickstartPage() {
       previous={{ href: "/learn/anatomy-of-a-bill", label: "Anatomy of a bill" }}
       next={{ href: "/learn/routing", label: "Routing and EDI" }}
     >
-      <Callout title="One user flow, one bill ID">The component creates a private bill record, uploads selected documents, opens the review form, and submits only when the user confirms a delivery route. Your product stores the returned <code>billId</code>; MindBill owns routing and the later lifecycle.</Callout>
+      <Callout title="No draft bill">Your app holds editable values locally. When the user presses Submit, one atomic request creates an immutable MindBill bill whose first status is <code>submitted</code>. A failed request creates no public bill.</Callout>
       <Steps>
         <Step title="Install React and the server client">
           <span id="install" />
           <CodeBlock code={install} language="bash" filename="Terminal" />
         </Step>
-        <Step title="Authorize the browser">
-          <span id="authorize" />
-          <p>Use any server framework. The API key fixes the organization, <code>subject</code> identifies your user, and <code>permissions</code> come from your own role-based access control.</p>
-          <CodeBlock code={server} filename="server/mindbill-session.ts" />
-          <Callout tone="warning" title="Do not put the API key in frontend code">Only the short-lived, exact-origin session reaches the browser. MindBill enforces both the organization boundary and the permissions on every request.</Callout>
-        </Step>
-        <Step title="Render bill creation and review">
+        <Step title="Render the complete submission form">
           <span id="render" />
-          <p>Pass every value your product already knows. They become the editable snapshot that prints on the <a href="https://www.nucc.org/images/stories/PDF/1500_claim_form_2012_02.pdf">CMS-1500</a> and travels in the <a href="https://www.cms.gov/files/document/mln006976-medicare-billing-cms-1500-837p.pdf">837P</a>.</p>
+          <p><code>BillSubmissionForm</code> owns the bill table, required-field asterisks and validation, attachment selection and uploads, and Submit button. Pass the case values and documents your product already knows.</p>
           <QuickstartPlayground />
-          <p>The first tab is a safe, editable preview of the review form. The production tabs show the connected component, server route, and bill snapshot. Pass <code>billId</code> instead of <code>create</code> when reopening a bill.</p>
-          <Callout title="No separate draft workflow is required">A private bill record exists so documents and edits have somewhere durable to live, but nothing reaches a payer until the user presses Submit bill. The connected component hides that orchestration.</Callout>
+          <CodeBlock code={component} filename="CaseBilling.tsx" />
+          <Callout title="Keep pre-submission state in your product">The form is controlled by your application and does not need a MindBill browser session. There is no create, edit, save-draft, or separate submit operation in the public bill API.</Callout>
         </Step>
-        <Step title="Keep the complete lifecycle in your product">
+        <Step title="Create and submit one immutable snapshot">
+          <span id="submit" />
+          <p>Send the reviewed bill, delivery route, and resolved documents to your backend. Use one stable idempotency key for the logical submission so retries cannot create duplicates.</p>
+          <CodeBlock code={submitRoute} filename="server/mindbill-bills.ts" />
+        </Step>
+        <Step title="Render the post-submission lifecycle">
           <span id="lifecycle" />
-          <p>After submission, the same component becomes the bill workspace. It shows progress, the frozen bill snapshot, payer contacts, EORs and original PDFs, payments, history, and only the actions valid for the current state.</p>
+          <p>After the atomic request succeeds, store the returned <code>billId</code> and render <code>ConnectedBillLifecycle</code>. It shows progress, the frozen snapshot, payer contacts, EORs and original PDFs, payments, history, and only the actions valid for the current state.</p>
           <LifecyclePlayground />
-          <p>Correction, resubmission, Second Bill Review, IBR or lien follow-up, payment posting, and closure open built-in dialogs. You can override callbacks and presentation, but you do not have to rebuild billing rules or modal flows.</p>
+        </Step>
+        <Step title="Authorize only the post-submission UI">
+          <span id="authorize" />
+          <p>Mint a short-lived, exact-origin browser session for the submitted bill. The permanent API key remains server-side.</p>
+          <CodeBlock code={sessionRoute} filename="server/mindbill-session.ts" />
         </Step>
         <Step title="Use callbacks for the current screen">
           <span id="callbacks" />
-          <p><code>onBillCreated</code> gives you the stable ID. <code>onBillIdChange</code> reports a replacement after correction. <code>onChanged</code> is useful for optimistic UI and browser analytics.</p>
+          <p>The submission response gives you the stable ID. Afterward, <code>onBillIdChange</code> reports a replacement bill after correction and <code>onChanged</code> keeps the current screen responsive.</p>
           <CodeBlock code={callbacks} filename="CaseBilling.tsx" />
-          <Callout tone="warning" title="Browser callbacks are not your ledger">They can be interrupted or forged. Use them to make the product feel immediate, then use signed webhooks or ordered events for durable server state.</Callout>
+          <Callout tone="warning" title="Browser callbacks are not your ledger">They can be interrupted or forged. Use them for immediate UI, then use signed webhooks or ordered events for durable server state.</Callout>
         </Step>
         <Step title="Synchronize payer activity">
           <span id="sync" />
-          <p>Store each event ID before applying it, ignore duplicates, and process organization sequence order. Events report submission, acceptance, rejection, EOR, denial, payment, review, lien, and closure after the browser is gone.</p>
+          <p>Store each event ID before applying it, ignore duplicates, and process organization sequence order. Events report acceptance, rejection, EOR, denial, payment, review, lien, and closure after the browser is gone.</p>
           <p><Link href="/api-reference/events">Read the event and webhook contract →</Link></p>
         </Step>
       </Steps>
-      <h2 id="api-only">Use the same flow without React</h2>
-      <p>The framework-neutral browser package uses the same session route. Angular ships a native lifecycle component. Your server may call the REST API directly when no user review is required.</p>
-      <CodeBlock code={`npm install @mindbill/browser`} language="bash" filename="Terminal" />
-      <CodeBlock code={browser} filename="billing.ts" />
+      <h2 id="api-only">Use the same atomic flow without React</h2>
+      <p>Your server can submit the same snapshot and payer packet directly with the Node SDK or REST API.</p>
+      <CodeBlock code={apiOnly} filename="server/submit-bill.ts" />
     </DocPage>
   );
 }
