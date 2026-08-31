@@ -26,12 +26,28 @@ const submissionForm = `import { BillSubmissionForm } from "@mindbill/react";
 <BillSubmissionForm
   initialBill={toBillSnapshot(caseRecord)}
   attachments={caseDocuments}
+  getSession={() =>
+    fetch("/api/mindbill/submission-session", { method: "POST" }).then((response) =>
+      response.json()
+    )
+  }
   submitLabel="Submit bill"
   onSubmit={async (value) => {
     const submitted = await submitBill(value);
     rememberBillId(submitted.id);
   }}
 />`;
+
+const submissionSession = `app.post("/api/mindbill/submission-session", async (req, res) => {
+  const user = await requireSignedInUser(req);
+
+  res.json(await mindbill.createBrowserSession({
+    subject: user.id,
+    permissions: ["payers:read"],
+    allowedOrigin: process.env.APP_ORIGIN!,
+    expiresIn: 900,
+  }));
+});`;
 
 const session = `app.post("/api/mindbill/session", async (req, res) => {
   const user = await requireSignedInUser(req);
@@ -187,7 +203,8 @@ export default function ReactPage() {
       <h2 id="choose">Choose an export</h2>
       <div className="data-table component-catalog">
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
-        <div><code>BillSubmissionForm</code><span>You want the complete form, validation, attachments, and Submit action.</span><span>No</span></div>
+        <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and Submit action.</span><span>Reference data only</span></div>
+        <div><code>BillReadOnlyForm</code><span>You want the same bill layout after submission without editing.</span><span>No</span></div>
         <div><code>ConnectedBillLifecycle</code><span>You want the complete post-submission workflow.</span><span>Yes</span></div>
         <div><code>useBillLifecycle</code><span>You want custom post-submission lifecycle UI.</span><span>Yes</span></div>
         <div><code>ConnectedBillStatus</code><span>You need compact status and valid next actions.</span><span>Yes</span></div>
@@ -205,11 +222,20 @@ export default function ReactPage() {
       </div>
 
       <h2 id="form">Complete submission form</h2>
-      <p><code>BillSubmissionForm</code> owns which fields exist and which are required. It renders red asterisks, validates the values, lets users review prefilled documents and add uploads, and renders the Submit button. It does not create a MindBill draft or require browser credentials.</p>
+      <p><code>BillSubmissionForm</code> owns which fields exist and which are required. It renders red asterisks, validates the values, resolves billing reference data through a short-lived browser session, lets users review prefilled documents and add uploads, and renders the Submit button. It never creates a MindBill draft.</p>
       <CodeBlock code={install} language="bash" filename="Terminal" />
+      <CodeBlock code={submissionSession} filename="server/submission-session.ts" />
       <CodeBlock code={submissionForm} filename="CaseBilling.tsx" />
       <SubmissionFormPlayground />
+      <div className="term-list compact">
+        <div><b>Patient and injury</b><p>Responsive two-column fields, paste-friendly <code>MM/DD/YYYY</code> dates, required asterisks, and authenticated ZIP-to-city/state completion.</p></div>
+        <div><b>Diagnosis and routing</b><p>Complete server-backed ICD-10 search with common-injury quick picks and removable chips, plus canonical claims-administrator search backed by MindBill payer routing IDs.</p></div>
+        <div><b>Service lines</b><p>Searchable workers&apos;-comp procedure and modifier controls, evaluation-mode modifier defaults, medical-legal fee-schedule amounts, totals, valid manual CPT/HCPCS entry, and one automatically maintained empty line.</p></div>
+        <div><b>Attachments</b><p>Removable source documents, a locked auto-attached practice W-9, and click, panel-drop, or whole-page PDF upload.</p></div>
+      </div>
+      <Callout title="API keys stay server-side">The form uses the short-lived, exact-origin session only for payer, ICD-10, and postal reference data. Your permanent Partner API key never reaches the browser.</Callout>
       <Callout title="One callback, one atomic submission">Your <code>onSubmit</code> handler sends the form value to your server. The server calls <code>createAndSubmitBill</code>; only a successful request returns a bill ID.</Callout>
+      <Callout title="Keep your integration thin">Do not duplicate required fields, payer or ICD directories, ZIP lookup, fee behavior, attachment rules, or mobile layout in your application. Those stay versioned inside <code>@mindbill/react</code>. Optional catalog and lookup props support licensed or organization-specific extensions.</Callout>
 
       <h2 id="setup">Post-submission setup</h2>
       <p>Once a bill exists, add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session restricted to that submitted bill.</p>
