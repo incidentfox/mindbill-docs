@@ -113,6 +113,14 @@ export const navigation: DocLink[] = [
     keywords: ["react", "hooks", "component", "theme", "playground"],
   },
   {
+    href: "/components/react/lifecycle-demo",
+    label: "Full lifecycle demo",
+    description: "Run the complete synthetic bill journey from submission through payment and closure.",
+    group: "Components",
+    icon: Workflow,
+    keywords: ["react", "sandbox", "demo", "submitted", "accepted", "processed", "payment", "closed"],
+  },
+  {
     href: "/components/angular",
     label: "Angular",
     description: "A standalone Angular component for the complete bill lifecycle.",
