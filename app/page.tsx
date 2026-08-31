@@ -26,9 +26,9 @@ export default function HomePage() {
       <h2 id="what">What MindBill does</h2>
       <p>MindBill is a developer-first API for the full workers&apos; compensation billing lifecycle. You integrate once instead of building separate connections to clearinghouses, payer portals, fax vendors, and mail workflows.</p>
       <div className="concept-grid">
-        <section className="concept-card"><b>Create</b><p>Represent the CMS-1500 claim as structured JSON, using stable IDs from your own system.</p></section>
-        <section className="concept-card"><b>Attach</b><p>Add the report, proof of service, W-9, or other documents the payer should receive.</p></section>
-        <section className="concept-card"><b>Submit</b><p>MindBill validates the bill and routes it electronically or through an approved fallback.</p></section>
+        <section className="concept-card"><b>Review</b><p>Use the native form or your own UI to review structured CMS-1500 data in your application.</p></section>
+        <section className="concept-card"><b>Attach</b><p>Select the report, proof of service, W-9, or other documents the payer should receive.</p></section>
+        <section className="concept-card"><b>Submit once</b><p>MindBill atomically validates, snapshots, and routes the complete bill and payer packet.</p></section>
         <section className="concept-card"><b>Track and act</b><p>Read acknowledgements, EORs, payments, denials, reviews, corrections, and closure through one model.</p></section>
       </div>
 
@@ -45,11 +45,11 @@ export default function HomePage() {
 
       <h2 id="why">Why this API exists</h2>
       <p>Workers&apos; compensation is not ordinary commercial health insurance billing. A bill is addressed to a claims administrator, tied to an employer and work injury, and often accompanied by legal or clinical documents. The accepted electronic transaction is an X12 837P file—not the JSON your application wants to work with—and routing varies by payer.</p>
-      <p>MindBill turns that network and EDI complexity into ordinary resources and actions. Your application creates a bill, stores its <code>billId</code>, and responds to lifecycle events. MindBill owns transmission, acknowledgements, remittance, denials, reviews, and resubmission.</p>
+      <p>MindBill turns that network and EDI complexity into ordinary resources and actions. Your application collects the editable values locally, submits one complete snapshot, stores its <code>billId</code>, and responds to lifecycle events. MindBill owns transmission, acknowledgements, remittance, denials, reviews, and corrected replacements.</p>
 
       <h2 id="lifecycle">One bill lifecycle</h2>
       <div className="lifecycle-flow">
-        <span>Draft</span><i>→</i><span>Submitted</span><i>→</i><span>Accepted</span><i>→</i><span>Processed</span><i>→</i><span>Paid, denied, or disputed</span>
+        <span>Submitted</span><i>→</i><span>Accepted</span><i>→</i><span>Processed</span><i>→</i><span>Paid, denied, or disputed</span>
       </div>
       <p>The lifecycle is not always linear. A clearinghouse rejection can require a corrected replacement. An underpayment or denial can require Second Bill Review and, when eligible, Independent Bill Review. The API exposes the valid next actions without making every partner rebuild that rules engine.</p>
 
@@ -57,7 +57,7 @@ export default function HomePage() {
       <Callout title="Medical-legal and professional billing share one lifecycle">
         Use <code>med_legal</code> for California QME and AME workflows. Use <code>professional</code> for treatment and other professional claims. Both modes use the same bill, document, submission, status, EOR, payment, denial, and follow-up APIs.
       </Callout>
-      <p>Start with the <Link href="/learn/quickstart">browser-first quickstart</Link>. React and Angular components can create and manage the bill directly with a short-lived session; server-only REST remains available for headless workflows.</p>
+      <p>Start with the <Link href="/learn/quickstart">component quickstart</Link>. The form component owns fields, validation, required markers, attachments, and Submit; the server SDK performs the atomic submission. Framework-neutral REST remains available for headless workflows.</p>
     </DocPage>
   );
 }

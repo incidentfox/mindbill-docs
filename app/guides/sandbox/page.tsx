@@ -32,7 +32,7 @@ export default function SandboxPage() {
         <div><span>Create organizations and manage access</span><code>orgs:write</code></div>
         <div><span>Update reusable source profiles</span><code>settings:write</code></div>
       </div>
-      <p>Browser permissions are narrower and role-derived: <code>bills:create</code>, <code>bills:read</code>, <code>bills:edit</code>, <code>bills:submit</code>, <code>bills:act</code>, <code>documents:read</code>, <code>documents:write</code>, <code>payers:read</code>, and <code>eors:read</code>.</p>
+      <p>Browser permissions are narrower and role-derived: <code>bills:create</code>, <code>bills:read</code>, <code>bills:act</code>, <code>documents:read</code>, <code>payers:read</code>, and <code>eors:read</code>. A submitted bill has no edit permission because its snapshot and payer packet are immutable.</p>
 
       <h2 id="live">Go live</h2>
       <p>Live routing requires an approved organization, a current BAA, payment setup, and a verified webhook endpoint. The API and components do not change when live access is enabled; rotate to the live key and keep your origin and role policy unchanged.</p>

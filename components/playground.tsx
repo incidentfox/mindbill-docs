@@ -11,7 +11,7 @@ type PlaygroundProps = {
 
 const fixture = `const review = {
   bill: {
-    id: "bill_demo_1038", billNumber: 1038, status: "Incomplete",
+    id: "bill_demo_1038", billNumber: 1038, status: "Submitted",
     billingMode: "med_legal", dos: "2026-08-26",
     billingSnapshot: {
       billingProvider: { name: "Northstar Evaluations", taxId: "12-3456789", npi: "1023401122", billType: "Professional", phone: "626-555-0194", billingStreet: "236 W Mountain St", billingCity: "Pasadena", billingState: "CA", billingZip: "91103" },
@@ -72,43 +72,58 @@ export default function App() {
   </main>;
 }`;
 
-const reviewCode = `import { useState } from "react";
-import { BillReviewForm } from "@mindbill/react";
+const submissionCode = `import { useState } from "react";
+import { BillSubmissionForm } from "@mindbill/react";
 
-${fixture}
-
-const delivery = {
-  payerName: "Republic Indemnity",
-  recommended: { route: "ebill", label: "E-bill via Data Dimensions", detail: "Payer ID WR618 · EDI", fallback: false, confidence: "high", payerName: "Republic Indemnity", payerId: "WR618" },
-  options: [
-    { route: "ebill", label: "E-bill via Data Dimensions", detail: "Payer ID WR618 · EDI", fallback: false, confidence: "high", payerName: "Republic Indemnity", payerId: "WR618" },
-    { route: "fax", label: "Fax", detail: "(213) 555-0199", fallback: true, confidence: "directory", payerName: "Republic Indemnity", target: "(213) 555-0199" },
-    { route: "mail", label: "Mail", detail: "PO Box 19600, Irvine, CA 92623", fallback: true, confidence: "directory", payerName: "Republic Indemnity", target: "PO Box 19600, Irvine, CA 92623" },
-  ],
-  contacts: { faxNumber: "(213) 555-0199", mailingAddress: "PO Box 19600, Irvine, CA 92623" },
+const initialBill = {
+  externalId: "report_9f7a",
+  billingMode: "med_legal",
+  patient: {
+    externalId: "patient_42", firstName: "Alex", lastName: "Morgan",
+    dateOfBirth: "1988-03-05",
+    address: { line1: "100 Main St", city: "Fresno", state: "CA", postalCode: "93721" },
+  },
+  claim: {
+    externalId: "claim_17", claimNumber: "WC-44871",
+    employer: "Northstar Foods", dateOfInjury: "2025-05-30", injuryState: "CA",
+    claimsAdministrator: { name: "Republic Indemnity" },
+  },
+  service: { date: "2026-08-26" },
+  billingProvider: {
+    name: "Northstar Evaluations", taxId: "123456789", npi: "1023401122",
+    address: { line1: "236 W Mountain St", city: "Pasadena", state: "CA", postalCode: "91103" },
+  },
+  renderingProvider: {
+    name: "Morgan Chen, MD", npi: "1098765432",
+    licenseNumber: "A140748", licenseState: "CA",
+  },
+  serviceLocation: {
+    name: "West Covina Exam Office", placeOfServiceCode: "11",
+    address: { line1: "1050 West Lakes Dr", city: "West Covina", state: "CA", postalCode: "91790" },
+  },
+  diagnoses: ["M25.562"],
+  serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1, charge: 2015 }],
 };
 
+const attachments = [
+  { id: "doc_report", fileName: "final-report.pdf", documentType: "final_report", selected: true },
+  { id: "doc_pos", fileName: "proof-of-service.pdf", documentType: "proof_of_service", selected: true },
+];
+
 export default function App() {
-  const [data, setData] = useState(review);
-  const [notice, setNotice] = useState("Try editing a field or opening Submit bill.");
+  const [notice, setNotice] = useState("Review the snapshot and payer packet.");
   return <main className="review-demo">
     <p className="notice">{notice}</p>
-    <BillReviewForm
-      data={data} appearance={{ preset: "qme-companion" }}
-      features={{ codingPresets: true, wcabNumber: true }}
-      onSave={async () => { setNotice("Draft saved locally."); return data; }}
-      onSubmit={async (_, route) => setNotice("Submitted through " + route.route + ".")}
-      onGetDeliveryOptions={async () => delivery}
-      onSearchClaimsAdministrators={async (query) => [
-        { id: "payer_republic", name: "Republic Indemnity", hasElectronic: true, recommended: true, confidence: "high", signals: [{ kind: "claim_number", state: "match", label: "Claim number pattern matches" }] },
-        { id: "payer_republic_wc", name: "Republic Indemnity Company of America", hasElectronic: true, confidence: "directory" },
-      ].filter((payer) => payer.name.toLowerCase().includes(query.toLowerCase()))}
-      onAddAttachment={async (file, documentType) => {
-        setData((current) => ({ ...current, bill: { ...current.bill, attachments: [...current.bill.attachments, { id: String(Date.now()), filename: file.name, documentType }] } }));
-        setNotice("Document attached locally.");
+    <BillSubmissionForm
+      initialBill={initialBill}
+      attachments={attachments}
+      appearance={{ preset: "qme-companion" }}
+      submitLabel="Submit bill"
+      onSubmit={async ({ sourceAttachmentIds, uploads }) => {
+        setNotice(
+          "Ready to submit " + (sourceAttachmentIds.length + uploads.length) + " documents atomically."
+        );
       }}
-      onRemoveAttachment={async (id) => setData((current) => ({ ...current, bill: { ...current.bill, attachments: current.bill.attachments.filter((doc) => doc.id !== id) } }))}
-      onOpenAttachment={(doc) => setNotice("Opening " + doc.filename)}
     />
   </main>;
 }`;
@@ -340,7 +355,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.17.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.18.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -355,26 +370,40 @@ function ComponentPlayground({
   );
 }
 
-const quickstartComponentCode = `import { ConnectedBillLifecycle } from "@mindbill/react";
+const quickstartComponentCode = `import { useState } from "react";
+import { BillSubmissionForm, ConnectedBillLifecycle } from "@mindbill/react";
 import { knownBillValues } from "./bill-data";
 
 export default function CaseBilling() {
-  return (
-    <ConnectedBillLifecycle
-      create={knownBillValues}
+  const [billId, setBillId] = useState(null);
+  const workItemId = "report_9f7a";
+
+  if (billId) {
+    return <ConnectedBillLifecycle
+      billId={billId}
       sessionEndpoint="/api/mindbill/session"
       appearance={{ preset: "clinical-blue" }}
-      onBillCreated={(billId) => {
-        // Keep this ID beside your case or report.
-        saveBillId(billId);
-      }}
-      onBillIdChange={(billId, previousBillId) => {
-        // A corrected bill may replace the previous bill ID.
-        replaceStoredBillId(previousBillId, billId);
-      }}
-      onChanged={(bill) => {
-        // Immediate UI and analytics only. Webhooks are authoritative.
-        updateLocalBillingSummary(bill.lifecycle);
+    />;
+  }
+
+  return (
+    <BillSubmissionForm
+      initialBill={knownBillValues}
+      attachments={availableCaseDocuments}
+      appearance={{ preset: "clinical-blue" }}
+      onSubmit={async (value) => {
+        const response = await fetch("/api/mindbill/bills", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "idempotency-key": "bill-" + workItemId,
+          },
+          body: JSON.stringify(await serializeSubmission(value)),
+        });
+        if (!response.ok) throw new Error("Bill submission failed");
+        const submitted = await response.json();
+        saveBillId(submitted.id);
+        setBillId(submitted.id);
       }}
     />
   );
@@ -386,26 +415,23 @@ const mindbill = new MindBillClient({
   apiKey: process.env.MINDBILL_API_KEY,
 });
 
-// POST /api/mindbill/session — any server framework
+// POST /api/mindbill/bills — any server framework
 export async function POST(request) {
   const user = await requireSignedInUser(request);
+  assertCanSubmitBills(user);
+  const input = await request.json();
+  const idempotencyKey = request.headers.get("idempotency-key");
+  if (!idempotencyKey) {
+    return Response.json({ error: "Idempotency-Key is required" }, { status: 400 });
+  }
 
-  const permissions = user.role === "billing_admin"
-    ? [
-        "bills:create", "bills:read", "bills:edit", "bills:submit", "bills:act",
-        "documents:read", "documents:write", "payers:read", "eors:read",
-      ]
-    : [
-        "bills:create", "bills:read", "bills:edit",
-        "documents:read", "documents:write", "payers:read",
-      ];
+  const bill = await mindbill.createAndSubmitBill({
+    bill: input.bill,
+    submission: { route: "ebill" },
+    documents: input.documents,
+  }, idempotencyKey);
 
-  return Response.json(await mindbill.createBrowserSession({
-    subject: user.id,
-    permissions,
-    allowedOrigin: process.env.APP_ORIGIN,
-    expiresIn: 900,
-  }));
+  return Response.json(bill);
 }`;
 
 const quickstartBillDataCode = `export const knownBillValues = {
@@ -444,13 +470,13 @@ export function QuickstartPlayground() {
         theme="auto"
         files={{
           "/App.js": { code: `export { default } from "./Preview";`, hidden: true },
-          "/Preview.jsx": reviewCode,
+          "/Preview.jsx": submissionCode,
           "/CaseBilling.jsx": quickstartComponentCode,
           "/server.ts": quickstartServerCode,
           "/bill-data.js": quickstartBillDataCode,
           "/styles.css": { code: demoCss, hidden: true },
         }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.17.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.18.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -506,8 +532,8 @@ export function StatusPlayground() {
   return <ComponentPlayground name="BillStatusSummary" code={statusCode} />;
 }
 
-export function ReviewFormPlayground() {
-  return <ComponentPlayground name="BillReviewForm" code={reviewCode} height={760} />;
+export function SubmissionFormPlayground() {
+  return <ComponentPlayground name="BillSubmissionForm" code={submissionCode} height={760} />;
 }
 
 export function HostedReviewPlayground() {

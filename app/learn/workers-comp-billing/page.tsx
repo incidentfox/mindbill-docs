@@ -8,7 +8,7 @@ export default function WorkersCompBillingPage() {
     <DocPage
       eyebrow="Learn"
       title="Workers' comp billing in five minutes"
-      description="The domain model a developer needs before creating the first bill."
+      description="The domain model a developer needs before submitting the first bill."
       toc={[
         { id: "model", label: "The 30-second model" },
         { id: "different", label: "What is different" },
@@ -35,17 +35,17 @@ export default function WorkersCompBillingPage() {
         <div className="table-head"><b><code>professional</code></b><b><code>med_legal</code></b></div>
         <div><span>Treatment, IME, malpractice, hourly, or activity-based services.</span><span>California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
       </div>
-      <p>Both modes use the same bill, document, submission, status, EOR, payment, and dispute APIs. The service lines and required packet differ.</p>
+      <p>Both modes use the same atomic submission, status, EOR, payment, and dispute APIs. The service lines and required packet differ.</p>
 
       <h2 id="lifecycle">The lifecycle</h2>
       <ol className="plain-steps">
-        <li><b>Draft:</b> create the bill, edit fields, and attach the payer packet.</li>
-        <li><b>Submit:</b> choose the resolved e-bill, fax, mail, or email route.</li>
-        <li><b>Accepted or rejected:</b> correct and resubmit transport or claim-level rejections.</li>
+        <li><b>Prepare locally:</b> review fields and attachments in your product. No MindBill bill exists yet.</li>
+        <li><b>Submit:</b> one atomic request validates the complete packet and creates an immutable bill whose first state is <code>submitted</code>.</li>
+        <li><b>Accepted or rejected:</b> track transport and claim-level acknowledgements. Submit a new corrected snapshot when replacement is required.</li>
         <li><b>Processed:</b> read the EOR, post payment, or inspect denial and adjustment reasons.</li>
         <li><b>Resolve:</b> close the bill or pursue Second Bill Review and, when eligible, IBR.</li>
       </ol>
-      <Callout tone="warning" title="Submitted bills are snapshots">Edit an incomplete or rejected bill. For a submitted bill, create a correction or review so its audit history remains intact.</Callout>
+      <Callout tone="warning" title="Every bill is a submitted snapshot">The public API has no draft or update operation. Keep edits local before submission; use a new atomic bill for a corrected replacement so the original audit history remains intact.</Callout>
 
       <h2 id="terms">Six terms you will see</h2>
       <div className="term-list compact">

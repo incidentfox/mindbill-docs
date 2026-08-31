@@ -4,47 +4,32 @@ import { Callout, DocPage } from "@/components/doc-page";
 
 export const metadata: Metadata = { title: "Documents and payer packets" };
 
-const upload = `const response = await fetch(report.downloadUrl);
-const file = await response.blob();
+const serverSubmission = `const report = await fetch(reportDownloadUrl);
+const contentBase64 = Buffer.from(await report.arrayBuffer()).toString("base64");
 
-await mindbill.uploadBillDocument(bill.id, {
-  file,
-  filename: "final-report.pdf",
-  documentType: "final_report",
-  externalId: "document_88",
-  description: "Final medical-legal report",
-}, "attach-document-88");
+const bill = await mindbill.createAndSubmitBill({
+  bill: billingSnapshot,
+  submission: { route: "ebill" },
+  documents: [{
+    filename: "final-report.pdf",
+    documentType: "final_report",
+    contentBase64,
+    externalId: "document_88",
+    description: "Final medical-legal report",
+  }],
+}, "submit-report-9f7a");`;
 
-const { data: documents } = await mindbill.listBillDocuments(bill.id);`;
-
-const remove = `await mindbill.deleteBillDocument(
-  bill.id,
-  documentId,
-  "remove-document-88",
-);`;
-
-const browserUpload = `import { createBillLifecycleClient } from "@mindbill/browser";
-
-const billing = createBillLifecycleClient({
-  sessionEndpoint: "/api/mindbill/session",
-});
-
-const { billId } = await billing.createBill(knownBillValues);
-
-for (const document of defaultPayerDocuments) {
-  await billing.addAttachment(
-    document.file,
-    document.type,
-    document.description,
-  );
-}
-
-// Persist billId in your product, then open the same bill in the component.
-setBillId(billId);`;
-
-const component = `<ConnectedBillLifecycle
-  billId={billId}
-  sessionEndpoint="/api/mindbill/session"
+const component = `<BillSubmissionForm
+  initialBill={billingSnapshot}
+  attachments={availableCaseDocuments}
+  onSubmit={async ({ bill, sourceAttachmentIds, uploads }) => {
+    const submitted = await submitBill({
+      bill,
+      sourceAttachmentIds,
+      uploads,
+    });
+    setBillId(submitted.id);
+  }}
 />`;
 
 export default function DocumentsPage() {
@@ -52,11 +37,11 @@ export default function DocumentsPage() {
     <DocPage
       eyebrow="Build"
       title="Build the payer packet"
-      description="A workers’ comp bill is often more than claim data. Attach the reports and forms the payer needs, while keeping unrelated medical records out of the packet."
+      description="Review claim data and payer documents together, then create and submit one immutable bill snapshot."
       toc={[
         { id: "packet", label: "What belongs in the packet" },
-        { id: "upload", label: "Upload documents" },
-        { id: "review", label: "Let the user review" },
+        { id: "review", label: "Review in the component" },
+        { id: "submit", label: "Submit atomically" },
         { id: "types", label: "Document types" },
       ]}
       previous={{ href: "/guides/bills", label: "The bill resource" }}
@@ -72,18 +57,14 @@ export default function DocumentsPage() {
       </ul>
       <Callout tone="warning" title="Billing packet is not report service">Serving a report on case parties and submitting a bill to a claims administrator are separate workflows. A document may belong in one packet, both packets, or neither.</Callout>
 
-      <h2 id="upload">Upload documents</h2>
-      <p>The structured create request and document bytes are separate calls. In a browser-first integration, create the private draft and immediately attach the intended payer documents with the same short-lived session:</p>
-      <CodeBlock code={browserUpload} filename="create-bill-with-documents.ts" />
-      <p>If your files must stay on the server, the Node SDK provides the same document operations. Use an idempotency key so a retry cannot create duplicate attachments.</p>
-      <CodeBlock code={upload} filename="server/attach-report.ts" />
-      <p>Remove a document while the draft is still being reviewed:</p>
-      <CodeBlock code={remove} filename="server/remove-document.ts" />
-
-      <h2 id="review">Let the user review the packet</h2>
-      <p>The React and Angular lifecycle components list every attached document, provide preview and removal controls, and accept additional PDFs. After creating and attaching defaults, pass the returned <code>billId</code> to open that draft for review.</p>
+      <h2 id="review">Review fields and attachments in one component</h2>
+      <p>The React <code>BillSubmissionForm</code> renders the complete bill table, marks required fields with a red asterisk, validates values, lists prefilled case documents, accepts additional uploads, and owns the Submit button. There is no draft bill to create or maintain.</p>
       <CodeBlock code={component} filename="CaseBilling.tsx" />
-      <Callout title="Creation and upload are sequential today">The bill ID is returned before documents are uploaded. Keep that ID even if a later upload fails, then retry only the missing document. The lifecycle component will show the resulting packet.</Callout>
+
+      <h2 id="submit">Send documents with the immutable snapshot</h2>
+      <p>Resolve selected source attachments and new uploads on your server, encode their bytes, and include them in the same atomic <code>createAndSubmitBill</code> request as the bill data. Store the returned bill ID only after success.</p>
+      <CodeBlock code={serverSubmission} filename="server/submit-with-documents.ts" />
+      <Callout title="No partially assembled bill">The public API does not expose initial document upload, removal, or separate submit mutations. If validation or packet preparation fails before submission, MindBill creates no public bill.</Callout>
 
       <h2 id="types">Document types</h2>
       <div className="term-list compact">

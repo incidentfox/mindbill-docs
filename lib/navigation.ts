@@ -51,7 +51,7 @@ export const navigation: DocLink[] = [
   {
     href: "/learn/quickstart",
     label: "Quickstart",
-    description: "Create, attach, submit, and read your first sandbox bill.",
+    description: "Review, submit, and track your first sandbox bill.",
     group: "Start here",
     icon: SquareCode,
     keywords: ["install", "first bill", "rest", "node", "sandbox"],
@@ -70,7 +70,7 @@ export const navigation: DocLink[] = [
     description: "Send the CMS-1500 snapshot without synchronizing partner databases.",
     group: "Understand",
     icon: ReceiptText,
-    keywords: ["create", "update", "cms-1500", "snapshot", "payer"],
+    keywords: ["create", "submit", "immutable", "cms-1500", "snapshot", "payer"],
   },
   {
     href: "/guides/documents",
@@ -130,19 +130,11 @@ export const navigation: DocLink[] = [
   },
   {
     href: "/api-reference/create-bill",
-    label: "Create a bill",
-    description: "Create a private bill record from CMS-1500 data.",
+    label: "Create and submit a bill",
+    description: "Atomically submit an immutable CMS-1500 snapshot and payer packet.",
     group: "Reference",
     icon: FileText,
-    keywords: ["create", "bill", "draft", "cms-1500"],
-  },
-  {
-    href: "/api-reference/submit-bill",
-    label: "Submit a bill",
-    description: "Send a reviewed bill through its selected delivery route.",
-    group: "Reference",
-    icon: Route,
-    keywords: ["submit", "delivery", "route", "payer"],
+    keywords: ["create", "submit", "bill", "immutable", "cms-1500", "payer packet"],
   },
   {
     href: "/api-reference/bill-actions",

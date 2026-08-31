@@ -18,7 +18,7 @@ export default function PricingPage() {
       previous={{ href: "/api-reference", label: "REST API" }}
     >
       <h2 id="model">A simple usage model</h2>
-      <p>Pricing is based on submitted bills rather than seats, providers, locations, or component usage. Your application can create and review drafts through the API or native components, and MindBill becomes the infrastructure layer when the bill is submitted into the workers’ compensation network.</p>
+      <p>Pricing is based on submitted bills rather than seats, providers, locations, or component usage. Editable values stay in your product until the user submits; that one atomic operation creates the immutable bill and payer packet in MindBill.</p>
 
       <div className="pricing-card">
         <span>Usage unit</span>

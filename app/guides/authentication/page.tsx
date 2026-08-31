@@ -12,12 +12,12 @@ export const mindbill = new MindBillClient({
 
 const roles = `const permissionsByRole = {
   billing_admin: [
-    "bills:create", "bills:read", "bills:edit", "bills:submit", "bills:act",
-    "documents:read", "documents:write", "payers:read", "eors:read",
+    "bills:create", "bills:read", "bills:act",
+    "documents:read", "payers:read", "eors:read",
   ],
   biller: [
-    "bills:create", "bills:read", "bills:edit", "bills:submit",
-    "documents:read", "documents:write", "payers:read", "eors:read",
+    "bills:create", "bills:read",
+    "documents:read", "payers:read", "eors:read",
   ],
   viewer: ["bills:read", "documents:read", "eors:read"],
 } as const;`;
@@ -40,7 +40,7 @@ const sessionRoute = `app.post("/api/mindbill/session", async (request, response
 
 const narrowSession = `const session = await mindbill.createBrowserSession({
   subject: user.id,
-  permissions: ["bills:read", "bills:edit", "documents:read"],
+  permissions: ["bills:read", "documents:read", "eors:read"],
   resource: { billId },
   allowedOrigin: process.env.APP_ORIGIN!,
   expiresIn: 300,
@@ -75,19 +75,16 @@ export default function AuthenticationPage() {
         <div><b>User and role</b><p><code>subject</code> is your user ID. <code>permissions</code> are the billing operations that user may perform.</p></div>
         <div><b>Origin and time</b><p>The token works only from one exact HTTPS origin and expires quickly.</p></div>
       </div>
-      <Callout title="No bill must exist first">The normal browser session is organization- and user-scoped. A permitted component can create a new bill and later reopen existing bills. You do not create a bill on the server merely to authorize the UI.</Callout>
+      <Callout title="The form needs no browser token"><code>BillSubmissionForm</code> keeps editable values in your application and calls your <code>onSubmit</code> handler only after local validation. Submit through your server, store the returned bill ID, then mint a narrowly scoped browser session for post-submit lifecycle UI.</Callout>
 
       <h2 id="permissions">Permission reference</h2>
       <p>A session may contain any subset of these permissions. MindBill checks them together with the API key&apos;s organization on every browser request.</p>
       <div className="data-table networks">
         <div className="table-head"><b>Permission</b><b>Allows</b></div>
-        <div><code>bills:create</code><span>Create a private bill from a structured snapshot.</span></div>
+        <div><code>bills:create</code><span>Atomically create and submit an immutable bill snapshot.</span></div>
         <div><code>bills:read</code><span>Read bill review data, status, balances, and available actions.</span></div>
-        <div><code>bills:edit</code><span>Edit claim, patient, provider, service, diagnosis, and line-item fields before submission.</span></div>
-        <div><code>bills:submit</code><span>Resolve a delivery destination and submit or resubmit a bill.</span></div>
         <div><code>bills:act</code><span>Post payment, close, correct, or start payer-review actions allowed by the bill state.</span></div>
         <div><code>documents:read</code><span>List and open payer-packet documents.</span></div>
-        <div><code>documents:write</code><span>Upload and remove payer-packet documents before submission or review.</span></div>
         <div><code>payers:read</code><span>Search the claims-administrator directory and resolve available delivery routes.</span></div>
         <div><code>eors:read</code><span>Read normalized EOR data and original payer documents when available.</span></div>
       </div>
@@ -97,13 +94,13 @@ export default function AuthenticationPage() {
       <CodeBlock code={roles} filename="server/billing-permissions.ts" />
 
       <h2 id="session">Add one authenticated session route</h2>
-      <p>The route is the only required partner-server integration for browser-side billing. It never accepts an organization ID from the client.</p>
+      <p>Use a session route after submission when a connected lifecycle component needs to read or act on the bill. It never accepts an organization ID from the client.</p>
       <CodeBlock code={serverClient} filename="server/mindbill.ts" />
       <CodeBlock code={sessionRoute} filename="server/billing-session.ts" />
       <Callout tone="warning" title="Derive the origin safely">Use a configured production origin or a trusted proxy-aware origin. Do not reflect an arbitrary client-supplied origin into the session.</Callout>
 
       <h2 id="resource">Optionally restrict a session to one bill</h2>
-      <p>Most embedded products should use the organization/user/role session above. For an unusually narrow read or edit surface, add a bill resource restriction. A bill-restricted session cannot include <code>bills:create</code>.</p>
+      <p>For a connected post-submit bill surface, add a bill resource restriction. A bill-restricted session cannot include <code>bills:create</code>.</p>
       <CodeBlock code={narrowSession} filename="server/narrow-session.ts" />
 
       <h2 id="server">Server-only REST remains available</h2>

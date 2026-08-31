@@ -4,63 +4,61 @@ import { Callout, DocPage } from "@/components/doc-page";
 
 export const metadata: Metadata = { title: "The bill resource" };
 
-const create = `const created = await mindbill.createBill({
-  externalId: "report_9f7a",
-  billingMode: "med_legal",
-  patient: {
-    externalId: "patient_42",
-    firstName: "Alex",
-    lastName: "Morgan",
-    dateOfBirth: "1984-03-12",
-    address: {
-      line1: "100 Main St",
-      city: "Fresno",
-      state: "CA",
-      postalCode: "93721",
+const submit = `const bill = await mindbill.createAndSubmitBill({
+  bill: {
+    externalId: "report_9f7a",
+    billingMode: "med_legal",
+    patient: {
+      externalId: "patient_42",
+      firstName: "Alex",
+      lastName: "Morgan",
+      dateOfBirth: "1984-03-12",
+      address: {
+        line1: "100 Main St",
+        city: "Fresno",
+        state: "CA",
+        postalCode: "93721",
+      },
     },
+    claim: {
+      externalId: "injury_81",
+      claimNumber: "WC-44871",
+      employer: "Example Foods, Inc.",
+      dateOfInjury: "2026-02-14",
+      injuryState: "CA",
+      claimsAdministrator: { name: "Example Claims Administrator" },
+    },
+    service: { date: "2026-08-26" },
+    billingProvider: {
+      name: "Northstar Evaluations",
+      taxId: "123456789",
+      npi: "1234567890",
+      address: { line1: "200 Market St", city: "Fresno", state: "CA", postalCode: "93721" },
+    },
+    renderingProvider: {
+      name: "Morgan Chen, MD",
+      npi: "1098765432",
+      licenseNumber: "A12345",
+      licenseState: "CA",
+    },
+    serviceLocation: {
+      name: "Fresno Exam Office",
+      placeOfServiceCode: "11",
+      address: { line1: "300 Pine Ave", city: "Fresno", state: "CA", postalCode: "93721" },
+    },
+    diagnoses: ["M25.562"],
+    serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1 }],
   },
-  claim: {
-    externalId: "injury_81",
-    claimNumber: "WC-44871",
-    employer: "Example Foods, Inc.",
-    dateOfInjury: "2026-02-14",
-    injuryState: "CA",
-    claimsAdministrator: { name: "Example Claims Administrator" },
-  },
-  service: { date: "2026-08-26" },
-  billingProvider: {
-    name: "Northstar Evaluations",
-    taxId: "123456789",
-    npi: "1234567890",
-    address: { line1: "200 Market St", city: "Fresno", state: "CA", postalCode: "93721" },
-  },
-  renderingProvider: {
-    name: "Morgan Chen, MD",
-    npi: "1098765432",
-    licenseNumber: "A12345",
-    licenseState: "CA",
-  },
-  serviceLocation: {
-    name: "Fresno Exam Office",
-    placeOfServiceCode: "11",
-    address: { line1: "300 Pine Ave", city: "Fresno", state: "CA", postalCode: "93721" },
-  },
-  diagnoses: ["M25.562"],
-  serviceLines: [{ code: "ML201", modifiers: ["95"], units: 1 }],
-}, "create-report-9f7a");
+  submission: { route: "ebill" },
+  documents: [{
+    filename: "final-report.pdf",
+    documentType: "final_report",
+    contentBase64: finalReportBytes.toString("base64"),
+    externalId: "document_88",
+  }],
+}, "submit-report-9f7a");
 
-const billId = created.id;`;
-
-const update = `await mindbill.updateBill(billId, {
-  claim: {
-    claimNumber: "WC-44871-A",
-    employer: "Example Foods, Inc.",
-  },
-  serviceLines: [
-    { code: "ML201", modifiers: ["95"], units: 1 },
-    { code: "MLPRR", modifiers: [], units: 3 },
-  ],
-}, "update-report-9f7a-v2");`;
+await saveBillId(bill.id);`;
 
 const list = `const page = await mindbill.listBills({
   externalId: "report_9f7a",
@@ -74,32 +72,28 @@ export default function BillsPage() {
     <DocPage
       eyebrow="Build"
       title="The bill resource"
-      description="A bill is an immutable-at-submission snapshot of the people, claim, services, diagnoses, providers, and locations that must appear on the claim."
+      description="A bill is created and submitted atomically as an immutable snapshot of the claim, services, providers, and payer packet."
       toc={[
         { id: "snapshot", label: "Snapshot model" },
-        { id: "create", label: "Create a draft" },
-        { id: "update", label: "Edit a draft" },
+        { id: "submit", label: "Create and submit" },
         { id: "query", label: "Find bills" },
         { id: "availability", label: "Availability" },
       ]}
       previous={{ href: "/guides/authentication", label: "Authentication" }}
       next={{ href: "/guides/documents", label: "Documents" }}
     >
-      <h2 id="snapshot">Send the exact billing snapshot</h2>
-      <p>Workers&apos; compensation bills carry more claim context than an ordinary patient invoice. Send the patient, injury, claims administrator, employer, billing and rendering providers, place of service, diagnoses, and service lines that should print on the CMS-1500 and travel in the 837P.</p>
-      <p>Reusable provider or location records are optional. Each submitted bill freezes its own values so later profile changes cannot rewrite billing history.</p>
-      <Callout title="Keep your relationships with external IDs">Add your report, case, patient, and injury IDs. You can later query MindBill using those identifiers without duplicating your entire application database.</Callout>
+      <h2 id="snapshot">Collect locally, then submit one exact snapshot</h2>
+      <p>Workers&apos; compensation bills carry more claim context than an ordinary patient invoice. Collect and edit the patient, injury, claims administrator, employer, providers, place of service, diagnoses, service lines, and attachments in your application before calling MindBill.</p>
+      <p>MindBill has no public draft bill. A successful request creates the bill with <code>submitted</code> as its first status and freezes the submitted values so later profile changes cannot rewrite billing history.</p>
+      <Callout title="Use the ready-to-use form">The React <code>BillSubmissionForm</code> owns the field layout, required-field asterisks, validation, attachment selection and uploads, and Submit action. Your integration supplies initial values and handles the one submit callback.</Callout>
 
-      <h2 id="create">Create a private draft</h2>
-      <p>This example uses the server SDK for a headless workflow. The React, Angular, and framework-neutral browser clients can create the same resource directly with a short-lived session. Use an idempotency key tied to the logical operation so a network retry cannot create a duplicate.</p>
-      <CodeBlock code={create} filename="server/create-bill.ts" />
+      <h2 id="submit">Create and submit atomically</h2>
+      <p>Send the bill snapshot, routing choice, and documents in one server-side operation. Use an idempotency key tied to the logical submission so a network retry cannot create a duplicate.</p>
+      <CodeBlock code={submit} filename="server/submit-bill.ts" />
+      <Callout title="Failure does not create a bill">Validation and other pre-submission failures create no public bill. Fix the local form values and retry with the same logical idempotency key. Store the returned bill ID only after the request succeeds.</Callout>
 
-      <h2 id="update">Correct a draft before submission</h2>
-      <p>Patch the bill while it is editable. The connected React and Angular components perform this call themselves and let a user correct prefilled values before sending.</p>
-      <CodeBlock code={update} filename="server/update-bill.ts" />
-
-      <h2 id="query">Find bills from your own records</h2>
-      <p>Store the stable MindBill bill ID when convenient, or find bills later using your external identifiers.</p>
+      <h2 id="query">Find submitted bills from your records</h2>
+      <p>Store the stable MindBill bill ID after successful submission, or find submitted bills later using your external identifiers.</p>
       <CodeBlock code={list} filename="server/find-bills.ts" />
 
       <h2 id="availability">Billing-mode availability</h2>
