@@ -10,9 +10,9 @@ export function MindBillDocsBrand() {
           </g>
           <circle className="brand-symbol-dot" cx="50" cy="22" r="6" />
         </svg>
-        <span className="brand-name">MindBill</span>
+        <span className="brand-name">Mind<span>Bill</span></span>
       </span>
-      <span className="brand-context" aria-hidden="true">docs</span>
+      <span className="brand-context" aria-hidden="true">Developer docs</span>
     </>
   );
 }
