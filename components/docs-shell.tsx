@@ -41,8 +41,9 @@ export function DocsShell({ children }: { children: React.ReactNode }) {
             <Link className={pathname.startsWith("/components") ? "active" : ""} href="/components/react">Components</Link>
             <Link className={pathname.startsWith("/api-reference") ? "active" : ""} href="/api-reference">API</Link>
           </nav>
+          <a className="console-link" href="https://platform.mindbill.org">Sign in</a>
           <ThemeToggle />
-          <a className="icon-button" href="https://github.com/incidentfox/mindbill-docs" aria-label="MindBill docs on GitHub"><Code2 size={19} /></a>
+          <a className="icon-button github-link" href="https://github.com/incidentfox/mindbill-docs" aria-label="MindBill docs on GitHub"><Code2 size={19} /></a>
         </div>
       </header>
       <aside className="desktop-sidebar">{sidebar}</aside>
