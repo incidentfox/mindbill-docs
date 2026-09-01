@@ -15,28 +15,18 @@ export function CaseBilling({ workItemId, initialBill, caseDocuments, billId, on
     return (
       <ConnectedBillLifecycle
         billId={billId}
-        sessionEndpoint="/api/mindbill/session"
+        sessionEndpoint={\`/api/mindbill/bills/\${billId}/session\`}
       />
     );
   }
 
   return (
     <BillSubmissionForm
-      initialBill={initialBill}
+      initialBill={{ ...initialBill, externalId: workItemId }}
       attachments={caseDocuments}
+      sessionEndpoint="/api/mindbill/submission-session"
       submitLabel="Submit bill"
-      onSubmit={async (value) => {
-        const response = await fetch("/api/mindbill/bills", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Idempotency-Key": "bill-" + workItemId,
-          },
-          body: JSON.stringify(value),
-        });
-        if (!response.ok) throw new Error("Bill submission failed");
-        onSubmitted(await response.json());
-      }}
+      onSubmitted={({ billId }) => onSubmitted(billId)}
     />
   );
 }`;
@@ -49,30 +39,28 @@ const mindbill = new MindBillClient({
 
 export async function POST(request: Request) {
   const user = await requireSignedInUser(request);
-  const value = await request.json();
-  const idempotencyKey = request.headers.get("Idempotency-Key");
-  if (!idempotencyKey) {
-    return Response.json({ error: "Idempotency-Key is required" }, { status: 400 });
-  }
-
-  const bill = await mindbill.createAndSubmitBill({
-    bill: value.bill,
-    submission: { route: "ebill" },
-    documents: await resolveDocuments(user, value),
-  }, idempotencyKey);
-
-  return Response.json({ id: bill.id, state: bill.state });
+  return Response.json(await mindbill.createBrowserSession({
+    subject: user.id,
+    permissions: ["bills:create", "payers:read"],
+    allowedOrigin: process.env.APP_ORIGIN!,
+    expiresIn: 900,
+  }));
 }`;
 
-const sessionRoute = `export async function POST(request: Request) {
+const sessionRoute = `export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ billId: string }> },
+) {
   const user = await requireSignedInUser(request);
+  const { billId } = await params;
+  await requireBillAccess(user, billId);
 
   const session = await mindbill.createBrowserSession({
     subject: user.id,
     permissions: [
       "bills:read", "bills:act", "documents:read", "eors:read",
     ],
-    resource: { billId: await billIdForSignedInCase(request) },
+    resource: { billId },
     allowedOrigin: process.env.APP_ORIGIN!,
     expiresIn: 900,
   });
@@ -82,7 +70,7 @@ const sessionRoute = `export async function POST(request: Request) {
 
 const callbacks = `<ConnectedBillLifecycle
   billId={billId}
-  sessionEndpoint="/api/mindbill/session"
+  sessionEndpoint={\`/api/mindbill/bills/\${billId}/session\`}
   onBillIdChange={(replacementId, previousId) =>
     replaceBillId(caseId, previousId, replacementId)
   }
@@ -105,7 +93,7 @@ export default function QuickstartPage() {
     <DocPage
       eyebrow="Get started"
       title="Submit and track a bill"
-      description="Add one native submission form and one server call. MindBill owns the billing fields, validation, attachments, Submit action, and every post-submission state."
+      description="Add one native submission form and a session-only backend. MindBill owns the billing fields, validation, attachments, atomic Submit action, and every post-submission state."
       toc={[
         { id: "install", label: "Install" },
         { id: "render", label: "Render the form" },
@@ -130,12 +118,12 @@ export default function QuickstartPage() {
           <p><code>BillSubmissionForm</code> owns the bill table, required-field asterisks and validation, attachment selection and uploads, and Submit button. Pass the case values and documents your product already knows.</p>
           <QuickstartPlayground />
           <CodeBlock code={component} filename="CaseBilling.tsx" />
-          <Callout title="Keep pre-submission state in your product">The form is controlled by your application and does not need a MindBill browser session. There is no create, edit, save-draft, or separate submit operation in the public bill API.</Callout>
+          <Callout title="Keep pre-submission state in your product">Editable values remain local until Submit. The short-lived session lets the component resolve directories and submit directly; there is no create, edit, save-draft, or separate submit operation in the public bill API.</Callout>
         </Step>
         <Step title="Create and submit one immutable snapshot">
           <span id="submit" />
-          <p>Send the reviewed bill, delivery route, and resolved documents to your backend. Use one stable idempotency key for the logical submission so retries cannot create duplicates.</p>
-          <CodeBlock code={submitRoute} filename="server/mindbill-bills.ts" />
+          <p>Your only MindBill server responsibility is minting short-lived browser sessions. The component validates the complete snapshot, encodes selected PDFs, serializes the Partner API request, and submits it directly with a stable idempotency key.</p>
+          <CodeBlock code={submitRoute} filename="server/mindbill-submission-session.ts" />
         </Step>
         <Step title="Render the post-submission lifecycle">
           <span id="lifecycle" />
@@ -145,7 +133,7 @@ export default function QuickstartPage() {
         <Step title="Authorize only the post-submission UI">
           <span id="authorize" />
           <p>Mint a short-lived, exact-origin browser session for the submitted bill. The permanent API key remains server-side.</p>
-          <CodeBlock code={sessionRoute} filename="server/mindbill-session.ts" />
+          <CodeBlock code={sessionRoute} filename="app/api/mindbill/bills/[billId]/session/route.ts" />
         </Step>
         <Step title="Use callbacks for the current screen">
           <span id="callbacks" />

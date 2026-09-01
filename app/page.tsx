@@ -54,10 +54,10 @@ export default function HomePage() {
       <p>The lifecycle is not always linear. A clearinghouse rejection can require a corrected replacement. An underpayment or denial can require Second Bill Review and, when eligible, Independent Bill Review. The API exposes the valid next actions without making every partner rebuild that rules engine.</p>
 
       <h2 id="availability">Billing modes</h2>
-      <Callout title="Medical-legal and professional billing share one lifecycle">
-        Use <code>med_legal</code> for California QME and AME workflows. Use <code>professional</code> for treatment and other professional claims. Both modes use the same bill, document, submission, status, EOR, payment, denial, and follow-up APIs.
+      <Callout title="Medical-legal billing is available now">
+        Use <code>med_legal</code> for California QME and AME workflows. The <code>professional</code> value is reserved for future treatment billing and is not enabled in the public Partner API yet.
       </Callout>
-      <p>Start with the <Link href="/learn/quickstart">component quickstart</Link>. The form component owns fields, validation, required markers, attachments, and Submit; the server SDK performs the atomic submission. Framework-neutral REST remains available for headless workflows.</p>
+      <p>Start with the <Link href="/learn/quickstart">component quickstart</Link>. The form component owns fields, validation, required markers, attachments, serialization, and atomic Submit; your server only mints a short-lived session. Framework-neutral REST remains available for headless workflows.</p>
     </DocPage>
   );
 }

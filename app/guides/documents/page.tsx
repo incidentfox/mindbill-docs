@@ -22,14 +22,8 @@ const bill = await mindbill.createAndSubmitBill({
 const component = `<BillSubmissionForm
   initialBill={billingSnapshot}
   attachments={availableCaseDocuments}
-  onSubmit={async ({ bill, sourceAttachmentIds, uploads }) => {
-    const submitted = await submitBill({
-      bill,
-      sourceAttachmentIds,
-      uploads,
-    });
-    setBillId(submitted.id);
-  }}
+  sessionEndpoint="/api/mindbill/submission-session"
+  onSubmitted={({ billId }) => setBillId(billId)}
 />`;
 
 export default function DocumentsPage() {
@@ -62,7 +56,7 @@ export default function DocumentsPage() {
       <CodeBlock code={component} filename="CaseBilling.tsx" />
 
       <h2 id="submit">Send documents with the immutable snapshot</h2>
-      <p>Resolve selected source attachments and new uploads on your server, encode their bytes, and include them in the same atomic <code>createAndSubmitBill</code> request as the bill data. Store the returned bill ID only after success.</p>
+      <p>The connected component resolves selected source attachments and new uploads, encodes their PDF bytes, and includes them in the same atomic request as the bill data. For API-only integrations, perform the equivalent operation on your server. Store the returned bill ID only after success.</p>
       <CodeBlock code={serverSubmission} filename="server/submit-with-documents.ts" />
       <Callout title="No partially assembled bill">The public API does not expose initial document upload, removal, or separate submit mutations. If validation or packet preparation fails before submission, MindBill creates no public bill.</Callout>
 
