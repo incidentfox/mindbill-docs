@@ -30,7 +30,9 @@ const correction = await mindbill.createAndSubmitBill({
 // Payment received after an EOR.
 await mindbill.performBillAction(billId, {
   action: "post_payment",
-  amount: 2015,
+  amount: 650,
+  penaltyAmount: 35,
+  interestAmount: 15,
   method: "eft",
   depositDate: "2026-09-04",
 }, "payment-bill-123-1");
@@ -102,7 +104,8 @@ export default function LifecyclePage() {
       <h2 id="status">Read status and EORs</h2>
       <p>The status endpoint is suitable for a case header, receivables list, or background reconciliation job. The EOR endpoint returns normalized line items plus the original PDF when available.</p>
       <CodeBlock code={read} filename="server/read-lifecycle.ts" />
-      <p>The connected workspace combines that read model with native dialogs for every available action.</p>
+      <p>The connected workspace combines that read model with native dialogs for every available action. The remittance surface distinguishes amount billed, payer allowed and reported paid amounts, principal posted to the bill, penalty and interest, total cash received, and remaining balance. Its payment ledger records partial payments, payment references, effective and deposit dates, and EOR source.</p>
+      <Callout title="Bill ID and session only"><code>ConnectedBillLifecycle</code> accepts the bill ID plus <code>getSession</code> or <code>sessionEndpoint</code>. It does not accept bill initial data: the component always reads the current immutable snapshot and lifecycle data from MindBill.</Callout>
       <LifecyclePlayground />
 
       <h2 id="actions">Take the next action</h2>

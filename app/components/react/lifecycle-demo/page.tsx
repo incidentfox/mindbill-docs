@@ -27,7 +27,7 @@ export default function LifecycleDemoPage() {
       <StatusGalleryPlayground />
 
       <h2 id="sandbox">Connect the real sandbox</h2>
-      <p>Replace <code>initialData</code> with a short-lived browser session and set <code>enabled</code>. In the sandbox, <code>ConnectedBillLifecycle</code> exposes simulation controls for acceptance, processing, rejection, denial, and payment testing.</p>
+      <p>Pass only the submitted <code>billId</code> and a short-lived browser session through <code>getSession</code> or <code>sessionEndpoint</code>. <code>ConnectedBillLifecycle</code> fetches the immutable bill snapshot, EOR, payments, actions, and history directly from MindBill. In the sandbox it also exposes controls for acceptance, processing, rejection, denial, and payment testing.</p>
       <Callout tone="success" title="The production surface is unchanged">Simulation is accepted only for sandbox organizations. Live bills always follow clearinghouse and payer events.</Callout>
     </DocPage>
   );
