@@ -203,7 +203,14 @@ export default function App() {
   </main>;
 }`;
 
-const lifecycleCode = `import { ConnectedBillLifecycle } from "@mindbill/react";
+const lifecycleCode = `import {
+  BillActivityTimeline,
+  BillLifecycleActions,
+  BillLifecycleProgress,
+  BillPaymentLedger,
+  BillRemittanceCard,
+  BillSnapshotSummary,
+} from "@mindbill/react";
 
 ${fixture}
 
@@ -226,7 +233,12 @@ const lifecycle = {
     { id: "evt_1", type: "bill.submitted", createdAt: "2026-07-27T16:08:00Z", actor: "Taylor R." },
   ],
   payments: [],
-  remittance: { payerReportedPaid: 0, totalPaid: 0, balanceDue: 2015, denialReason: "Medical necessity or frequency" },
+  remittance: {
+    billedAmount: 2015, expectedAmount: 2015, payerAllowedAmount: 0,
+    payerReportedPaid: 0, postedPrincipal: 0, postedAdditional: 0,
+    totalPostedCash: 0, balanceDue: 2015,
+    denialReason: "Medical necessity or frequency",
+  },
   delivery: {
     payerName: "Republic Indemnity",
     contacts: {
@@ -239,10 +251,12 @@ const lifecycle = {
 
 export default function App() {
   return <main className="review-demo">
-    <ConnectedBillLifecycle
-      billId="bill_demo_1038" enabled={false} initialData={lifecycle}
-      appearance={{ preset: "orange-bright" }}
-    />
+    <BillLifecycleProgress {...lifecycle.lifecycle} appearance={{ preset: "orange-bright" }} />
+    <BillSnapshotSummary {...lifecycle} appearance={{ preset: "orange-bright" }} />
+    <BillRemittanceCard remittance={lifecycle.remittance} appearance={{ preset: "orange-bright" }} />
+    <BillPaymentLedger payments={lifecycle.payments} appearance={{ preset: "orange-bright" }} />
+    <BillLifecycleActions actions={lifecycle.lifecycle.actions} onAction={() => {}} appearance={{ preset: "orange-bright" }} />
+    <BillActivityTimeline events={lifecycle.activity} appearance={{ preset: "orange-bright" }} />
   </main>;
 }`;
 
@@ -324,8 +338,13 @@ export default function App() {
   return <main className="demo">
     <BillRemittanceCard
       remittance={{
+        billedAmount: 2015,
+        expectedAmount: 2015,
+        payerAllowedAmount: 650,
         payerReportedPaid: 503.75,
-        totalPaid: 503.75,
+        postedPrincipal: 450,
+        postedAdditional: 53.75,
+        totalPostedCash: 503.75,
         balanceDue: 1511.25,
         denialReason: "Payment reduced pending additional documentation.",
       }}
@@ -359,8 +378,8 @@ const paymentLedgerCode = `import { BillPaymentLedger } from "@mindbill/react";
 const payments = [{
   id: "payment_1", method: "check", checkNumber: "4811505",
   status: "deposited", depositDate: "2026-08-25", checkReceived: true,
-  receivedDate: "2026-08-23", amount: 503.75, feeAmount: null,
-  feeReason: null, source: "paper", postedAt: "2026-08-25T17:42:18Z",
+  receivedDate: "2026-08-23", amount: 503.75, principalAmount: 450,
+  feeAmount: 53.75, feeReason: "Penalty and interest", source: "paper", postedAt: "2026-08-25T17:42:18Z",
   updatedAt: null, note: "Partial payment",
 }];
 
@@ -438,7 +457,13 @@ export default function App() {
 }`;
 
 const fullLifecycleCode = `import { useMemo, useState } from "react";
-import { ConnectedBillLifecycle } from "@mindbill/react";
+import {
+  BillActivityTimeline,
+  BillLifecycleProgress,
+  BillPaymentLedger,
+  BillRemittanceCard,
+  BillSnapshotSummary,
+} from "@mindbill/react";
 
 ${fixture}
 
@@ -463,8 +488,15 @@ export default function App() {
       actions: [],
     },
     eors: index >= 2 ? [{ id: "eor_1", filename: "EOR-1038.pdf", description: "Explanation of Review", addedAt: "2026-09-04T14:30:00Z", contentUrl: "#eor" }] : [],
-    payments: paid ? [{ id: "payment_1", method: "check", checkNumber: "4811505", status: "deposited", amount: 2015, source: "paper", postedAt: "2026-09-06T12:15:00Z" }] : [],
-    remittance: { payerReportedPaid: index >= 2 ? 2015 : null, totalPaid: paid, balanceDue: 2015 - paid },
+    payments: paid ? [{ id: "payment_1", method: "check", checkNumber: "4811505", status: "deposited", amount: 2015, principalAmount: 2015, feeAmount: 0, feeReason: null, source: "paper", postedAt: "2026-09-06T12:15:00Z" }] : [],
+    remittance: {
+      billedAmount: 2015, expectedAmount: 2015,
+      payerAllowedAmount: index >= 2 ? 2015 : null,
+      payerReportedPaid: index >= 2 ? 2015 : null,
+      postedPrincipal: paid, postedAdditional: 0,
+      totalPostedCash: paid, balanceDue: 2015 - paid,
+      denialReason: null,
+    },
     delivery: { payerName: "Republic Indemnity", channel: "electronic", clearinghouse: "Jopari", contacts: {} },
     activity: [
       ...(step === "closed" ? [{ id: "evt_close", type: "bill.closed", createdAt: "2026-09-18T17:00:00Z", description: "Bill closed after payment was reconciled" }] : []),
@@ -483,13 +515,13 @@ export default function App() {
     <nav aria-label="Demo lifecycle controls">
       {steps.map((item) => <button key={item} className={item === step ? "active" : ""} onClick={() => setStep(item)}>{labels[item]}</button>)}
     </nav>
-    <ConnectedBillLifecycle
-      key={step}
-      billId="bill_demo_1038"
-      enabled={false}
-      initialData={data}
-      appearance={{ preset: "orange-bright" }}
-    />
+    <section className="journey-surfaces">
+      <BillLifecycleProgress {...data.lifecycle} appearance={{ preset: "orange-bright" }} />
+      <BillSnapshotSummary {...data} appearance={{ preset: "orange-bright" }} />
+      {index >= 2 ? <BillRemittanceCard remittance={data.remittance} appearance={{ preset: "orange-bright" }} /> : null}
+      {paid ? <BillPaymentLedger payments={data.payments} appearance={{ preset: "orange-bright" }} /> : null}
+      <BillActivityTimeline events={data.activity} appearance={{ preset: "orange-bright" }} />
+    </section>
   </main>;
 }`;
 
@@ -513,6 +545,8 @@ const demoCss = `body { margin: 0; background: #f5f8f9; }
 .journey-demo > nav { display: flex; flex-wrap: wrap; gap: 8px; max-width: 1040px; margin: 0 auto 20px; }
 .journey-demo > nav button { border: 1px solid #e4d5ca; border-radius: 999px; padding: 9px 14px; background: white; color: #4d443f; font: inherit; font-weight: 700; cursor: pointer; }
 .journey-demo > nav button.active { border-color: #f4510b; background: #f4510b; color: white; }
+.review-demo, .journey-surfaces { display: grid; gap: 16px; }
+.journey-surfaces { max-width: 1040px; margin: 0 auto; }
 * { box-sizing: border-box; }`;
 
 function ComponentPlayground({
@@ -531,7 +565,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.22.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.27.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -652,7 +686,7 @@ export function QuickstartPlayground() {
           "/bill-data.js": quickstartBillDataCode,
           "/styles.css": { code: demoCss, hidden: true },
         }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.22.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.27.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
