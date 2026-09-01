@@ -22,15 +22,13 @@ const roles = `const permissionsByRole = {
   viewer: ["bills:read", "documents:read", "eors:read"],
 } as const;`;
 
-const sessionRoute = `app.post("/api/mindbill/session", async (request, response) => {
+const submissionSessionRoute = `app.post("/api/mindbill/submission-session", async (request, response) => {
   const user = await requireSignedInUser(request);
-  const permissions = permissionsByRole[user.role];
-
-  if (!permissions) return response.sendStatus(403);
+  await requireBillingPermission(user, "create");
 
   const session = await mindbill.createBrowserSession({
     subject: user.id,
-    permissions,
+    permissions: ["bills:create", "payers:read"],
     allowedOrigin: process.env.APP_ORIGIN!,
     expiresIn: 900,
   });
@@ -38,12 +36,20 @@ const sessionRoute = `app.post("/api/mindbill/session", async (request, response
   response.json(session);
 });`;
 
-const narrowSession = `const session = await mindbill.createBrowserSession({
-  subject: user.id,
-  permissions: ["bills:read", "documents:read", "eors:read"],
-  resource: { billId },
-  allowedOrigin: process.env.APP_ORIGIN!,
-  expiresIn: 300,
+const narrowSession = `app.post("/api/mindbill/bills/:billId/session", async (request, response) => {
+  const user = await requireSignedInUser(request);
+  const billId = request.params.billId;
+  await requireBillAccess(user, billId);
+
+  const session = await mindbill.createBrowserSession({
+    subject: user.id,
+    permissions: ["bills:read", "bills:act", "documents:read", "eors:read"],
+    resource: { billId },
+    allowedOrigin: process.env.APP_ORIGIN!,
+    expiresIn: 300,
+  });
+
+  response.json(session);
 });`;
 
 const direct = `curl https://app.mindbill.org/partner/v2/bills \
@@ -75,7 +81,7 @@ export default function AuthenticationPage() {
         <div><b>User and role</b><p><code>subject</code> is your user ID. <code>permissions</code> are the billing operations that user may perform.</p></div>
         <div><b>Origin and time</b><p>The token works only from one exact HTTPS origin and expires quickly.</p></div>
       </div>
-      <Callout title="The form needs no browser token"><code>BillSubmissionForm</code> keeps editable values in your application and calls your <code>onSubmit</code> handler only after local validation. Submit through your server, store the returned bill ID, then mint a narrowly scoped browser session for post-submit lifecycle UI.</Callout>
+      <Callout title="The form uses a short-lived browser session"><code>BillSubmissionForm</code> keeps editable values and uploads local until Submit. With <code>bills:create</code> and <code>payers:read</code>, it resolves reference data, validates, encodes PDFs, and submits the immutable snapshot directly. Your permanent API key remains server-side.</Callout>
 
       <h2 id="permissions">Permission reference</h2>
       <p>A session may contain any subset of these permissions. MindBill checks them together with the API key&apos;s organization on every browser request.</p>
@@ -93,10 +99,10 @@ export default function AuthenticationPage() {
       <p>Your application remains authoritative for sign-in and roles. Map those roles to the least set of MindBill permissions they need.</p>
       <CodeBlock code={roles} filename="server/billing-permissions.ts" />
 
-      <h2 id="session">Add one authenticated session route</h2>
-      <p>Use a session route after submission when a connected lifecycle component needs to read or act on the bill. It never accepts an organization ID from the client.</p>
+      <h2 id="session">Add authenticated session routes</h2>
+      <p>Use a create-only route for the connected submission form. It never accepts an organization ID from the client. Use a separate, bill-scoped route for post-submit lifecycle components.</p>
       <CodeBlock code={serverClient} filename="server/mindbill.ts" />
-      <CodeBlock code={sessionRoute} filename="server/billing-session.ts" />
+      <CodeBlock code={submissionSessionRoute} filename="server/submission-session.ts" />
       <Callout tone="warning" title="Derive the origin safely">Use a configured production origin or a trusted proxy-aware origin. Do not reflect an arbitrary client-supplied origin into the session.</Callout>
 
       <h2 id="resource">Optionally restrict a session to one bill</h2>

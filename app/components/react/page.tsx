@@ -35,11 +35,9 @@ const submissionForm = `import { BillSubmissionForm } from "@mindbill/react";
       response.json()
     )
   }
+  appearance={{ preset: "orange-bright" }}
   submitLabel="Submit bill"
-  onSubmit={async (value) => {
-    const submitted = await submitBill(value);
-    rememberBillId(submitted.id);
-  }}
+  onSubmitted={({ billId }) => rememberBillId(billId)}
 />`;
 
 const submissionSections = `import {
@@ -53,7 +51,12 @@ const submissionSections = `import {
   BillSubmissionServiceLinesSection,
 } from "@mindbill/react";
 
-<BillSubmissionForm initialBill={bill} attachments={documents} onSubmit={submitBill}>
+<BillSubmissionForm
+  initialBill={bill}
+  attachments={documents}
+  sessionEndpoint="/api/mindbill/submission-session"
+  onSubmitted={({ billId }) => rememberBillId(billId)}
+>
   <BillSubmissionHeader />
   <BillSubmissionPatientSection />
   <BillSubmissionClaimSection />
@@ -87,19 +90,21 @@ const submissionSession = `app.post("/api/mindbill/submission-session", async (r
 
   res.json(await mindbill.createBrowserSession({
     subject: user.id,
-    permissions: ["payers:read"],
+    permissions: ["bills:create", "payers:read"],
     allowedOrigin: process.env.APP_ORIGIN!,
     expiresIn: 900,
   }));
 });`;
 
-const session = `app.post("/api/mindbill/session", async (req, res) => {
+const session = `app.post("/api/mindbill/bills/:billId/session", async (req, res) => {
   const user = await requireSignedInUser(req);
+  const { billId } = req.params;
+  await requireBillAccess(user, billId);
 
   res.json(await mindbill.createBrowserSession({
     subject: user.id,
     permissions: ["bills:read", "bills:act", "documents:read", "eors:read"],
-    resource: { billId: await authorizedBillId(req) },
+    resource: { billId },
     allowedOrigin: process.env.APP_ORIGIN!,
     expiresIn: 900,
   }));
@@ -111,7 +116,7 @@ export function SubmittedBill({ billId }: { billId: string }) {
   return (
     <ConnectedBillLifecycle
       billId={billId}
-      sessionEndpoint="/api/mindbill/session"
+      sessionEndpoint={\`/api/mindbill/bills/\${billId}/session\`}
       appearance={{ preset: "orange-bright" }}
     />
   );
@@ -122,7 +127,7 @@ const customLifecycle = `import { useBillLifecycle } from "@mindbill/react";
 function BillingToolbar({ billId }: { billId: string }) {
   const bill = useBillLifecycle({
     billId,
-    sessionEndpoint: "/api/mindbill/session",
+    sessionEndpoint: \`/api/mindbill/bills/\${billId}/session\`,
   });
 
   if (bill.isLoading) return <p>Loading…</p>;
@@ -142,7 +147,7 @@ const status = `import { ConnectedBillStatus } from "@mindbill/react";
 
 <ConnectedBillStatus
   billId={billId}
-  sessionEndpoint="/api/mindbill/session"
+  sessionEndpoint={\`/api/mindbill/bills/\${billId}/session\`}
   refreshInterval={30_000}
 />`;
 
@@ -208,13 +213,13 @@ const clients = `import {
 
 const lifecycle = createBillLifecycleClient({
   billId,
-  sessionEndpoint: "/api/mindbill/session",
+  sessionEndpoint: \`/api/mindbill/bills/\${billId}/session\`,
 });
 const bill = await lifecycle.getLifecycle();
 
 const status = await createBillStatusClient({
   billId,
-  sessionEndpoint: "/api/mindbill/session",
+  sessionEndpoint: \`/api/mindbill/bills/\${billId}/session\`,
 }).getStatus();`;
 
 const hosted = `import { MindBillBillReview, MindBillBillTimeline } from "@mindbill/react";
@@ -249,8 +254,8 @@ export default function ReactPage() {
       <h2 id="choose">Choose an export</h2>
       <div className="data-table component-catalog">
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
-        <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and Submit action.</span><span>Reference data only</span></div>
-        <div><code>BillSubmission*Section</code><span>You want the same component-owned form state with individually composable sections.</span><span>Reference data only</span></div>
+        <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and atomic Submit action.</span><span>Yes</span></div>
+        <div><code>BillSubmission*Section</code><span>You want the same component-owned form state with individually composable sections.</span><span>Yes, through the parent</span></div>
         <div><code>BillingDashboard</code><span>You need receivables KPIs, aging buckets, search, filters, and a responsive bill list.</span><span>No</span></div>
         <div><code>BillList</code><span>You need only the searchable and filterable bill directory.</span><span>No</span></div>
         <div><code>BillAgingSummary</code><span>You need only receivables and aging KPIs.</span><span>No</span></div>
@@ -284,8 +289,8 @@ export default function ReactPage() {
         <div><b>Service lines</b><p>Searchable workers&apos;-comp procedure and modifier controls, evaluation-mode modifier defaults, medical-legal fee-schedule amounts, totals, valid manual CPT/HCPCS entry, and one automatically maintained empty line.</p></div>
         <div><b>Attachments</b><p>Removable source documents, a locked auto-attached practice W-9, and click, panel-drop, or whole-page PDF upload.</p></div>
       </div>
-      <Callout title="API keys stay server-side">The form uses the short-lived, exact-origin session only for payer, ICD-10, and postal reference data. Your permanent Partner API key never reaches the browser.</Callout>
-      <Callout title="One callback, one atomic submission">Your <code>onSubmit</code> handler sends the form value to your server. The server calls <code>createAndSubmitBill</code>; only a successful request returns a bill ID.</Callout>
+      <Callout title="API keys stay server-side">Your server only mints a short-lived, exact-origin session. The component uses it for reference data, validation, PDF encoding, wire serialization, and the atomic Partner API submission. Your permanent API key and clearinghouse routing identifiers never reach the browser.</Callout>
+      <Callout title="One component, one atomic submission">Omit the custom <code>onSubmit</code> escape hatch for the connected default. A successful <code>onSubmitted</code> callback returns the immutable MindBill bill ID; a failed request creates no public bill.</Callout>
       <Callout title="Keep your integration thin">Do not duplicate required fields, payer or ICD directories, ZIP lookup, fee behavior, attachment rules, or mobile layout in your application. Those stay versioned inside <code>@mindbill/react</code>. Optional catalog and lookup props support licensed or organization-specific extensions.</Callout>
 
       <h2 id="sections">Individual form sections</h2>
@@ -305,7 +310,7 @@ export default function ReactPage() {
 
       <h2 id="setup">Post-submission setup</h2>
       <p>Once a bill exists, add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session restricted to that submitted bill.</p>
-      <CodeBlock code={session} filename="server/session.ts" />
+      <CodeBlock code={session} filename="server/bill-session.ts" />
       <Callout title="Your API key stays server-side">The session fixes the organization, user, bill, origin, expiry, and post-submission permissions.</Callout>
 
       <h2 id="lifecycle">Complete post-submission lifecycle</h2>

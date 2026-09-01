@@ -10,12 +10,15 @@ const authenticate = `curl https://app.mindbill.org/partner/v2/bills \\
   --header "Authorization: Bearer $MINDBILL_API_KEY"`;
 
 const error = `{
-  "error": {
-    "code": "validation_error",
-    "message": "The request could not be validated.",
-    "requestId": "req_01J6Z9",
-    "fields": [{ "path": "service.date", "message": "Required" }]
-  }
+  "type": "about:blank",
+  "title": "The request body is invalid.",
+  "status": 422,
+  "code": "validation_error",
+  "detail": "Complete the required bill fields and submit again.",
+  "errors": [
+    { "path": "bill.renderingProvider.taxonomy", "message": "Required" },
+    { "path": "bill.diagnoses", "message": "Add at least one ICD-10 code" }
+  ]
 }`;
 
 export default function ApiReferencePage() {
@@ -49,7 +52,7 @@ export default function ApiReferencePage() {
       })}
 
       <h2 id="errors">Errors</h2>
-      <p>Non-2xx responses use one stable error envelope. Log <code>requestId</code>; it lets support trace the exact request without exposing claim data.</p>
+      <p>Non-2xx responses use RFC 9457-style Problem Details. Use <code>code</code> for program logic and map each <code>errors[].path</code> back to the corresponding form field.</p>
       <CodeBlock code={error} language="json" filename="422 Unprocessable Entity" />
       <div className="term-list compact">
         <div><b>400</b><p>Malformed JSON or an invalid parameter.</p></div>

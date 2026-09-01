@@ -30,12 +30,12 @@ export default function WorkersCompBillingPage() {
         <div><b>Accepted is not paid</b><p>A 999 or 277CA can accept the transmission. The payer later returns an EOR with payment, adjustments, or denial reasons.</p></div>
       </div>
 
-      <h2 id="modes">Two billing modes, one resource</h2>
+      <h2 id="modes">Billing-mode availability</h2>
       <div className="comparison-table">
         <div className="table-head"><b><code>professional</code></b><b><code>med_legal</code></b></div>
-        <div><span>Treatment, IME, malpractice, hourly, or activity-based services.</span><span>California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
+        <div><span>Reserved for future treatment and other professional services; not enabled in the public API yet.</span><span>Available now for California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
       </div>
-      <p>Both modes use the same atomic submission, status, EOR, payment, and dispute APIs. The service lines and required packet differ.</p>
+      <p>Build current integrations with <code>med_legal</code>. SDK types reserve <code>professional</code> so treatment billing can join the same lifecycle without a later naming break.</p>
 
       <h2 id="lifecycle">The lifecycle</h2>
       <ol className="plain-steps">
