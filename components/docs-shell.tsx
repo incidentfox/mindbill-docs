@@ -1,11 +1,11 @@
 "use client";
 
 import { Code2, Menu, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { navigation, navigationGroups } from "@/lib/navigation";
+import { MindBillDocsBrand } from "./mindbill-docs-brand";
 import { SearchDialog } from "./search-dialog";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -33,8 +33,7 @@ export function DocsShell({ children }: { children: React.ReactNode }) {
         <div className="topbar-inner">
           <button className="mobile-menu-button" type="button" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
           <Link className="wordmark" href="/" aria-label="MindBill documentation">
-            <Image src="/mindbill-logo.svg" alt="MindBill" width={116} height={39} priority />
-            <i>docs</i>
+            <MindBillDocsBrand />
           </Link>
           <SearchDialog />
           <nav className="top-links" aria-label="Primary">
@@ -50,7 +49,7 @@ export function DocsShell({ children }: { children: React.ReactNode }) {
       {mobileOpen ? (
         <div className="mobile-nav-overlay" onMouseDown={() => setMobileOpen(false)}>
           <aside className="mobile-nav" role="dialog" aria-modal="true" aria-label="Documentation navigation" onMouseDown={(event) => event.stopPropagation()}>
-            <div><Link className="wordmark" href="/" aria-label="MindBill documentation"><Image src="/mindbill-logo.svg" alt="MindBill" width={116} height={39} /><i>docs</i></Link><button className="icon-button" type="button" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X size={20} /></button></div>
+            <div><Link className="wordmark" href="/" aria-label="MindBill documentation"><MindBillDocsBrand /></Link><button className="icon-button" type="button" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X size={20} /></button></div>
             {sidebar}
           </aside>
         </div>
