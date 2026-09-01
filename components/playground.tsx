@@ -205,10 +205,9 @@ export default function App() {
 
 const lifecycleCode = `import {
   BillActivityTimeline,
+  BillExplanationOfReview,
   BillLifecycleActions,
   BillLifecycleProgress,
-  BillPaymentLedger,
-  BillRemittanceCard,
   BillSnapshotSummary,
 } from "@mindbill/react";
 
@@ -253,8 +252,14 @@ export default function App() {
   return <main className="review-demo">
     <BillLifecycleProgress {...lifecycle.lifecycle} appearance={{ preset: "orange-bright" }} />
     <BillSnapshotSummary {...lifecycle} appearance={{ preset: "orange-bright" }} />
-    <BillRemittanceCard remittance={lifecycle.remittance} appearance={{ preset: "orange-bright" }} />
-    <BillPaymentLedger payments={lifecycle.payments} appearance={{ preset: "orange-bright" }} />
+    <BillExplanationOfReview
+      remittance={lifecycle.remittance}
+      eors={lifecycle.eors}
+      payments={lifecycle.payments}
+      submittedAt={lifecycle.lifecycle.submittedAt}
+      onOpenEor={(eor) => alert("Preview " + eor.filename)}
+      appearance={{ preset: "orange-bright" }}
+    />
     <BillLifecycleActions actions={lifecycle.lifecycle.actions} onAction={() => {}} appearance={{ preset: "orange-bright" }} />
     <BillActivityTimeline events={lifecycle.activity} appearance={{ preset: "orange-bright" }} />
   </main>;
@@ -348,6 +353,41 @@ export default function App() {
         balanceDue: 1511.25,
         denialReason: "Payment reduced pending additional documentation.",
       }}
+      appearance={{ preset: "orange-bright" }}
+    />
+  </main>;
+}`;
+
+const explanationOfReviewCode = `import { BillExplanationOfReview } from "@mindbill/react";
+
+const remittance = {
+  billedAmount: 2015, expectedAmount: 2015, payerAllowedAmount: 650,
+  payerReportedPaid: 503.75, postedPrincipal: 450, postedAdditional: 53.75,
+  totalPostedCash: 503.75, balanceDue: 1511.25,
+  denialReason: "Payment reduced pending additional documentation.",
+};
+
+const eors = [{
+  id: "eor_1", filename: "EOR-1038.pdf", description: "Explanation of Review",
+  addedAt: "2026-08-25T17:42:18Z", contentUrl: "#eor",
+}];
+
+const payments = [{
+  id: "payment_1", method: "check", checkNumber: "4811505",
+  status: "deposited", depositDate: "2026-08-25", checkReceived: true,
+  receivedDate: "2026-08-23", amount: 503.75, principalAmount: 450,
+  feeAmount: 53.75, feeReason: "Penalty and interest", source: "paper",
+  postedAt: "2026-08-25T17:42:18Z", updatedAt: null, note: "Partial payment",
+}];
+
+export default function App() {
+  return <main className="demo">
+    <BillExplanationOfReview
+      remittance={remittance}
+      eors={eors}
+      payments={payments}
+      submittedAt="2026-08-12T17:00:00Z"
+      onOpenEor={(eor) => alert("Preview " + eor.filename)}
       appearance={{ preset: "orange-bright" }}
     />
   </main>;
@@ -459,9 +499,8 @@ export default function App() {
 const fullLifecycleCode = `import { useMemo, useState } from "react";
 import {
   BillActivityTimeline,
+  BillExplanationOfReview,
   BillLifecycleProgress,
-  BillPaymentLedger,
-  BillRemittanceCard,
   BillSnapshotSummary,
 } from "@mindbill/react";
 
@@ -518,8 +557,7 @@ export default function App() {
     <section className="journey-surfaces">
       <BillLifecycleProgress {...data.lifecycle} appearance={{ preset: "orange-bright" }} />
       <BillSnapshotSummary {...data} appearance={{ preset: "orange-bright" }} />
-      {index >= 2 ? <BillRemittanceCard remittance={data.remittance} appearance={{ preset: "orange-bright" }} /> : null}
-      {paid ? <BillPaymentLedger payments={data.payments} appearance={{ preset: "orange-bright" }} /> : null}
+      {index >= 2 ? <BillExplanationOfReview remittance={data.remittance} eors={data.eors} payments={data.payments} submittedAt={data.lifecycle.submittedAt} onOpenEor={(eor) => alert("Preview " + eor.filename)} appearance={{ preset: "orange-bright" }} /> : null}
       <BillActivityTimeline events={data.activity} appearance={{ preset: "orange-bright" }} />
     </section>
   </main>;
@@ -565,7 +603,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.27.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.28.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -686,7 +724,7 @@ export function QuickstartPlayground() {
           "/bill-data.js": quickstartBillDataCode,
           "/styles.css": { code: demoCss, hidden: true },
         }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.27.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.28.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -724,6 +762,10 @@ export function SnapshotPlayground() {
 
 export function RemittancePlayground() {
   return <ComponentPlayground name="BillRemittanceCard" code={remittanceCode} />;
+}
+
+export function ExplanationOfReviewPlayground() {
+  return <ComponentPlayground name="BillExplanationOfReview" code={explanationOfReviewCode} height={680} />;
 }
 
 export function PayerContactPlayground() {

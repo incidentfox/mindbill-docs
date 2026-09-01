@@ -7,6 +7,7 @@ import {
   BillingDashboardPlayground,
   BillingReportPlayground,
   ConnectedStatusPlayground,
+  ExplanationOfReviewPlayground,
   HostedReviewPlayground,
   HostedTimelinePlayground,
   LifecyclePlayground,
@@ -197,11 +198,21 @@ const snapshot = `import { BillSnapshotSummary } from "@mindbill/react";
 />`;
 
 const remittance = `import {
+  BillExplanationOfReview,
   BillRemittanceCard,
   BillPayerContactCard,
   BillPaymentLedger,
 } from "@mindbill/react";
 
+<BillExplanationOfReview
+  remittance={bill.remittance}
+  eors={bill.eors}
+  payments={bill.payments}
+  submittedAt={bill.lifecycle.submittedAt}
+  onOpenEor={previewEor}
+/>
+
+// Lower-level legacy surfaces remain available for custom layouts.
 <BillRemittanceCard remittance={bill.remittance} />
 <BillPayerContactCard delivery={bill.delivery} />
 <BillPaymentLedger payments={bill.payments} />`;
@@ -269,6 +280,7 @@ export default function ReactPage() {
         <div><code>BillLifecycleActions</code><span>You need state-aware actions in your own layout.</span><span>No</span></div>
         <div><code>BillLifecycleProgress</code><span>You need the horizontal bill lifecycle.</span><span>No</span></div>
         <div><code>BillSnapshotSummary</code><span>You need a compact submitted CMS-1500 snapshot.</span><span>No</span></div>
+        <div><code>BillExplanationOfReview</code><span>You need the consolidated EOR, denial, remittance, and payment reconciliation surface.</span><span>No</span></div>
         <div><code>BillRemittanceCard</code><span>You need payer-reported, posted, and balance amounts.</span><span>No</span></div>
         <div><code>BillPayerContactCard</code><span>You need payer and adjuster follow-up contacts.</span><span>No</span></div>
         <div><code>BillPaymentLedger</code><span>You need posted payment history.</span><span>No</span></div>
@@ -316,7 +328,8 @@ export default function ReactPage() {
       <h2 id="lifecycle">Complete post-submission lifecycle</h2>
       <p>Pass the returned <code>billId</code>. <code>ConnectedBillLifecycle</code> never creates or edits a pre-submission draft.</p>
       <CodeBlock code={lifecycle} filename="SubmittedBill.tsx" />
-      <p>The component includes lifecycle progress, the frozen bill snapshot, EOR details and original PDFs, payer contacts, payments, history, Second Review, correction, IBR or lien actions when eligible, and closure.</p>
+      <p>The component includes lifecycle progress, the frozen bill snapshot, a consolidated EOR and payment reconciliation surface, rich claims-administrator directory details, history, packet preview, and a sticky state-aware action bar for Second Review, correction, IBR, lien, payment, or closure when eligible.</p>
+      <Callout title="Only bill ID and session">The connected lifecycle accepts no initial bill data. Pass the submitted <code>billId</code> and a short-lived browser session; MindBill remains authoritative for the snapshot, payer directory, EORs, payments, history, and actions.</Callout>
       <LifecyclePlayground />
 
       <h2 id="custom">Custom lifecycle UI</h2>
@@ -339,6 +352,7 @@ export default function ReactPage() {
       <CodeBlock code={snapshot} filename="BillSnapshot.tsx" />
       <SnapshotPlayground />
       <CodeBlock code={remittance} filename="BillFollowUp.tsx" />
+      <ExplanationOfReviewPlayground />
       <RemittancePlayground />
       <PayerContactPlayground />
       <PaymentLedgerPlayground />
