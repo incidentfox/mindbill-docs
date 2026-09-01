@@ -4,6 +4,8 @@ import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 import {
   ActivityTimelinePlayground,
+  BillingDashboardPlayground,
+  BillingReportPlayground,
   ConnectedStatusPlayground,
   HostedReviewPlayground,
   HostedTimelinePlayground,
@@ -16,6 +18,7 @@ import {
   PaymentLedgerPlayground,
   StatusPlayground,
   SubmissionFormPlayground,
+  SubmissionSectionsPlayground,
 } from "@/components/playground";
 
 export const metadata: Metadata = { title: "React components" };
@@ -38,6 +41,46 @@ const submissionForm = `import { BillSubmissionForm } from "@mindbill/react";
     rememberBillId(submitted.id);
   }}
 />`;
+
+const submissionSections = `import {
+  BillSubmissionActions,
+  BillSubmissionAttachmentsSection,
+  BillSubmissionClaimSection,
+  BillSubmissionForm,
+  BillSubmissionHeader,
+  BillSubmissionPatientSection,
+  BillSubmissionProvidersSection,
+  BillSubmissionServiceLinesSection,
+} from "@mindbill/react";
+
+<BillSubmissionForm initialBill={bill} attachments={documents} onSubmit={submitBill}>
+  <BillSubmissionHeader />
+  <BillSubmissionPatientSection />
+  <BillSubmissionClaimSection />
+  <BillSubmissionProvidersSection />
+  <BillSubmissionServiceLinesSection />
+  <BillSubmissionAttachmentsSection />
+  <BillSubmissionActions />
+</BillSubmissionForm>`;
+
+const dashboard = `import { BillingDashboard } from "@mindbill/react";
+
+<BillingDashboard
+  bills={bills}
+  heading="Billing operations"
+  description="Search every bill and act on aging balances."
+  onSelectBill={(bill) => navigate(\`/billing/\${bill.id}\`)}
+  appearance={{ preset: "orange-bright" }}
+/>`;
+
+const reporting = `import {
+  BillingReport,
+  buildBillingReportCsv,
+} from "@mindbill/react";
+
+<BillingReport bills={bills} groupBy="payer" />;
+
+const csv = buildBillingReportCsv(bills, "payer");`;
 
 const submissionSession = `app.post("/api/mindbill/submission-session", async (req, res) => {
   const user = await requireSignedInUser(req);
@@ -188,6 +231,8 @@ export default function ReactPage() {
       toc={[
         { id: "choose", label: "Choose an export" },
         { id: "form", label: "Submission form" },
+        { id: "sections", label: "Individual form sections" },
+        { id: "operations", label: "Dashboard and reporting" },
         { id: "setup", label: "Post-submit setup" },
         { id: "lifecycle", label: "Complete lifecycle" },
         { id: "custom", label: "Custom lifecycle UI" },
@@ -205,6 +250,11 @@ export default function ReactPage() {
       <div className="data-table component-catalog">
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
         <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and Submit action.</span><span>Reference data only</span></div>
+        <div><code>BillSubmission*Section</code><span>You want the same component-owned form state with individually composable sections.</span><span>Reference data only</span></div>
+        <div><code>BillingDashboard</code><span>You need receivables KPIs, aging buckets, search, filters, and a responsive bill list.</span><span>No</span></div>
+        <div><code>BillList</code><span>You need only the searchable and filterable bill directory.</span><span>No</span></div>
+        <div><code>BillAgingSummary</code><span>You need only receivables and aging KPIs.</span><span>No</span></div>
+        <div><code>BillingReport</code><span>You need grouped status, payer, or aging reporting.</span><span>No</span></div>
         <div><code>BillReadOnlyForm</code><span>You want the same bill layout after submission without editing.</span><span>No</span></div>
         <div><code>ConnectedBillLifecycle</code><span>You want the complete post-submission workflow.</span><span>Yes</span></div>
         <div><code>useBillLifecycle</code><span>You want custom post-submission lifecycle UI.</span><span>Yes</span></div>
@@ -237,6 +287,21 @@ export default function ReactPage() {
       <Callout title="API keys stay server-side">The form uses the short-lived, exact-origin session only for payer, ICD-10, and postal reference data. Your permanent Partner API key never reaches the browser.</Callout>
       <Callout title="One callback, one atomic submission">Your <code>onSubmit</code> handler sends the form value to your server. The server calls <code>createAndSubmitBill</code>; only a successful request returns a bill ID.</Callout>
       <Callout title="Keep your integration thin">Do not duplicate required fields, payer or ICD directories, ZIP lookup, fee behavior, attachment rules, or mobile layout in your application. Those stay versioned inside <code>@mindbill/react</code>. Optional catalog and lookup props support licensed or organization-specific extensions.</Callout>
+
+      <h2 id="sections">Individual form sections</h2>
+      <p>Use the named section exports when your product needs to place form sections in its own page shell. <code>BillSubmissionForm</code> remains the single state, validation, lookup, upload, and submission engine; its children only control composition and order.</p>
+      <CodeBlock code={submissionSections} filename="CustomBillSubmission.tsx" />
+      <SubmissionSectionsPlayground />
+      <Callout title="Do not wire fields individually">The section components deliberately share the parent form context. Partners can compose the experience without rebuilding field rules, state synchronization, or API calls.</Callout>
+
+      <h2 id="operations">Dashboard, aging, bill list, and reporting</h2>
+      <p>The operations exports accept the same normalized bill summaries. They calculate receivables and aging in the browser, render responsive tables or mobile cards, and keep navigation under your application&apos;s control.</p>
+      <CodeBlock code={dashboard} filename="BillingDashboard.tsx" />
+      <BillingDashboardPlayground />
+      <p><code>BillingReport</code> groups the same data by payer, lifecycle status, or aging bucket. <code>buildBillingReportCsv</code> returns a ready-to-download or copyable CSV without requiring a second reporting schema.</p>
+      <CodeBlock code={reporting} filename="BillingReport.tsx" />
+      <BillingReportPlayground />
+      <Callout title="Use connected data in production">The demos use synthetic rows. In your product, load bill summaries with the Partner API or your webhook-backed store and pass them directly to these presentational components.</Callout>
 
       <h2 id="setup">Post-submission setup</h2>
       <p>Once a bill exists, add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session restricted to that submitted bill.</p>
@@ -299,6 +364,9 @@ export default function ReactPage() {
         <div><b><code>resolveMindBillAppearance</code></b><p>Resolve a preset plus token overrides.</p></div>
         <div><b><code>mindBillAppearanceStyle</code></b><p>Convert appearance tokens to CSS custom properties.</p></div>
         <div><b><code>ensureTrailingProcedureLine</code></b><p>Keep exactly one empty procedure row after populated rows.</p></div>
+        <div><b><code>summarizeBillingDashboard</code></b><p>Calculate outstanding balance, paid totals, status counts, and aging buckets.</p></div>
+        <div><b><code>buildBillingReportRows</code></b><p>Group normalized bill summaries by payer, lifecycle status, or aging bucket.</p></div>
+        <div><b><code>buildBillingReportCsv</code></b><p>Export the grouped report as CSV.</p></div>
       </div>
     </DocPage>
   );

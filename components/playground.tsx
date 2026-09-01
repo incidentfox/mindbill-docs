@@ -128,6 +128,81 @@ export default function App() {
   </main>;
 }`;
 
+const submissionSectionsCode = `import {
+  BillSubmissionActions,
+  BillSubmissionAttachmentsSection,
+  BillSubmissionClaimSection,
+  BillSubmissionForm,
+  BillSubmissionHeader,
+  BillSubmissionPatientSection,
+  BillSubmissionProvidersSection,
+  BillSubmissionServiceLinesSection,
+} from "@mindbill/react";
+
+${submissionCode.slice(submissionCode.indexOf("const initialBill"), submissionCode.indexOf("export default function App"))}
+
+export default function App() {
+  return <main className="review-demo">
+    <BillSubmissionForm
+      initialBill={initialBill}
+      attachments={attachments}
+      appearance={{ preset: "orange-bright" }}
+      onSubmit={async (value) => console.log("submit", value)}
+    >
+      <BillSubmissionHeader />
+      <BillSubmissionPatientSection />
+      <BillSubmissionClaimSection />
+      <BillSubmissionProvidersSection />
+      <BillSubmissionServiceLinesSection />
+      <BillSubmissionAttachmentsSection />
+      <BillSubmissionActions />
+    </BillSubmissionForm>
+  </main>;
+}`;
+
+const dashboardCode = `import { BillingDashboard } from "@mindbill/react";
+
+const bills = [
+  { id: "bill_1042", billNumber: 1042, patientName: "Jordan Lee", claimNumber: "WC-78142", payerName: "Republic Indemnity", state: "processed", submittedAt: "2026-05-14", totalCharge: 2015, totalPaid: 650, balanceDue: 1365 },
+  { id: "bill_1041", billNumber: 1041, patientName: "Morgan Cruz", claimNumber: "WC-77908", payerName: "State Compensation Insurance Fund", state: "accepted", submittedAt: "2026-06-29", totalCharge: 2015, totalPaid: 0, balanceDue: 2015 },
+  { id: "bill_1039", billNumber: 1039, patientName: "Taylor Kim", claimNumber: "WC-76881", payerName: "Sedgwick", state: "submitted", submittedAt: "2026-08-19", totalCharge: 1300, totalPaid: 0, balanceDue: 1300 },
+  { id: "bill_1036", billNumber: 1036, patientName: "Alex Morgan", claimNumber: "WC-75117", payerName: "Gallagher Bassett", state: "closed", submittedAt: "2026-04-02", totalCharge: 2015, totalPaid: 2015, balanceDue: 0 },
+];
+
+export default function App() {
+  return <main className="operations-demo">
+    <BillingDashboard
+      bills={bills}
+      heading="Billing operations"
+      description="Search every bill and act on aging balances."
+      appearance={{ preset: "orange-bright" }}
+      onSelectBill={(bill) => alert("Open " + bill.id)}
+    />
+  </main>;
+}`;
+
+const reportCode = `import { useState } from "react";
+import { BillingReport, buildBillingReportCsv } from "@mindbill/react";
+
+const bills = [
+  { id: "bill_1042", patientName: "Jordan Lee", payerName: "Republic Indemnity", state: "processed", submittedAt: "2026-05-14", totalCharge: 2015, totalPaid: 650, balanceDue: 1365 },
+  { id: "bill_1041", patientName: "Morgan Cruz", payerName: "State Compensation Insurance Fund", state: "accepted", submittedAt: "2026-06-29", totalCharge: 2015, totalPaid: 0, balanceDue: 2015 },
+  { id: "bill_1039", patientName: "Taylor Kim", payerName: "Sedgwick", state: "submitted", submittedAt: "2026-08-19", totalCharge: 1300, totalPaid: 0, balanceDue: 1300 },
+];
+
+export default function App() {
+  const [groupBy, setGroupBy] = useState("payer");
+  return <main className="operations-demo">
+    <nav className="report-controls">
+      <select value={groupBy} onChange={(event) => setGroupBy(event.target.value)}>
+        <option value="payer">Payer</option><option value="status">Status</option><option value="aging">Aging</option>
+      </select>
+      <button onClick={() => navigator.clipboard.writeText(buildBillingReportCsv(bills, groupBy))}>Copy CSV</button>
+    </nav>
+    <BillingReport bills={bills} groupBy={groupBy} appearance={{ preset: "orange-bright" }} />
+  </main>;
+}`;
+
 const lifecycleCode = `import { ConnectedBillLifecycle } from "@mindbill/react";
 
 ${fixture}
@@ -421,7 +496,10 @@ export default function App() {
 const demoCss = `body { margin: 0; background: #f5f8f9; }
 .demo { padding: 24px; max-width: 760px; margin: 0 auto; font-family: Inter, system-ui, sans-serif; color: #203743; }
 .demo > p, .notice { color: #657982; }
-.review-demo { min-width: 920px; padding: 18px; font-family: Inter, system-ui, sans-serif; }
+.review-demo { width: 100%; min-width: 0; padding: 18px; font-family: Inter, system-ui, sans-serif; }
+.operations-demo { padding: 24px; font-family: Inter, system-ui, sans-serif; }
+.report-controls { display: flex; justify-content: flex-end; gap: 8px; margin: 0 0 12px; }
+.report-controls select, .report-controls button { min-height: 42px; border: 1px solid #e4d5ca; border-radius: 9px; padding: 8px 12px; background: white; color: #352a24; font: inherit; font-weight: 700; }
 .notice { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dbe6ea; border-radius: 8px; background: white; }
 .error { color: #b42318 !important; }
 .gallery-demo { display: grid; gap: 18px; padding: 24px; background: #fffaf6; font-family: Inter, system-ui, sans-serif; }
@@ -453,7 +531,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.21.3" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.22.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -574,7 +652,7 @@ export function QuickstartPlayground() {
           "/bill-data.js": quickstartBillDataCode,
           "/styles.css": { code: demoCss, hidden: true },
         }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.21.3" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.22.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -632,6 +710,18 @@ export function StatusPlayground() {
 
 export function SubmissionFormPlayground() {
   return <ComponentPlayground name="BillSubmissionForm" code={submissionCode} height={760} />;
+}
+
+export function SubmissionSectionsPlayground() {
+  return <ComponentPlayground name="Composable submission sections" code={submissionSectionsCode} height={760} />;
+}
+
+export function BillingDashboardPlayground() {
+  return <ComponentPlayground name="BillingDashboard" code={dashboardCode} height={760} label="Synthetic receivables · search and filter" />;
+}
+
+export function BillingReportPlayground() {
+  return <ComponentPlayground name="BillingReport" code={reportCode} height={650} label="Synthetic reporting · group and export" />;
 }
 
 export function HostedReviewPlayground() {
