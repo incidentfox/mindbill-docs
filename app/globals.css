@@ -347,3 +347,13 @@ button { color: inherit; }
   .search-results em { display: none; }
   .search-results button { grid-template-columns: 24px 1fr; }
 }
+
+/* Live Angular playgrounds (components/angular-playground.tsx) */
+.angular-playground-grid { display: grid; grid-template-columns: minmax(0, 44%) minmax(0, 56%); }
+.angular-playground-code { border-right: 1px solid var(--line); min-width: 0; }
+.angular-playground-code pre { border: 0 !important; border-radius: 0 !important; margin: 0 !important; height: 100%; }
+.angular-playground-preview { overflow: auto; padding: 18px; background: var(--surface-raised, #fafafa); }
+.angular-playground-status { color: var(--faint); font-size: 14px; padding: 8px 2px; }
+@media (max-width: 900px) { .angular-playground-grid { grid-template-columns: 1fr; } .angular-playground-code { border-right: 0; border-bottom: 1px solid var(--line); } }
+.angular-playground-pre { margin: 0; padding: 16px; overflow: auto; font-size: 13px; line-height: 1.55; background: transparent; }
+.angular-playground-code .code-block { border: 0; border-radius: 0; margin: 0; height: 100%; }

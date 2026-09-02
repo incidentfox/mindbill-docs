@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
+import {
+  DashboardAngularPlayground,
+  ManagementButtonAngularPlayground,
+  MatrixAngularPlayground,
+  SubmissionAngularPlayground,
+} from "@/components/angular-playgrounds";
 
 export const metadata: Metadata = { title: "Angular components" };
 
@@ -167,7 +173,7 @@ export default function AngularPage() {
 
       <h2 id="setup">Setup</h2>
       <CodeBlock code={install} language="bash" filename="Terminal" />
-      <p>All Angular exports are standalone components. Import only the surfaces your product needs. Every component and utility below has the same behavior as its React counterpart, so mixed-framework teams share one mental model.</p>
+      <p>All Angular exports are standalone components. Import only the surfaces your product needs. The previews on this page are the real Angular components, rendered live from the published bundle. Every component and utility below has the same behavior as its React counterpart, so mixed-framework teams share one mental model.</p>
 
       <h2 id="security">Session endpoint</h2>
       <p>Keep the permanent API key on your server. This is the only MindBill-specific server route required by the embedded components: authenticate the current user and mint a short-lived, exact-origin browser token.</p>
@@ -192,6 +198,7 @@ export default function AngularPage() {
         ["(submitted)", "BrowserBillSubmissionResult", "Fires once with the immutable billId after atomic submission."],
         ["(billingError)", "unknown", "Surface session or submission failures to your product chrome."],
       ]} />
+      <SubmissionAngularPlayground />
       <p>Field requirements and payer mappings come from MindBill, not host-app validation. See <Link href="/guides/bills">The bill resource</Link> for the complete required/optional contract and <Link href="/api-reference/create-bill">Create and submit a bill</Link> for cURL and response examples.</p>
 
       <h2 id="lifecycle">Lifecycle component</h2>
@@ -210,11 +217,13 @@ export default function AngularPage() {
       <h2 id="operations">Operations components</h2>
       <p>Organization-level surfaces can be embedded together or independently. The dashboard includes monthly submitted and closed totals, outstanding balance, aging buckets, search, status filters, and bill drill-down. The report component exports the normalized bill list, and the management button opens a short-lived SSO session in MindBill.</p>
       <CodeBlock code={operations} filename="billing-operations.component.ts" />
+      <DashboardAngularPlayground />
       <p>All operations components consume the same normalized <code>MindBillDashboardBill</code> summaries — id, patient, claim, payer, state, submittedAt or agingDays, and the three money fields — so one server load feeds every surface. <code>summarizeMindBillDashboard</code>, <code>buildMindBillReportRows</code>, and <code>buildMindBillReportCsv</code> are exported for custom layouts and server-side reporting.</p>
 
       <h2 id="matrix">Status × aging matrix</h2>
       <p><code>MindBillStatusAgingMatrixComponent</code> is the management view billing teams expect from legacy tools: one row per lifecycle status, one column per 0–30 / 31–60 / 61–90 / 91+ aging bucket, clickable counts with outstanding balances, and row, column, and grand totals. Every emitted cell carries the exact bills behind its count, so a drill-down never needs a second query.</p>
       <CodeBlock code={matrix} filename="billing-matrix.component.ts" />
+      <MatrixAngularPlayground />
       <h3><code>mindbill-status-aging-matrix</code> inputs and outputs</h3>
       <ApiTable rows={[
         ["bills", "MindBillDashboardBill[]", "The same normalized summaries the dashboard consumes."],
@@ -237,6 +246,7 @@ export default function AngularPage() {
         ["(opened)", "string", "The URL that was opened."],
         ["(failed)", "unknown", "Session minting or navigation failures."],
       ]} />
+      <ManagementButtonAngularPlayground />
       <Callout title="Hosted management access">Authenticate <code>/api/mindbill/management-session</code>, call <Link href="/api-reference/management-sessions">Create a management session</Link> with your server API key, and return <code>{`{ url }`}</code>. Links are single-use and expire within minutes. Ask your MindBill integration contact to enable organization management SSO.</Callout>
 
       <h2 id="exports">Choose an export</h2>
