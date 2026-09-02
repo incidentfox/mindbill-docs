@@ -86,6 +86,16 @@ const reporting = `import {
 
 const csv = buildBillingReportCsv(bills, "payer");`;
 
+const statusAgingMatrix = `import { BillStatusAgingMatrix } from "@mindbill/react";
+
+<BillStatusAgingMatrix
+  bills={bills}
+  appearance={{ preset: "clinical-blue" }}
+  onSelectCell={(cell) => setDrillDown(cell)}
+/>
+
+{drillDown ? <BillList bills={drillDown.bills} onSelectBill={openBill} /> : null}`;
+
 const submissionSession = `app.post("/api/mindbill/submission-session", async (req, res) => {
   const user = await requireSignedInUser(req);
 
@@ -271,6 +281,7 @@ export default function ReactPage() {
         <div><code>BillList</code><span>You need only the searchable and filterable bill directory.</span><span>No</span></div>
         <div><code>BillAgingSummary</code><span>You need only receivables and aging KPIs.</span><span>No</span></div>
         <div><code>BillingReport</code><span>You need grouped status, payer, or aging reporting.</span><span>No</span></div>
+        <div><code>BillStatusAgingMatrix</code><span>You need the status × aging management grid with drill-down cells and totals.</span><span>No</span></div>
         <div><code>BillReadOnlyForm</code><span>You want the same bill layout after submission without editing.</span><span>No</span></div>
         <div><code>ConnectedBillLifecycle</code><span>You want the complete post-submission workflow.</span><span>Yes</span></div>
         <div><code>useBillLifecycle</code><span>You want custom post-submission lifecycle UI.</span><span>Yes</span></div>
@@ -318,6 +329,8 @@ export default function ReactPage() {
       <p><code>BillingReport</code> groups the same data by payer, lifecycle status, or aging bucket. <code>buildBillingReportCsv</code> returns a ready-to-download or copyable CSV without requiring a second reporting schema.</p>
       <CodeBlock code={reporting} filename="BillingReport.tsx" />
       <BillingReportPlayground />
+      <p><code>BillStatusAgingMatrix</code> renders the management view billing teams expect from legacy tools: one row per lifecycle status, one column per 0–30 / 31–60 / 61–90 / 91+ aging bucket, clickable counts with outstanding balances, and row, column, and grand totals. Every <code>onSelectCell</code> payload carries <code>{`{ state, bucket, count, balance, bills }`}</code> — the exact bills behind the count — so a drill-down never needs a second query. Pin your lifecycle ordering with <code>stateOrder</code>; <code>buildBillStatusAgingMatrix</code> and <code>buildBillStatusAgingCsv</code> expose the same aggregation presentation-free.</p>
+      <CodeBlock code={statusAgingMatrix} filename="BillStatusAgingMatrix.tsx" />
       <Callout title="Use connected data in production">The demos use synthetic rows. In your product, load bill summaries with the Partner API or your webhook-backed store and pass them directly to these presentational components.</Callout>
 
       <h2 id="setup">Post-submission setup</h2>
@@ -386,6 +399,8 @@ export default function ReactPage() {
         <div><b><code>summarizeBillingDashboard</code></b><p>Calculate outstanding balance, paid totals, status counts, and aging buckets.</p></div>
         <div><b><code>buildBillingReportRows</code></b><p>Group normalized bill summaries by payer, lifecycle status, or aging bucket.</p></div>
         <div><b><code>buildBillingReportCsv</code></b><p>Export the grouped report as CSV.</p></div>
+        <div><b><code>buildBillStatusAgingMatrix</code></b><p>Aggregate bills into the status × aging grid with per-cell bills and totals.</p></div>
+        <div><b><code>buildBillStatusAgingCsv</code></b><p>Export the status × aging grid as CSV.</p></div>
       </div>
     </DocPage>
   );

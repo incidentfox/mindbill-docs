@@ -5,7 +5,7 @@ import { Callout, DocPage } from "@/components/doc-page";
 
 export const metadata: Metadata = { title: "Angular components" };
 
-const install = `npm install @mindbill/angular@0.6.1 @mindbill/node@0.13.0`;
+const install = `npm install @mindbill/angular@0.7.0 @mindbill/node@0.13.0`;
 
 const sessionRoute = `// app/api/mindbill/session/route.ts (Next.js)
 import { MindBillClient } from "@mindbill/node";
@@ -102,18 +102,62 @@ const operations = `import {
 })
 export class BillingOperationsComponent { /* app-specific data loading */ }`;
 
+const matrix = `import {
+  MindBillBillListComponent,
+  MindBillStatusAgingMatrixComponent,
+  type MindBillStatusAgingCell,
+} from "@mindbill/angular";
+
+@Component({
+  standalone: true,
+  imports: [MindBillStatusAgingMatrixComponent, MindBillBillListComponent],
+  template: \`
+    <mindbill-status-aging-matrix
+      [bills]="bills"
+      [appearance]="appearance"
+      (cellSelected)="cell = $event"
+    />
+
+    @if (cell) {
+      <mindbill-bill-list
+        [bills]="cell.bills"
+        [appearance]="appearance"
+        (billSelected)="openBill($event)"
+      />
+    }
+  \`,
+})
+export class BillingMatrixComponent {
+  cell: MindBillStatusAgingCell | null = null;
+  /* app-specific data loading */
+}`;
+
+function ApiTable({ rows }: { rows: [string, string, string][] }) {
+  return (
+    <div className="data-table component-api">
+      <div className="table-head"><b>Name</b><b>Type</b><b>Description</b></div>
+      {rows.map(([name, type, description]) => (
+        <div key={name}><code>{name}</code><code>{type}</code><span>{description}</span></div>
+      ))}
+    </div>
+  );
+}
+
 export default function AngularPage() {
   return (
     <DocPage
       eyebrow="Components"
       title="Angular"
-      description="Add bill submission, lifecycle management, aging, bill lists, reporting, and hosted MindBill access with native standalone Angular components. No React and no iframe."
+      description="Add bill submission, lifecycle management, the status-by-aging management view, aging, bill lists, reporting, and hosted MindBill access with native standalone Angular components. No React and no iframe."
       toc={[
         { id: "setup", label: "Setup" },
         { id: "security", label: "Session endpoint" },
         { id: "workflow", label: "Complete case workflow" },
         { id: "submission", label: "Submission behavior" },
+        { id: "lifecycle", label: "Lifecycle component" },
         { id: "operations", label: "Operations components" },
+        { id: "matrix", label: "Status × aging matrix" },
+        { id: "management", label: "Management button" },
         { id: "exports", label: "Choose an export" },
       ]}
       previous={{ href: "/components/react", label: "React components" }}
@@ -123,7 +167,7 @@ export default function AngularPage() {
 
       <h2 id="setup">Setup</h2>
       <CodeBlock code={install} language="bash" filename="Terminal" />
-      <p>All Angular exports are standalone components. Import only the surfaces your product needs.</p>
+      <p>All Angular exports are standalone components. Import only the surfaces your product needs. Every component and utility below has the same behavior as its React counterpart, so mixed-framework teams share one mental model.</p>
 
       <h2 id="security">Session endpoint</h2>
       <p>Keep the permanent API key on your server. This is the only MindBill-specific server route required by the embedded components: authenticate the current user and mint a short-lived, exact-origin browser token.</p>
@@ -137,12 +181,63 @@ export default function AngularPage() {
 
       <h2 id="submission">Submission behavior</h2>
       <p><code>MindBillBillSubmissionComponent</code> includes the complete patient, injury, payer, provider, service-location, diagnosis, service-line, fee schedule, and attachment workflow. It marks required fields, scrolls to the first error, resolves ZIP codes, searches claims administrators and ICD-10 codes, validates routing selections, calculates totals, and submits one immutable bill snapshot.</p>
+      <h3><code>mindbill-bill-submission</code> inputs and outputs</h3>
+      <ApiTable rows={[
+        ["initialBill", "BrowserBillCreateInput", "Prefilled patient, claim, provider, diagnosis, and service-line values from your case."],
+        ["attachments", "MindBillSubmissionAttachment[]", "Documents supplied by your product. locked: true renders an auto-attached, non-removable row — use it for the finalized report and the practice W-9."],
+        ["sessionEndpoint", "string", "Your authenticated route that returns { token }. Default /api/mindbill/session."],
+        ["apiBaseUrl", "string", "Override the MindBill API origin (sandbox proxies, tests)."],
+        ["appearance", "MindBillAngularAppearance", "Preset plus per-token overrides."],
+        ["submitter", "(input) => Promise<BrowserBillSubmissionResult>", "Optional custom submit hook; omit to submit directly to MindBill."],
+        ["(submitted)", "BrowserBillSubmissionResult", "Fires once with the immutable billId after atomic submission."],
+        ["(billingError)", "unknown", "Surface session or submission failures to your product chrome."],
+      ]} />
       <p>Field requirements and payer mappings come from MindBill, not host-app validation. See <Link href="/guides/bills">The bill resource</Link> for the complete required/optional contract and <Link href="/api-reference/create-bill">Create and submit a bill</Link> for cURL and response examples.</p>
+
+      <h2 id="lifecycle">Lifecycle component</h2>
+      <p><code>MindBillBillLifecycleComponent</code> owns everything after submission: the immutable snapshot, progress rail, remittance and EOR reconciliation, payer contacts, documents, payments, activity history, and the state-appropriate actions (post payment, second review, close, reopen). <code>MindBillLifecycleStore</code> exposes the same connected state as an injectable service for fully custom layouts.</p>
+      <h3><code>mindbill-bill-lifecycle</code> inputs and outputs</h3>
+      <ApiTable rows={[
+        ["billId", "string", "The submitted bill to track. Required."],
+        ["sessionEndpoint", "string", "Your authenticated session route. Default /api/mindbill/session."],
+        ["getSession", "() => Promise<BillLifecycleSession>", "Programmatic alternative to sessionEndpoint."],
+        ["apiBaseUrl", "string", "Override the MindBill API origin."],
+        ["refreshInterval", "number", "Milliseconds between automatic refreshes. Default 60000."],
+        ["appearance", "MindBillAngularAppearance", "Preset plus per-token overrides."],
+        ["(billingError)", "unknown", "Session or fetch failures, after the built-in retry surface."],
+      ]} />
 
       <h2 id="operations">Operations components</h2>
       <p>Organization-level surfaces can be embedded together or independently. The dashboard includes monthly submitted and closed totals, outstanding balance, aging buckets, search, status filters, and bill drill-down. The report component exports the normalized bill list, and the management button opens a short-lived SSO session in MindBill.</p>
       <CodeBlock code={operations} filename="billing-operations.component.ts" />
-      <Callout title="Hosted management access">Authenticate <code>/api/mindbill/management-session</code> and return <code>{`{ url }`}</code>. The ready-made button opens the session in a new tab without exposing a reusable credential. Ask your MindBill integration contact to enable organization management SSO.</Callout>
+      <p>All operations components consume the same normalized <code>MindBillDashboardBill</code> summaries — id, patient, claim, payer, state, submittedAt or agingDays, and the three money fields — so one server load feeds every surface. <code>summarizeMindBillDashboard</code>, <code>buildMindBillReportRows</code>, and <code>buildMindBillReportCsv</code> are exported for custom layouts and server-side reporting.</p>
+
+      <h2 id="matrix">Status × aging matrix</h2>
+      <p><code>MindBillStatusAgingMatrixComponent</code> is the management view billing teams expect from legacy tools: one row per lifecycle status, one column per 0–30 / 31–60 / 61–90 / 91+ aging bucket, clickable counts with outstanding balances, and row, column, and grand totals. Every emitted cell carries the exact bills behind its count, so a drill-down never needs a second query.</p>
+      <CodeBlock code={matrix} filename="billing-matrix.component.ts" />
+      <h3><code>mindbill-status-aging-matrix</code> inputs and outputs</h3>
+      <ApiTable rows={[
+        ["bills", "MindBillDashboardBill[]", "The same normalized summaries the dashboard consumes."],
+        ["heading / description", "string", "Header copy above the grid."],
+        ["stateOrder", "string[]", "Pin your lifecycle-first row order; unknown states append alphabetically."],
+        ["showBalances", "boolean", "Show outstanding balance under each count. Default true."],
+        ["appearance", "MindBillAngularAppearance", "Preset plus per-token overrides."],
+        ["(cellSelected)", "MindBillStatusAgingCell", "{ state, bucket, count, balance, bills } for the clicked cell, including totals cells."],
+      ]} />
+      <p><code>buildMindBillStatusAgingMatrix</code> and <code>buildMindBillStatusAgingCsv</code> expose the same aggregation presentation-free for custom grids and exports.</p>
+
+      <h2 id="management">Management button</h2>
+      <p><code>MindBillBillingManagementButtonComponent</code> is the prebuilt hosted-SSO launcher. It opens a tab synchronously (so popup blockers cooperate), asks your server for a one-time URL, and navigates the tab when the URL arrives.</p>
+      <h3><code>mindbill-billing-management-button</code> inputs and outputs</h3>
+      <ApiTable rows={[
+        ["sessionEndpoint", "string", "Your authenticated route that returns { url }. Default /api/mindbill/management-session."],
+        ["sessionProvider", "() => Promise<{ url } | string>", "Programmatic alternative to sessionEndpoint."],
+        ["label / loadingLabel", "string", "Button copy. Defaults: “Billing management” / “Opening billing…”."],
+        ["appearance", "MindBillAngularAppearance", "Preset plus per-token overrides."],
+        ["(opened)", "string", "The URL that was opened."],
+        ["(failed)", "unknown", "Session minting or navigation failures."],
+      ]} />
+      <Callout title="Hosted management access">Authenticate <code>/api/mindbill/management-session</code>, call <Link href="/api-reference/management-sessions">Create a management session</Link> with your server API key, and return <code>{`{ url }`}</code>. Links are single-use and expire within minutes. Ask your MindBill integration contact to enable organization management SSO.</Callout>
 
       <h2 id="exports">Choose an export</h2>
       <div className="data-table component-api">
@@ -150,11 +245,14 @@ export default function AngularPage() {
         <div><code>MindBillBillSubmissionComponent</code><code>mindbill-bill-submission</code><span>Review, validate, attach documents, and submit a bill.</span></div>
         <div><code>MindBillBillLifecycleComponent</code><code>mindbill-bill-lifecycle</code><span>Read-only bill detail, status, EOR, payments, history, and actions.</span></div>
         <div><code>MindBillBillingDashboardComponent</code><code>mindbill-billing-dashboard</code><span>Monthly metrics, aging, bill search, and drill-down.</span></div>
+        <div><code>MindBillStatusAgingMatrixComponent</code><code>mindbill-status-aging-matrix</code><span>Status × aging management grid with drill-down cells and totals.</span></div>
         <div><code>MindBillBillAgingSummaryComponent</code><code>mindbill-bill-aging-summary</code><span>Clickable outstanding-balance aging buckets.</span></div>
         <div><code>MindBillBillListComponent</code><code>mindbill-bill-list</code><span>Searchable, filterable list of bills.</span></div>
         <div><code>MindBillBillingReportComponent</code><code>mindbill-billing-report</code><span>Operational reporting and CSV export.</span></div>
         <div><code>MindBillBillingManagementButtonComponent</code><code>mindbill-billing-management-button</code><span>Prebuilt SSO launcher for the hosted MindBill workspace.</span></div>
+        <div><code>MindBillLifecycleStore</code><span>injectable</span><span>Connected lifecycle state, actions, and downloads for custom layouts.</span></div>
       </div>
+      <p>Presentation-free utilities: <code>summarizeMindBillDashboard</code>, <code>buildMindBillReportRows</code>, <code>buildMindBillReportCsv</code>, <code>buildMindBillStatusAgingMatrix</code>, <code>buildMindBillStatusAgingCsv</code>, <code>mindBillAgingDays</code>, <code>mindBillAgingBucket</code>, and <code>ensureTrailingProcedureLine</code>.</p>
       <p>Available appearance presets are <code>mindbill</code>, <code>qme-companion</code>, <code>orange-bright</code>, and <code>clinical-blue</code>. Every visual token can also be overridden.</p>
     </DocPage>
   );
