@@ -1,4 +1,4 @@
-export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export type ApiField = {
   name: string;
@@ -826,6 +826,52 @@ export async function POST(request: Request) {
     notes: [
       { title: "Links are single-use and short-lived", body: "Opening the URL signs the visitor in exactly once; a replayed, expired, or forwarded link fails closed to an error page. Mint a fresh link on every click rather than caching one." },
       { title: "Operator-granted scope", body: "management:write is not available on self-serve keys. Ask your MindBill integration contact to enable organization management SSO for your partner account." },
+    ],
+  },
+  {
+    slug: "organization-profile",
+    group: "Platform",
+    method: "PUT",
+    path: "/organizations/{id}/billing-profile",
+    title: "Organization billing profile, locations, and W-9",
+    summary: "Optional organization endpoints behind the embeddable onboarding: idempotent upserts for practice identity, billing providers, locations, and the W-9.",
+    useWhen: "Use when your product owns organization setup — the OrganizationOnboarding component drives the browser equivalents under /browser/organization* with the organization:manage session permission; server-side callers use these routes with orgs:write. Partners that never call them see no behavior change.",
+    permissions: ["orgs:read for GETs, orgs:write for PUTs (browser: organization:manage)"],
+    idempotent: true,
+    requestFields: [
+      { name: "practiceIdentity", type: "object", description: "Practice name, legalName, taxId, npi, phone, email — merged over existing values; unset fields are preserved." },
+      { name: "billingProviders[]", type: "object[]", description: "Pay-to providers upserted by id, then externalId, else appended with a generated id. Existing records are never deleted." },
+      { name: "locations[]", type: "object[]", description: "PUT /organizations/{id}/locations — same upsert semantics; exactly one location stays primary." },
+      { name: "filename + contentBase64", type: "string", description: "PUT /organizations/{id}/w9 — the practice W-9 as a base64 PDF (max 10 MB); replaces the current record.", constraint: "PDF magic bytes validated" },
+    ],
+    responseFields: [
+      { name: "organizationId", type: "string", required: true, description: "The organization." },
+      { name: "practiceIdentity / billingProviders / locations / w9", type: "object", required: true, description: "The full profile after the write." },
+      { name: "onboarding", type: "{ status, complete, checklist[] }", required: true, description: "MindBill's onboarding checklist — the same one the embeddable component renders." },
+    ],
+    examples: [
+      { label: "cURL", language: "bash", filename: "Save the billing profile", code: `curl https://app.mindbill.org/partner/v2/organizations/$ORG_ID/billing-profile \\
+  --request PUT \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
+  --header "Content-Type: application/json" \\
+  --data '{
+    "practiceIdentity": { "name": "Example Medical Group", "taxId": "94-1234567", "npi": "1234567893" }
+  }'` },
+    ],
+    responseStatus: "200 OK",
+    responseExample: `{
+  "data": {
+    "organizationId": "org_01J4",
+    "practiceIdentity": { "name": "Example Medical Group", "taxId": "94-1234567", "npi": "1234567893" },
+    "billingProviders": [],
+    "locations": [],
+    "w9": null,
+    "onboarding": { "status": "configuring", "complete": false, "checklist": [] }
+  }
+}`,
+    notes: [
+      { title: "Additive by design", body: "Every write is an idempotent upsert that never deletes records another workflow created. GET /partner/v2/organizations/{id} returns the same composed profile." },
+      { title: "Browser path", body: "Mint the browser session with the optional organization:manage permission and the embeddable components save directly from your frontend — your server never proxies the profile." },
     ],
   },
 ];
