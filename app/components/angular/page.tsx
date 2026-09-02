@@ -11,7 +11,7 @@ import {
 
 export const metadata: Metadata = { title: "Angular components" };
 
-const install = `npm install @mindbill/angular@0.7.0 @mindbill/node@0.13.0`;
+const install = `npm install @mindbill/angular@0.9.0 @mindbill/node@0.13.0`;
 
 const sessionRoute = `// app/api/mindbill/session/route.ts (Next.js)
 import { MindBillClient } from "@mindbill/node";
@@ -164,6 +164,7 @@ export default function AngularPage() {
         { id: "operations", label: "Operations components" },
         { id: "matrix", label: "Status × aging matrix" },
         { id: "management", label: "Management button" },
+        { id: "onboarding", label: "Organization onboarding" },
         { id: "exports", label: "Choose an export" },
       ]}
       previous={{ href: "/components/react", label: "React components" }}
@@ -249,6 +250,17 @@ export default function AngularPage() {
       <ManagementButtonAngularPlayground />
       <Callout title="Hosted management access">Authenticate <code>/api/mindbill/management-session</code>, call <Link href="/api-reference/management-sessions">Create a management session</Link> with your server API key, and return <code>{`{ url }`}</code>. Links are single-use and expire within minutes. Ask your MindBill integration contact to enable organization management SSO.</Callout>
 
+      <h2 id="onboarding">Organization onboarding</h2>
+      <p><code>MindBillOrganizationOnboardingComponent</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission. Your users never visit the MindBill dashboard. Set <code>variant=&quot;settings&quot;</code> for the compact edit-after-setup layout; the review step renders MindBill&apos;s real onboarding checklist and <code>(completed)</code> fires when billing setup is done.</p>
+      <ApiTable rows={[
+        ["sessionEndpoint", "string", "Your authenticated session route. The session needs the organization:manage permission."],
+        ["variant", '"onboarding" | "settings"', "Stepper for first-run setup, stacked sections for editing. Default onboarding."],
+        ["appearance", "MindBillAngularAppearance", "Preset plus per-token overrides."],
+        ["(saved$)", "OrganizationProfileData", "Fires after each section saves."],
+        ["(completed)", "OrganizationProfileData", "Fires once when the onboarding checklist is complete."],
+        ["(organizationError)", "Error", "Load or save failures."],
+      ]} />
+
       <h2 id="exports">Choose an export</h2>
       <div className="data-table component-api">
         <div className="table-head"><b>Export</b><b>Selector</b><b>Purpose</b></div>
@@ -260,6 +272,7 @@ export default function AngularPage() {
         <div><code>MindBillBillListComponent</code><code>mindbill-bill-list</code><span>Searchable, filterable list of bills.</span></div>
         <div><code>MindBillBillingReportComponent</code><code>mindbill-billing-report</code><span>Operational reporting and CSV export.</span></div>
         <div><code>MindBillBillingManagementButtonComponent</code><code>mindbill-billing-management-button</code><span>Prebuilt SSO launcher for the hosted MindBill workspace.</span></div>
+        <div><code>MindBillOrganizationOnboardingComponent</code><code>mindbill-organization-onboarding</code><span>Practice identity, locations, and W-9 setup saved straight to MindBill.</span></div>
         <div><code>MindBillLifecycleStore</code><span>injectable</span><span>Connected lifecycle state, actions, and downloads for custom layouts.</span></div>
       </div>
       <p>Presentation-free utilities: <code>summarizeMindBillDashboard</code>, <code>buildMindBillReportRows</code>, <code>buildMindBillReportCsv</code>, <code>buildMindBillStatusAgingMatrix</code>, <code>buildMindBillStatusAgingCsv</code>, <code>mindBillAgingDays</code>, <code>mindBillAgingBucket</code>, and <code>ensureTrailingProcedureLine</code>.</p>

@@ -86,6 +86,14 @@ const reporting = `import {
 
 const csv = buildBillingReportCsv(bills, "payer");`;
 
+const orgOnboardingCode = `import { OrganizationOnboarding } from "@mindbill/react";
+
+<OrganizationOnboarding
+  sessionEndpoint="/api/mindbill/session"
+  appearance={{ preset: "clinical-blue" }}
+  onCompleted={() => enableBillingFeatures()}
+/>`;
+
 const statusAgingMatrix = `import { BillStatusAgingMatrix } from "@mindbill/react";
 
 <BillStatusAgingMatrix
@@ -332,6 +340,10 @@ export default function ReactPage() {
       <p><code>BillStatusAgingMatrix</code> renders the management view billing teams expect from legacy tools: one row per lifecycle status, one column per 0–30 / 31–60 / 61–90 / 91+ aging bucket, clickable counts with outstanding balances, and row, column, and grand totals. Every <code>onSelectCell</code> payload carries <code>{`{ state, bucket, count, balance, bills }`}</code> — the exact bills behind the count — so a drill-down never needs a second query. Pin your lifecycle ordering with <code>stateOrder</code>; <code>buildBillStatusAgingMatrix</code> and <code>buildBillStatusAgingCsv</code> expose the same aggregation presentation-free.</p>
       <CodeBlock code={statusAgingMatrix} filename="BillStatusAgingMatrix.tsx" />
       <Callout title="Use connected data in production">The demos use synthetic rows. In your product, load bill summaries with the Partner API or your webhook-backed store and pass them directly to these presentational components.</Callout>
+
+      <h2 id="org-onboarding">Organization onboarding</h2>
+      <p><code>OrganizationOnboarding</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission — so your users never visit the MindBill dashboard. <code>BillingSettings</code> is the compact edit-after-setup variant. The review step renders MindBill&apos;s onboarding checklist and <code>onCompleted</code> fires when billing setup is done.</p>
+      <CodeBlock code={orgOnboardingCode} filename="BillingSetup.tsx" />
 
       <h2 id="setup">Post-submission setup</h2>
       <p>Once a bill exists, add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session restricted to that submitted bill.</p>
