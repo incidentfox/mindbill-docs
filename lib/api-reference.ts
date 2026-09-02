@@ -765,6 +765,69 @@ export async function POST(request: Request) {
       { title: "Trust events, not the browser callback", body: "Use the atomic submission response for immediate UI state. Persist durable lifecycle changes from ordered events or signed webhooks because payer responses can arrive after the browser closes." },
     ],
   },
+  {
+    slug: "management-sessions",
+    group: "Platform",
+    method: "POST",
+    path: "/management-sessions",
+    title: "Create a management session",
+    summary: "Mint a one-time sign-in URL that opens the hosted MindBill billing workspace for your organization.",
+    useWhen: "Use behind the prebuilt Billing-management button (or your own link) so organization staff can open the full MindBill work queue, reports, and denials without a second login. This is a hosted-SSO handoff, not a browser API token.",
+    permissions: ["Server API key with the operator-granted management:write scope"],
+    idempotent: false,
+    requestFields: [
+      { name: "subject", type: "string", required: true, description: "Stable identifier for the signed-in user in your system. Recorded for audit; never rendered in the product." },
+      { name: "role", type: '"biller" | "viewer"', description: "Access level for the managed sign-in. biller covers day-to-day billing operations; viewer is read-only.", constraint: "Defaults to biller; admin is never available" },
+      { name: "expiresIn", type: "number", description: "Seconds until the unopened link expires.", constraint: "Integer 60–900; defaults to 300" },
+    ],
+    responseFields: [
+      { name: "url", type: "string", required: true, description: "One-time sign-in URL. Open it in a new tab; it works exactly once." },
+      { name: "expiresAt", type: "string", required: true, description: "ISO expiration timestamp for the unopened link." },
+      { name: "organizationId", type: "string", required: true, description: "Organization fixed by the server credential." },
+      { name: "subject", type: "string", required: true, description: "Your signed-in user identifier." },
+      { name: "role", type: "string", required: true, description: "Effective managed role." },
+    ],
+    examples: [
+      { label: "Node.js", language: "typescript", filename: "app/api/mindbill/management-session/route.ts", code: `export async function POST(request: Request) {
+  const user = await requireSignedInUser(request); // your existing auth
+
+  const response = await fetch(
+    "https://app.mindbill.org/partner/v2/management-sessions",
+    {
+      method: "POST",
+      headers: {
+        authorization: \`Bearer \${process.env.MINDBILL_API_KEY!}\`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ subject: user.id, role: "biller" }),
+    },
+  );
+  const session = await response.json();
+
+  return Response.json({ url: session.url });
+}` },
+      { label: "cURL", language: "bash", filename: "Create a management session", code: `curl https://app.mindbill.org/partner/v2/management-sessions \\
+  --request POST \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
+  --header "Content-Type: application/json" \\
+  --data '{
+    "subject": "user_42",
+    "role": "biller"
+  }'` },
+    ],
+    responseStatus: "201 Created",
+    responseExample: `{
+  "url": "https://app.mindbill.org/partner/management-signin?token=mbms_…",
+  "expiresAt": "2026-09-02T19:05:00.000Z",
+  "organizationId": "org_01J4",
+  "subject": "user_42",
+  "role": "biller"
+}`,
+    notes: [
+      { title: "Links are single-use and short-lived", body: "Opening the URL signs the visitor in exactly once; a replayed, expired, or forwarded link fails closed to an error page. Mint a fresh link on every click rather than caching one." },
+      { title: "Operator-granted scope", body: "management:write is not available on self-serve keys. Ask your MindBill integration contact to enable organization management SSO for your partner account." },
+    ],
+  },
 ];
 
 export const endpointGroups = ["Bills", "Documents", "Reviews", "Lifecycle", "Platform"] as const;
