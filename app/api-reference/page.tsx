@@ -60,6 +60,8 @@ export default function ApiReferencePage() {
         <div><b>403</b><p>The credential lacks the organization, resource, or role permission.</p></div>
         <div><b>404</b><p>The resource does not exist in the authenticated organization.</p></div>
         <div><b>409</b><p>Lifecycle conflict or idempotency-key reuse with different input.</p></div>
+        <div><b>413</b><p>The request body, or the total document bytes on a submission, exceeded the <a href="/guides/documents#limits">size limits</a>.</p></div>
+        <div><b>415</b><p>A document was not a valid PDF, or exceeded the 25 MB per-document limit.</p></div>
         <div><b>422</b><p>Bill data failed field or submission validation.</p></div>
         <div><b>429</b><p>Rate limit exceeded; retry with backoff.</p></div>
       </div>

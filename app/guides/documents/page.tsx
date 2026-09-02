@@ -36,6 +36,7 @@ export default function DocumentsPage() {
         { id: "packet", label: "What belongs in the packet" },
         { id: "review", label: "Review in the component" },
         { id: "submit", label: "Submit atomically" },
+        { id: "limits", label: "Size limits" },
         { id: "types", label: "Document types" },
       ]}
       previous={{ href: "/guides/bills", label: "The bill resource" }}
@@ -59,6 +60,17 @@ export default function DocumentsPage() {
       <p>The connected component resolves selected source attachments and new uploads, encodes their PDF bytes, and includes them in the same atomic request as the bill data. For API-only integrations, perform the equivalent operation on your server. Store the returned bill ID only after success.</p>
       <CodeBlock code={serverSubmission} filename="server/submit-with-documents.ts" />
       <Callout title="No partially assembled bill">The public API does not expose initial document upload, removal, or separate submit mutations. If validation or packet preparation fails before submission, MindBill creates no public bill.</Callout>
+
+      <h2 id="limits">Size limits</h2>
+      <p>Documents travel base64-encoded inside the JSON body, and base64 adds about 33% to every file. Budget against the decoded PDF bytes:</p>
+      <div className="term-list compact">
+        <div><code>25 MB</code><p>Largest single PDF, measured before encoding. A larger document returns <code>415 invalid_pdf</code>.</p></div>
+        <div><code>45 MB</code><p>Largest total across all documents on one submission. Exceeding it returns <code>413 submission_too_large</code>.</p></div>
+        <div><code>25</code><p>Most documents on one submission. More returns <code>422 validation_error</code>.</p></div>
+        <div><code>64 MB</code><p>Largest HTTP request body, documents plus bill JSON. Exceeding it returns <code>413 request_too_large</code>.</p></div>
+      </div>
+      <p>Only PDFs are accepted; MindBill verifies the leading bytes of every document and rejects anything else with <code>415 invalid_pdf</code>.</p>
+      <Callout title="Sizing a large packet">The 45 MB document budget is the one to plan against. It sits below the 64 MB body limit precisely so a full-size packet still fits once encoding and the surrounding bill JSON are added. If a packet approaches it, split the supporting records rather than the report itself.</Callout>
 
       <h2 id="types">Document types</h2>
       <div className="term-list compact">
