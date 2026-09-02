@@ -19,7 +19,7 @@ export default function SandboxPage() {
       next={{ href: "/components/react", label: "React components" }}
     >
       <h2 id="sandbox">Create a sandbox key</h2>
-      <p>Open the developer console, create a sandbox organization, and copy the key when it is shown. Sandbox organizations accept synthetic data only and never route a claim to a payer.</p>
+      <p>Open the <a href="https://platform.mindbill.org/onboarding">developer console</a>, create a sandbox organization, and copy the key when it is shown. Sandbox organizations accept synthetic data only and never route a claim to a payer.</p>
       <Callout tone="warning" title="Never send PHI to sandbox">Use invented patients, claims, documents, identifiers, and contact details.</Callout>
 
       <h2 id="account">Account controls</h2>
