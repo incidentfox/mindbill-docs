@@ -24,7 +24,34 @@ import {
 
 export const metadata: Metadata = { title: "React components" };
 
-const install = `npm install @mindbill/react @mindbill/node`;
+const install = `pnpm add @mindbill/react`;
+
+const connectedWorkspace = `import { ConnectedBillingWorkspace } from "@mindbill/react";
+
+<ConnectedBillingWorkspace
+  sessionEndpoint="/api/mindbill/session"
+  appearance={{ preset: "calm-clinical" }}
+  onCreateBill={() => navigate("/billing/new")}
+  onSelectBill={(bill) => navigate(\`/billing/\${bill.id}\`)}
+/>`;
+
+const connectedSearch = `import { ConnectedBillSearch } from "@mindbill/react";
+
+<ConnectedBillSearch
+  sessionEndpoint="/api/mindbill/session"
+  initialQuery={{ arAge: "61-90", status: "submitted" }}
+  onSelectBill={(bill) => openBill(bill.id)}
+/>`;
+
+const connectedReports = `import {
+  ConnectedBillTasksDashboard,
+  ConnectedProductivityReport,
+  ConnectedServiceLineItemsReport,
+} from "@mindbill/react";
+
+<ConnectedBillTasksDashboard sessionEndpoint="/api/mindbill/session" />
+<ConnectedServiceLineItemsReport sessionEndpoint="/api/mindbill/session" />
+<ConnectedProductivityReport sessionEndpoint="/api/mindbill/session" />`;
 
 const submissionForm = `import { BillSubmissionForm } from "@mindbill/react";
 
@@ -261,7 +288,7 @@ export default function ReactPage() {
     <DocPage
       eyebrow="Components"
       title="React"
-      description="Use MindBill's complete pre-submission form, then render the connected lifecycle for the immutable submitted bill."
+      description="Add a complete connected billing workspace or compose submission, search, reporting, and lifecycle surfaces individually."
       toc={[
         { id: "choose", label: "Choose an export" },
         { id: "form", label: "Submission form" },
@@ -285,6 +312,11 @@ export default function ReactPage() {
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
         <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and atomic Submit action.</span><span>Yes</span></div>
         <div><code>BillSubmission*Section</code><span>You want the same component-owned form state with individually composable sections.</span><span>Yes, through the parent</span></div>
+        <div><code>ConnectedBillingWorkspace</code><span>You want Bill Tasks, All Bills, reports, and per-bill lifecycle in one integrated surface.</span><span>Yes</span></div>
+        <div><code>ConnectedBillSearch</code><span>You need the authoritative bill registry with patient, bill, claim, status, and A/R filters.</span><span>Yes</span></div>
+        <div><code>ConnectedBillTasksDashboard</code><span>You need actionable billing queues grouped by task and age.</span><span>Yes</span></div>
+        <div><code>ConnectedServiceLineItemsReport</code><span>You need original submissions grouped by procedure code.</span><span>Yes</span></div>
+        <div><code>ConnectedProductivityReport</code><span>You need created, transmitted, submitted, and acceptance performance by biller.</span><span>Yes</span></div>
         <div><code>BillingDashboard</code><span>You need receivables KPIs, aging buckets, search, filters, and a responsive bill list.</span><span>No</span></div>
         <div><code>BillList</code><span>You need only the searchable and filterable bill directory.</span><span>No</span></div>
         <div><code>BillAgingSummary</code><span>You need only receivables and aging KPIs.</span><span>No</span></div>
@@ -331,6 +363,13 @@ export default function ReactPage() {
       <Callout title="Do not wire fields individually">The section components deliberately share the parent form context. Partners can compose the experience without rebuilding field rules, state synchronization, or API calls.</Callout>
 
       <h2 id="operations">Dashboard, aging, bill list, and reporting</h2>
+      <p><code>ConnectedBillingWorkspace</code> is the default partner integration. It owns fetching, filters, drill-down navigation, selected views, loading and error states, and per-bill lifecycle actions. Pass the same authenticated session endpoint used by the submission form.</p>
+      <CodeBlock code={connectedWorkspace} filename="Billing.tsx" />
+      <Callout title="Bill Tasks and All Bills are intentionally different">Bill Tasks contains only open work that requires action. All Bills is the complete registry, including sent, accepted, processed, rejected, paid, and closed bills.</Callout>
+      <p>Use <code>ConnectedBillSearch</code> independently when your product already has its own navigation. It searches patient name, bill ID, and claim number and combines that search with status, billing-provider, claims-administrator, A/R-age, and date filters.</p>
+      <CodeBlock code={connectedSearch} filename="AllBills.tsx" />
+      <p>The connected dashboard and reports use the same thin-client session contract. Counts and drill-downs come from MindBill&apos;s authoritative server-side queries, while CSV and PDF controls remain in the component surface.</p>
+      <CodeBlock code={connectedReports} filename="BillingReports.tsx" />
       <p>The operations exports accept the same normalized bill summaries. They calculate receivables and aging in the browser, render responsive tables or mobile cards, and keep navigation under your application&apos;s control.</p>
       <CodeBlock code={dashboard} filename="BillingDashboard.tsx" />
       <BillingDashboardPlayground />
@@ -404,7 +443,7 @@ export default function ReactPage() {
       <div className="term-list compact">
         <div><b><code>BILL_SUBMISSION_REQUIRED_FIELDS</code></b><p>The canonical required fields used by <code>BillSubmissionForm</code>.</p></div>
         <div><b><code>validateBillSubmission</code></b><p>Run the same submission validation outside the rendered form.</p></div>
-        <div><b><code>mindBillThemePresets</code></b><p><code>mindbill</code>, <code>qme-companion</code>, <code>orange-bright</code>, and <code>clinical-blue</code>.</p></div>
+        <div><b><code>mindBillThemePresets</code></b><p><code>mindbill</code>, <code>qme-companion</code>, <code>orange-bright</code>, <code>clinical-blue</code>, and the generic warm <code>calm-clinical</code> partner preset.</p></div>
         <div><b><code>resolveMindBillAppearance</code></b><p>Resolve a preset plus token overrides.</p></div>
         <div><b><code>mindBillAppearanceStyle</code></b><p>Convert appearance tokens to CSS custom properties.</p></div>
         <div><b><code>ensureTrailingProcedureLine</code></b><p>Keep exactly one empty procedure row after populated rows.</p></div>
