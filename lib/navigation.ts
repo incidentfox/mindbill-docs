@@ -107,10 +107,10 @@ export const navigation: DocLink[] = [
   {
     href: "/components/react",
     label: "React",
-    description: "Native components with sessions, API calls, and state-aware actions.",
+    description: "Connected billing workspace, search, reports, submission, and state-aware lifecycle actions.",
     group: "Components",
     icon: Layers3,
-    keywords: ["react", "hooks", "component", "theme", "playground"],
+    keywords: ["react", "hooks", "component", "theme", "playground", "all bills", "bill tasks", "search", "productivity", "procedure report"],
   },
   {
     href: "/components/react/lifecycle-demo",
