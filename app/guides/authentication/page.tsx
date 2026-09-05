@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
+import { IntegrationBuilder } from "@/components/integration-builder";
+import { hostContract } from "@/lib/integration-recipes";
 
 export const metadata: Metadata = { title: "Authentication" };
-
-const serverClient = `import { MindBillClient } from "@mindbill/node";
-
-export const mindbill = new MindBillClient({
-  apiKey: process.env.MINDBILL_API_KEY!,
-});`;
 
 const roles = `const permissionsByRole = {
   billing_admin: [
@@ -22,76 +19,25 @@ const roles = `const permissionsByRole = {
   viewer: ["bills:read", "documents:read", "eors:read"],
 } as const;`;
 
-const submissionSessionRoute = `app.post("/api/mindbill/submission-session", async (request, response) => {
-  const user = await requireSignedInUser(request);
-  await requireBillingPermission(user, "create");
-
-  const session = await mindbill.createBrowserSession({
-    subject: user.id,
-    permissions: ["bills:create", "payers:read"],
-    allowedOrigin: process.env.APP_ORIGIN!,
-    expiresIn: 900,
-  });
-
-  response.json(session);
-});`;
-
-const narrowSession = `app.post("/api/mindbill/bills/:billId/session", async (request, response) => {
-  const user = await requireSignedInUser(request);
-  const billId = request.params.billId;
-  await requireBillAccess(user, billId);
-
-  const session = await mindbill.createBrowserSession({
-    subject: user.id,
-    permissions: ["bills:read", "bills:act", "documents:read", "eors:read"],
-    resource: { billId },
-    allowedOrigin: process.env.APP_ORIGIN!,
-    expiresIn: 300,
-  });
-
-  response.json(session);
-});`;
-
-const direct = `curl https://app.mindbill.org/partner/v2/bills \
-  --header "Authorization: Bearer $MINDBILL_API_KEY" \
-  --header "Idempotency-Key: create-report-9f7a" \
-  --header "Content-Type: application/json" \
-  --data @bill.json`;
-
 export default function AuthenticationPage() {
-  return (
-    <DocPage
-      eyebrow="Build"
-      title="Authentication and authorization"
-      description="Use a server API key or a short-lived browser session. Browser sessions identify the signed-in user, carry role permissions, and stay limited to their organization and exact origin."
-      toc={[
-        { id: "shared", label: "One API, two credentials" },
-        { id: "boundaries", label: "Security boundaries" },
-        { id: "permissions", label: "Permission reference" },
-        { id: "roles", label: "Map roles" },
-        { id: "session", label: "Mint a session" },
-        { id: "resource", label: "Optional bill restriction" },
-        { id: "server", label: "Server-only REST" },
-      ]}
-      previous={{ href: "/learn/quickstart", label: "Quickstart" }}
-      next={{ href: "/guides/bills", label: "The bill resource" }}
-    >
-      <h2 id="shared">One API, two credentials</h2>
-      <p>Business endpoints use the same <code>/partner/v2</code> URLs, payloads, and responses from your backend and frontend. A trusted server sends its API key; a browser sends a short-lived session token with its exact authorized <code>Origin</code>. The browser SDK accepts session credentials only.</p>
-      <p>Browser sessions and organization-scoped API keys are fixed to one organization. Account-scoped partner keys may use <code>{"/organizations/{id}"}</code> for any linked organization they are authorized to manage. The singular <code>/organization</code> routes use the credential’s current organization.</p>
-      <p>Each endpoint lists the required server scope and browser permission separately. Browser sessions remain restricted to their organization, permissions, allowed bill resources, origin, and expiration. Existing <code>/partner/v2/browser</code> business URLs remain compatibility aliases; use the canonical URLs for new integrations.</p>
-      <p>Server-side reference lookups require <code>payers:read</code>. New self-serve accounts include this scope. If an existing key lacks it, create a replacement key with <code>payers:read</code> through your account’s key management endpoint; existing keys keep their original scopes.</p>
-      <Callout title="Server-only control operations">Creating organizations, issuing browser or management sessions, reading ordered events, and administering webhook deliveries require a server API key. These operations are not available to browser sessions.</Callout>
-      <h2 id="boundaries">Three boundaries protect browser access</h2>
-      <div className="term-list compact">
-        <div><b>Organization</b><p>The permanent API key binds the session to one MindBill organization. A bill ID cannot cross that boundary.</p></div>
-        <div><b>User and role</b><p><code>subject</code> is your user ID. <code>permissions</code> are the billing operations that user may perform.</p></div>
-        <div><b>Origin and time</b><p>The token works only from one exact HTTPS origin and expires quickly.</p></div>
-      </div>
-      <Callout title="The form uses a short-lived browser session"><code>BillSubmissionForm</code> keeps editable values and uploads local until Submit. With <code>bills:create</code> and <code>payers:read</code>, it resolves reference data, validates, encodes PDFs, and submits the immutable snapshot directly. Your permanent API key remains server-side.</Callout>
-
-      <h2 id="permissions">Permission reference</h2>
-      <p>A session may contain any subset of these permissions. MindBill checks them together with the API key&apos;s organization on every browser request.</p>
+  return <DocPage eyebrow="Build" title="Authentication"
+    description="Call the same API with a server key or a short-lived browser session. Your application controls which customers and users can access billing."
+    toc={[{ id: "shared", label: "One API, two credentials" }, { id: "boundaries", label: "Organizations and users" }, { id: "permissions", label: "Browser permissions" }, { id: "session", label: "Server route recipes" }, { id: "resource", label: "Restrict access to a bill" }]}
+    previous={{ href: "/learn/quickstart", label: "Quickstart" }} next={{ href: "/guides/sandbox", label: "Sandbox checks" }}>
+    <h2 id="shared">One API, two credentials</h2>
+    <div className="term-list compact">
+      <div><b>Server API key</b><p>Send <code>Authorization: Bearer &lt;api-key&gt;</code> from a trusted backend. Keep the key in your server secret store.</p></div>
+      <div><b>Browser session</b><p>Your backend exchanges its key for a short-lived token. Components send that token and the browser’s exact authorized <code>Origin</code>.</p></div>
+    </div>
+    <p>Both use the same <code>/partner/v2</code> business URLs, payloads, and responses. Each <Link href="/api-reference">endpoint reference</Link> lists its server scopes and browser permissions. Existing <code>/partner/v2/browser</code> business URLs remain aliases; use the canonical URLs for new integrations.</p>
+    <Callout title="Some operations require a server key">Organization creation, session issuance, ordered events, and webhook-delivery administration are server-only operations. The browser SDK accepts session credentials only.</Callout>
+    <h2 id="boundaries">Choose the organization and user on your server</h2>
+    <p>Authenticate the user, check their billing role, and select the customer’s MindBill credential from server-owned membership data. Never accept a credential, organization, subject, or permission list from the request body.</p>
+    <Callout tone="warning" title="Subject is an audit identity, not tenant isolation">An organization-wide session can access that organization’s bills according to its permissions. <code>subject</code> records who acted; it does not filter records by user. Multi-customer apps need a server-owned customer-to-credential mapping.</Callout>
+    <p>Organization-scoped keys and browser sessions are fixed to one organization. An account-scoped partner key can use <code>{"/organizations/{id}"}</code> for linked organizations it may manage. For normal business routes, account-scoped keys select a linked organization with <code>X-MindBill-Org-Id</code>; missing selection returns <code>400 org_required</code>. Singular <code>/organization</code> routes use that selected organization. Fixed organization keys and browser sessions cannot switch organizations.</p>
+    <p>Configure <code>APP_ORIGIN</code> as the frontend’s exact origin: scheme, host, and port, with no path or trailing slash. Live sessions require HTTPS; sandbox also accepts loopback HTTP. For separate frontend and backend hosts, apply explicit allowed-origin CORS and your existing CSRF protections, then use a component <code>getSession</code> callback with your authenticated fetch.</p>
+    <h2 id="permissions">Assign browser permissions from your roles</h2>
+    <p>Grant only the operations the signed-in user needs. Saved settings require a separate admin-authorized <code>organization:manage</code> session; ordinary bill creators can read masked profile choices with <code>bills:create</code>.</p>
       <div className="data-table networks">
         <div className="table-head"><b>Permission</b><b>Allows</b></div>
         <div><code>bills:create</code><span>Atomically create and submit an immutable bill snapshot.</span></div>
@@ -103,24 +49,14 @@ export default function AuthenticationPage() {
         <div><code>eors:read</code><span>Read normalized EOR data and original payer documents when available.</span></div>
       </div>
 
-      <h2 id="roles">Map your roles to billing permissions</h2>
-      <p>Your application remains authoritative for sign-in and roles. Map those roles to the least set of MindBill permissions they need.</p>
-      <CodeBlock code={roles} filename="server/billing-permissions.ts" />
-
-      <h2 id="session">Add authenticated session routes</h2>
-      <p>Use a create-only route for the connected submission form. It never accepts an organization ID from the client. Use a separate, bill-scoped route for post-submit lifecycle components.</p>
-      <CodeBlock code={serverClient} filename="server/mindbill.ts" />
-      <CodeBlock code={submissionSessionRoute} filename="server/submission-session.ts" />
-      <Callout tone="warning" title="Derive the origin safely">Use a configured production origin or a trusted proxy-aware origin. Do not reflect an arbitrary client-supplied origin into the session.</Callout>
-
-      <h2 id="resource">Optionally restrict a session to one bill</h2>
-      <p>For a connected post-submit bill surface, add a bill resource restriction. A bill-restricted session cannot include <code>bills:create</code>.</p>
-      <CodeBlock code={narrowSession} filename="server/narrow-session.ts" />
-
-      <h2 id="server">Server-only REST remains available</h2>
-      <p>Use the permanent key from a trusted worker or backend when no browser user is involved. The Node SDK is optional; any server framework can call REST directly.</p>
-      <CodeBlock code={direct} language="bash" filename="Terminal" />
-      <Callout title="Synchronize with events">Browser callbacks are useful for immediate UI. Use ordered events or signed webhooks for durable server state; never rely on an untrusted browser callback as the sole record of payer activity.</Callout>
-    </DocPage>
-  );
+    <details><summary>Example role mapping</summary><CodeBlock code={roles} filename="server/billing-permissions.ts" /><p>This mapping does not grant settings access. Add <code>organization:manage</code> only after checking the user’s practice-administration role.</p></details>
+    <h2 id="session">Add a server route for your stack</h2>
+    <p>Choose your stack below. Each browser-session recipe intentionally refuses to mint a token until you implement the host authorization adapter. It must authenticate the user, enforce your feature flag and role, and return the correct customer credential.</p>
+    <details><summary>Required host authorization adapter</summary><CodeBlock code={hostContract} language="text" filename="Your application’s authorization contract" /></details>
+    <IntegrationBuilder />
+    <p>Return session responses with <code>Cache-Control: no-store</code>. Map authentication failures to <code>401</code> or <code>403</code>; return a generic error for upstream failures. Never expose keys or upstream error bodies.</p>
+    <h2 id="resource">Restrict a session to one bill</h2>
+    <p>For a case billing tab, authorize access to the host case and resolve its saved MindBill bill ID on the server. Set <code>{"resource: { billId }"}</code> and omit <code>bills:create</code>. Use an organization-wide session for the full workspace or saved-profile lookup.</p>
+    <p>See the <Link href="/api-reference/browser-sessions">browser-session reference</Link> for token fields, expiration, and resource rules. For API-only integrations, use the server key directly; no session route is needed.</p>
+  </DocPage>;
 }

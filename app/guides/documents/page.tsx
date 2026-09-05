@@ -5,6 +5,7 @@ import { Callout, DocPage } from "@/components/doc-page";
 export const metadata: Metadata = { title: "Documents and payer packets" };
 
 const serverSubmission = `const report = await fetch(reportDownloadUrl);
+if (!report.ok) throw new Error("Unable to load final report");
 const contentBase64 = Buffer.from(await report.arrayBuffer()).toString("base64");
 
 const bill = await mindbill.createAndSubmitBill({
@@ -21,9 +22,9 @@ const bill = await mindbill.createAndSubmitBill({
 
 const component = `<BillSubmissionForm
   initialBill={billingSnapshot}
-  attachments={availableCaseDocuments}
+  attachments={selectedBillingDocuments}
   sessionEndpoint="/api/mindbill/submission-session"
-  onSubmitted={({ billId }) => setBillId(billId)}
+  onSubmitted={({ billId }) => saveBillId(billId)}
 />`;
 
 export default function DocumentsPage() {
@@ -53,7 +54,7 @@ export default function DocumentsPage() {
       <Callout tone="warning" title="Billing packet is not report service">Serving a report on case parties and submitting a bill to a claims administrator are separate workflows. A document may belong in one packet, both packets, or neither.</Callout>
 
       <h2 id="review">Review fields and attachments in one component</h2>
-      <p>The React <code>BillSubmissionForm</code> renders the complete bill table, marks required fields with a red asterisk, validates values, lists prefilled case documents, accepts additional uploads, and owns the Submit button. There is no draft bill to create or maintain.</p>
+      <p>The React <code>BillSubmissionForm</code> lets users review prefilled fields and PDFs, add or remove supporting documents, and submit the complete packet. Pass only the source documents chosen for billing: every supplied attachment is included unless removed, even if it has <code>selected: false</code>.</p>
       <CodeBlock code={component} filename="CaseBilling.tsx" />
 
       <h2 id="submit">Send documents with the immutable snapshot</h2>
@@ -70,7 +71,7 @@ export default function DocumentsPage() {
         <div><code>64 MB</code><p>Largest HTTP request body, documents plus bill JSON. Exceeding it returns <code>413 request_too_large</code>.</p></div>
       </div>
       <p>Only PDFs are accepted; MindBill verifies the leading bytes of every document and rejects anything else with <code>415 invalid_pdf</code>.</p>
-      <Callout title="Sizing a large packet">The 45 MB document budget is the one to plan against. It sits below the 64 MB body limit precisely so a full-size packet still fits once encoding and the surrounding bill JSON are added. If a packet approaches it, split the supporting records rather than the report itself.</Callout>
+      <Callout title="Sizing a large packet">The 45 MB document budget is the one to plan against. It sits below the 64 MB body limit precisely so a full-size packet still fits once encoding and the surrounding bill JSON are added. If a packet approaches it, compress the PDFs or remove documents that do not belong in the packet. Splitting one PDF into several does not reduce the total byte count.</Callout>
 
       <h2 id="types">Document types</h2>
       <div className="term-list compact">

@@ -11,31 +11,7 @@ import {
 
 export const metadata: Metadata = { title: "Angular components" };
 
-const install = `npm install @mindbill/angular@0.9.0 @mindbill/node@0.13.0`;
-
-const sessionRoute = `// app/api/mindbill/session/route.ts (Next.js)
-import { MindBillClient } from "@mindbill/node";
-import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
-
-const mindbill = new MindBillClient({
-  apiKey: process.env.MINDBILL_API_KEY!,
-});
-
-export async function POST(request: Request) {
-  const user = await requireUser(request);
-  const origin = new URL(request.url).origin;
-
-  return NextResponse.json(await mindbill.createBrowserSession({
-    subject: user.id,
-    allowedOrigin: origin,
-    permissions: [
-      "bills:create", "bills:read", "bills:act",
-      "documents:read", "payers:read", "eors:read",
-    ],
-    expiresIn: 900,
-  }));
-}`;
+const install = `npm install @mindbill/angular@latest`;
 
 const submission = `import { Component, Input } from "@angular/core";
 import {
@@ -178,7 +154,7 @@ export default function AngularPage() {
 
       <h2 id="security">Session endpoint</h2>
       <p>Keep the permanent API key on your server. This is the only MindBill-specific server route required by the embedded components: authenticate the current user and mint a short-lived, exact-origin browser token.</p>
-      <CodeBlock code={sessionRoute} filename="app/api/mindbill/session/route.ts" />
+      <p>Use the <Link href="/guides/authentication#session">server route recipe</Link> for your backend. It must authenticate the user, select their organization credential, and enforce permissions before minting a session. Configure <code>APP_ORIGIN</code> as the Angular app’s exact origin, not the API server’s URL.</p>
       <Callout tone="warning" title="Never expose the API key">The browser receives only a short-lived token scoped to your organization, user, origin, and permissions. It never sees your permanent MindBill credential or clearinghouse routing IDs.</Callout>
 
       <h2 id="workflow">Complete case workflow</h2>
@@ -201,6 +177,8 @@ export default function AngularPage() {
       ]} />
       <SubmissionAngularPlayground />
       <p>Field requirements and payer mappings come from MindBill, not host-app validation. See <Link href="/guides/bills">The bill resource</Link> for the complete required/optional contract and <Link href="/api-reference/create-bill">Create and submit a bill</Link> for cURL and response examples.</p>
+
+      <p>Load the saved bill ID with the case and persist <code>$event.bill.id</code> in your host application when submission succeeds. Local component state alone is lost on refresh. Pass only the finalized report and supporting PDFs the user has selected.</p>
 
       <h2 id="lifecycle">Lifecycle component</h2>
       <p><code>MindBillBillLifecycleComponent</code> owns everything after submission: the immutable snapshot, progress rail, remittance and EOR reconciliation, payer contacts, documents, payments, activity history, and the state-appropriate actions (post payment, second review, close, reopen). <code>MindBillLifecycleStore</code> exposes the same connected state as an injectable service for fully custom layouts.</p>
@@ -252,7 +230,7 @@ export default function AngularPage() {
 
       <h2 id="onboarding">Organization onboarding</h2>
       <p><code>MindBillOrganizationOnboardingComponent</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission. Your users never visit the MindBill dashboard. Set <code>variant=&quot;settings&quot;</code> for the compact edit-after-setup layout; the review step renders MindBill&apos;s real onboarding checklist and <code>(completed)</code> fires when billing setup is done.</p>
-      <p>From Angular 0.18.0, settings and bill submission support EIN/SSN selection and password-style SSN inputs. Blank saved SSN inputs preserve the identifier; use the clear button or enter a replacement to change it on save. To submit from a saved profile, pass <code>billingProvider: &#123; savedProviderId &#125;</code>; SSN corrections and duplicates preserve the original provider with <code>&#123; sourceBillId &#125;</code>. The form keeps either reference until the user explicitly chooses a different manual provider. See the <a href="/learn/quickstart#settings">saved-profile contract</a>.</p>
+      <p>From Angular 0.18.0, settings and bill submission support EIN/SSN selection and password-style SSN inputs. Blank saved SSN inputs preserve the identifier; use the clear button or enter a replacement to change it on save. To submit from a saved profile, pass <code>billingProvider: &#123; savedProviderId &#125;</code>; SSN corrections and duplicates preserve the original provider with <code>&#123; sourceBillId &#125;</code>. The form keeps either reference until the user explicitly chooses a different manual provider. See the <a href="/components/react#saved-profiles">saved-profile contract</a>.</p>
       <ApiTable rows={[
         ["sessionEndpoint", "string", "Your authenticated session route. The session needs the organization:manage permission."],
         ["variant", '"onboarding" | "settings"', "Stepper for first-run setup, stacked sections for editing. Default onboarding."],
@@ -266,7 +244,7 @@ export default function AngularPage() {
       <div className="data-table component-api">
         <div className="table-head"><b>Export</b><b>Selector</b><b>Purpose</b></div>
         <div><code>MindBillBillSubmissionComponent</code><code>mindbill-bill-submission</code><span>Review, validate, attach documents, and submit a bill.</span></div>
-        <div><code>MindBillBillLifecycleComponent</code><code>mindbill-bill-lifecycle</code><span>Read-only bill detail, status, EOR, payments, history, and actions.</span></div>
+        <div><code>MindBillBillLifecycleComponent</code><code>mindbill-bill-lifecycle</code><span>Bill detail, status, EOR, payments, history, and lifecycle actions.</span></div>
         <div><code>MindBillBillingDashboardComponent</code><code>mindbill-billing-dashboard</code><span>Monthly metrics, aging, bill search, and drill-down.</span></div>
         <div><code>MindBillStatusAgingMatrixComponent</code><code>mindbill-status-aging-matrix</code><span>Status × aging management grid with drill-down cells and totals.</span></div>
         <div><code>MindBillBillAgingSummaryComponent</code><code>mindbill-bill-aging-summary</code><span>Clickable outstanding-balance aging buckets.</span></div>

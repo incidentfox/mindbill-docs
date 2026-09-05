@@ -12,6 +12,7 @@ export default function SandboxPage() {
       description="Develop with synthetic data and the same API surface used in production. Live claims remain disabled until your organization completes security and billing setup."
       toc={[
         { id: "sandbox", label: "Create a sandbox key" },
+        { id: "verify", label: "Test your integration" },
         { id: "account", label: "Account controls" },
         { id: "live", label: "Go live" },
       ]}
@@ -22,6 +23,15 @@ export default function SandboxPage() {
       <p>Open the <a href="https://platform.mindbill.org/onboarding">developer console</a>, create a sandbox organization, and copy the key when it is shown. Sandbox organizations accept synthetic data only and never route a claim to a payer.</p>
       <Callout tone="warning" title="Never send PHI to sandbox">Use invented patients, claims, documents, identifiers, and contact details.</Callout>
 
+      <h2 id="verify">Test your integration</h2>
+      <ol>
+        <li>Create a synthetic bill with a final report, save its bill ID, and confirm it appears in All Bills.</li>
+        <li>Use the <Link href="/api-reference/sandbox-simulate">sandbox simulation endpoint</Link> to exercise acceptance, rejection, and payer processing. Check status, EORs, attachments, and available actions.</li>
+        <li>Test a corrected bill, second review, and payment posting through the <Link href="/guides/lifecycle">lifecycle workflow</Link>.</li>
+        <li>Verify that unauthenticated users, users from another customer, and non-admin settings users are denied. Check session expiry and refresh.</li>
+        <li>For components, test empty and error states, narrow screens, and scrolling inside your app. Bills waiting on payers must remain visible in All Bills.</li>
+        <li>Verify <Link href="/api-reference/events">webhook signatures</Link>, duplicate events, and out-of-order delivery. Reconcile current bill state; browser callbacks alone are not a durable record.</li>
+      </ol>
       <h2 id="account">Account controls</h2>
       <div className="data-table networks">
         <div className="table-head"><b>Capability</b><b>Server permission</b></div>
@@ -32,7 +42,7 @@ export default function SandboxPage() {
         <div><span>Create organizations and manage access</span><code>orgs:write</code></div>
         <div><span>Update reusable source profiles</span><code>settings:write</code></div>
       </div>
-      <p>Browser permissions are narrower and role-derived: <code>bills:create</code>, <code>bills:read</code>, <code>bills:act</code>, <code>documents:read</code>, <code>payers:read</code>, and <code>eors:read</code>. A submitted bill has no edit permission because its snapshot and payer packet are immutable.</p>
+      <p>Browser access uses the separate <Link href="/guides/authentication#permissions">browser permission set</Link>, assigned from your application’s roles. A submitted bill has no edit permission because its snapshot and payer packet are immutable.</p>
 
       <h2 id="live">Go live</h2>
       <p>Live routing requires an approved organization, a current BAA, payment setup, and a verified webhook endpoint. The API and components do not change when live access is enabled; rotate to the live key and keep your origin and role policy unchanged.</p>

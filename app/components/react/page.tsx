@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
+import { prefillRecipe, profileRecipe, reactRecipe } from "@/lib/integration-recipes";
 import {
   ActivityTimelinePlayground,
   BillingDashboardPlayground,
@@ -57,12 +58,8 @@ const submissionForm = `import { BillSubmissionForm } from "@mindbill/react";
 
 <BillSubmissionForm
   initialBill={toBillSnapshot(caseRecord)}
-  attachments={caseDocuments}
-  getSession={() =>
-    fetch("/api/mindbill/submission-session", { method: "POST" }).then((response) =>
-      response.json()
-    )
-  }
+  attachments={selectedBillingDocuments}
+  sessionEndpoint="/api/mindbill/submission-session"
   appearance={{ preset: "orange-bright" }}
   submitLabel="Submit bill"
   onSubmitted={({ billId }) => rememberBillId(billId)}
@@ -306,10 +303,12 @@ export default function ReactPage() {
       title="React"
       description="Add a complete connected billing workspace or compose submission, search, reporting, and lifecycle surfaces individually."
       toc={[
-        { id: "choose", label: "Choose an export" },
+        { id: "start", label: "Get started" },
+        { id: "choose", label: "Component catalog" },
         { id: "form", label: "Submission form" },
         { id: "sections", label: "Individual form sections" },
         { id: "operations", label: "Dashboard and reporting" },
+        { id: "org-onboarding", label: "Saved practice settings" },
         { id: "setup", label: "Post-submit setup" },
         { id: "lifecycle", label: "Complete lifecycle" },
         { id: "custom", label: "Custom lifecycle UI" },
@@ -323,7 +322,19 @@ export default function ReactPage() {
       previous={{ href: "/guides/lifecycle", label: "Lifecycle and actions" }}
       next={{ href: "/components/angular", label: "Angular components" }}
     >
-      <h2 id="choose">Choose an export</h2>
+      <h2 id="start">Add billing to your application</h2>
+      <p>Install the package and import <code>@mindbill/react/styles.css</code> once in your application. First connect an authenticated <Link href="/guides/authentication#session">server session route</Link>; the examples below assume that route is ready.</p>
+      <CodeBlock code={install} language="bash" filename="Terminal" />
+      <ul>
+        <li><strong>Billing page:</strong> <code>ConnectedBillingWorkspace</code> provides task queues, All Bills, reports, and bill details.</li>
+        <li><strong>Case billing tab:</strong> <code>BillSubmissionForm</code> before submission; <code>ConnectedBillLifecycle</code> afterward.</li>
+        <li><strong>Practice settings:</strong> <code>BillingSettings</code> uses a separate admin-authorized session.</li>
+      </ul>
+      <details><summary>Example: place components in your existing routes</summary><CodeBlock code={reactRecipe} language="jsx" filename="billing.jsx" /></details>
+      <p>Keep the returned <code>billId</code> in your existing case metadata. Send your case ID as <code>externalId</code> for correlation; it is not a uniqueness guarantee. Never create a bill on component mount.</p>
+      <p>Give the workspace a bounded height and <code>min-height: 0</code> in flex ancestors when your app disables page scrolling.</p>
+      <h2 id="choose">Component catalog</h2>
+      <details><summary>All React exports and when to use them</summary>
       <div className="data-table component-catalog">
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
         <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and atomic Submit action.</span><span>Yes</span></div>
@@ -356,11 +367,18 @@ export default function ReactPage() {
         <div><code>MindBillBillTimeline</code><span>You prefer the hosted timeline surface.</span><span>Hosted</span></div>
       </div>
 
+      </details>
+
       <h2 id="form">Complete submission form</h2>
       <p><code>BillSubmissionForm</code> owns which fields exist and which are required. It renders red asterisks, validates the values, resolves billing reference data through a short-lived browser session, lets users review prefilled documents and add uploads, and renders the Submit button. It never creates a MindBill draft.</p>
-      <CodeBlock code={install} language="bash" filename="Terminal" />
-      <CodeBlock code={submissionSession} filename="server/submission-session.ts" />
+      <details><summary>Submission session permissions</summary><p>This excerpt assumes your server has authenticated the user, checked membership, and selected the organization credential. See the <Link href="/guides/authentication#session">complete server route</Link> for origin checks and error handling.</p><CodeBlock code={submissionSession} filename="server/submission-session.ts" /></details>
       <CodeBlock code={submissionForm} filename="CaseBilling.tsx" />
+      <details><summary>Prefill case data and final-report attachments</summary>
+    <p>Map data you already have: patient name, date of birth and address; claim, employer and injury date; service date; diagnosis codes; procedure codes, modifiers and units. Keep missing values editable. Confirm a canonical claims administrator in the payer picker; a text label from a report is not a verified payer ID.</p>
+    <p>Use your existing structured extraction results. SDK setup should not add ad-hoc regex or AI report parsing, infer clinical codes, or fabricate missing information. Provider templates differ, so preserve review by the user.</p>
+    <CodeBlock code={prefillRecipe} language="jsx" filename="host-billing-adapters.jsx — source field names belong to your app" />
+    <p>Pass <code>billFromCase(caseRecord)</code> as <code>initialBill</code> and <code>finalReportSources(finalizedReportId)</code> as <code>attachments</code>. All supplied source attachments are included unless removed: do not pass every case document or rely on <code>selected: false</code>. Users can add proof of service and other supporting PDFs in the form, including a final report edited outside your app.</p>
+      </details>
       <SubmissionFormPlayground />
       <div className="term-list compact">
         <div><b>Patient and injury</b><p>Responsive two-column fields, paste-friendly <code>MM/DD/YYYY</code> dates, required asterisks, and authenticated ZIP-to-city/state completion.</p></div>
@@ -379,7 +397,7 @@ export default function ReactPage() {
       <Callout title="Do not wire fields individually">The section components deliberately share the parent form context. Partners can compose the experience without rebuilding field rules, state synchronization, or API calls.</Callout>
 
       <h2 id="operations">Dashboard, aging, bill list, and reporting</h2>
-      <p><code>ConnectedBillingWorkspace</code> is the default partner integration. It owns fetching, filters, drill-down navigation, selected views, loading and error states, and per-bill lifecycle actions. Pass the same authenticated session endpoint used by the submission form.</p>
+      <p><code>ConnectedBillingWorkspace</code> is the default partner integration. It owns fetching, filters, drill-down navigation, selected views, loading and error states, and per-bill lifecycle actions. Use an organization-wide session with bills:create, bills:read, bills:act, documents:read, payers:read, and eors:read. A create-only submission session cannot load the workspace.</p>
       <CodeBlock code={connectedWorkspace} filename="Billing.tsx" />
       <Callout title="Bill Tasks and All Bills are intentionally different">Bill Tasks contains only open work that requires action. All Bills is the complete registry, including sent, accepted, processed, rejected, paid, and closed bills.</Callout>
       <p>Use <code>ConnectedBillSearch</code> independently when your product already has its own navigation. It searches patient name, bill ID, and claim number and combines that search with status, billing-provider, claims-administrator, A/R-age, and date filters.</p>
@@ -398,12 +416,22 @@ export default function ReactPage() {
 
       <h2 id="org-onboarding">Organization onboarding</h2>
       <p><code>OrganizationOnboarding</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission — so your users never visit the MindBill dashboard. <code>BillingSettings</code> is the compact edit-after-setup variant. The review step renders MindBill&apos;s onboarding checklist and <code>onCompleted</code> fires when billing setup is done.</p>
-      <p>From React 0.47.0, settings accept EIN or SSN with an explicit tax ID type. Saved SSNs are encrypted and masked in responses. A blank saved SSN field preserves it, a replacement changes it, and the clear button requests removal on save. Use <code>organizationProfileOptions(profile)</code> for SSN-backed saved billing choices so submission sends a provider reference rather than a masked identifier. See the <a href="/learn/quickstart#settings">saved-profile contract and upgrade checklist</a>.</p>
+      <p>From React 0.47.0, settings accept EIN or SSN with an explicit tax ID type. Saved SSNs are encrypted and masked in responses. A blank saved SSN field preserves it, a replacement changes it, and the clear button requests removal on save. Use <code>organizationProfileOptions(profile)</code> for SSN-backed saved billing choices so submission sends a provider reference rather than a masked identifier. See the saved-profile details below.</p>
       <CodeBlock code={orgOnboardingCode} filename="BillingSetup.tsx" />
+      <details id="saved-profiles"><summary>Saved profiles, provider references, and tax ID handling</summary>
+    <p>If your app already stores billing provider, rendering provider, service locations, and W-9 documents, keep that ownership and prefill from it. Otherwise offer MindBill&apos;s settings components to avoid building and maintaining duplicate input screens. Check the <Link href="/components/react">current component reference</Link> for saved-profile controls and supported fields.</p>
+    <p>Use a separate admin-authorized session endpoint for <code>organization:manage</code>. Do not grant it to every billing user. Avoid persisting duplicate tax identifiers; keep sensitive values out of browser storage, logs, analytics, screenshots, and coding-agent prompts.</p>
+    <p>For saved choices during bill creation, <code>GET /partner/v2/organization/billing-profile</code> accepts an organization-wide browser session with <code>bills:create</code> and returns a masked organization profile. Bill-scoped sessions cannot perform this lookup. Settings writes still require <code>organization:manage</code>; reading choices does not grant permission to edit them.</p>
+    <CodeBlock code={profileRecipe} language="jsx" filename="Optional saved-profile choices — use the current React release" />
+    <p><code>profileDisplay=&quot;compact&quot;</code> presents saved choices first; <code>&quot;expanded&quot;</code> keeps all fields visible. Host-managed options need no extra storage or organization lookup. Settings support <code>taxIdType: &quot;EIN&quot; | &quot;SSN&quot;</code>; EIN remains the default. Select SSN explicitly rather than putting it in an EIN field.</p>
+    <p>Saved SSNs are encrypted and returned as an empty <code>taxId</code> with <code>taxIdLast4</code> and <code>taxIdConfigured</code>, not as plaintext. In settings, leaving a saved SSN input blank preserves it; entering a replacement changes it; the explicit clear action removes it on save. The components handle these write semantics. Custom API forms should omit <code>taxId</code> to preserve it and send <code>taxId: &quot;&quot;</code> to clear it; do not send read-only masking metadata back in a settings write.</p>
+    <p><code>organizationProfileOptions(profile)</code> creates a server-resolved provider reference for an SSN-backed profile. Do not copy the last four digits into a bill&apos;s tax ID. The browser/API create contract accepts <code>billingProvider: &#123; savedProviderId &#125;</code>. Corrections and duplicates can use <code>billingProvider: &#123; sourceBillId &#125;</code> to reuse that bill&apos;s immutable provider snapshot. Both references are resolved within the authenticated organization. Existing TypeScript code should narrow reference versus inline-provider values before reading fields such as <code>name</code> or <code>taxId</code>.</p>
+    <Callout title="Upgrade the complete integration">This contract requires browser 0.28.0, React 0.47.0, or Angular 0.18.0 (or a later compatible release). Update any directly installed browser client alongside the component package, commit the lockfile, rebuild, and test saved SSN create, unchanged save, replace, clear, and correction flows in sandbox. A password input hides screen entry; it does not make logging or persisting the form state safe.</Callout>
+      </details>
 
       <h2 id="setup">Post-submission setup</h2>
       <p>Once a bill exists, add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session restricted to that submitted bill.</p>
-      <CodeBlock code={session} filename="server/bill-session.ts" />
+      <details><summary>Bill-scoped session permissions</summary><p>This excerpt assumes existing authentication, bill-access checks, and the correct organization credential. Apply the <Link href="/guides/authentication#session">server route protections</Link> before issuing sessions.</p><CodeBlock code={session} filename="server/bill-session.ts" /></details>
       <Callout title="Your API key stays server-side">The session fixes the organization, user, bill, origin, expiry, and post-submission permissions.</Callout>
 
       <h2 id="lifecycle">Complete post-submission lifecycle</h2>

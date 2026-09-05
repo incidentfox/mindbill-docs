@@ -19,7 +19,7 @@ export default function HomePage() {
       next={{ href: "/learn/workers-comp-billing", label: "Workers' comp billing" }}
     >
       <div className="action-row">
-        <Link className="button-link primary" href="/learn/quickstart">Submit a sandbox bill</Link>
+        <Link className="button-link primary" href="/learn/quickstart">Start the quickstart</Link>
         <Link className="button-link" href="/learn/workers-comp-billing">Learn the domain</Link>
       </div>
 
@@ -57,7 +57,7 @@ export default function HomePage() {
       <Callout title="Medical-legal billing is available now">
         Use <code>med_legal</code> for California QME and AME workflows. The <code>professional</code> value is reserved for future treatment billing and is not enabled in the public Partner API yet.
       </Callout>
-      <p>Start with the <Link href="/learn/quickstart">component quickstart</Link>. The form component owns fields, validation, required markers, attachments, serialization, and atomic Submit; your server only mints a short-lived session. Framework-neutral REST remains available for headless workflows.</p>
+      <p>Start with the <Link href="/learn/quickstart">quickstart</Link>, then add <Link href="/components/react">React</Link> or <Link href="/components/angular">Angular components</Link>, or <Link href="/guides/bills">submit bills from your own backend</Link>.</p>
     </DocPage>
   );
 }

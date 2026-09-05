@@ -2,54 +2,31 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
-import { IntegrationBuilder } from "@/components/integration-builder";
-import { hostContract, implementationChecklist, prefillRecipe, profileRecipe, reactRecipe } from "@/lib/integration-recipes";
 
 export const metadata: Metadata = { title: "Quickstart" };
 
+const request = `curl --fail-with-body \\
+  'https://app.mindbill.org/partner/v2/claims-administrators?limit=1' \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY"`;
+
 export default function QuickstartPage() {
-  return <DocPage eyebrow="Get started" title="Add billing to your existing product" description="Choose your stack, reuse your authentication and case data, and give your users a complete billing workflow. Copy a framework recipe or the full implementation brief for your coding agent."
-    toc={[{ id: "key", label: "Create a sandbox key" }, { id: "session", label: "Choose your stack" }, { id: "authorization", label: "Authentication and tenants" }, { id: "placements", label: "Where components belong" }, { id: "prefill", label: "Prefill and documents" }, { id: "settings", label: "Saved settings" }, { id: "verify", label: "Verify the integration" }]}
-    previous={{ href: "/learn/anatomy-of-a-bill", label: "Anatomy of a bill" }} next={{ href: "/components/react", label: "React components" }}>
-    <Callout title="Two supported integration paths">Use connected UI components for forms, bills, and the workspace; your server mints short-lived browser sessions. Or use the REST API from your server and build your own UI. Permanent API keys never belong in browser code.</Callout>
-    <h2 id="key">1. Create a sandbox key</h2>
-    <p><a href="https://platform.mindbill.org">Sign up in the developer console</a>, then open <a href="https://platform.mindbill.org/settings/api-keys">API keys</a> and copy a sandbox key to your server&apos;s secret store. The <a href="https://platform.mindbill.org/quickstart">console quickstart</a> includes this same stack selector.</p>
-    <CodeBlock code={'MINDBILL_API_KEY=<your-sandbox-key>\nAPP_ORIGIN=http://localhost:3000'} language="bash" filename="Server environment — never NEXT_PUBLIC_ or VITE_" />
-    <p><code>APP_ORIGIN</code> is the browser app&apos;s exact origin, including the port. It is not the backend URL and contains no path or trailing slash. Live sessions require HTTPS; sandbox sessions also support loopback HTTP. Keep sandbox and production keys and data separate.</p>
-    <h2 id="session">2. Choose your frontend and backend</h2>
-    <p>React, Angular, or backend-only; Next.js App Router, FastAPI, Express, or a plain HTTP contract. The full brief includes placements, authorization, prefill, attachment rules, and acceptance tests. Paste it into your existing project&apos;s coding-agent session after inspecting your app.</p>
-    <IntegrationBuilder />
-    <h2 id="authorization">3. Connect your existing authentication</h2>
-    <Callout tone="warning" title="A browser token is not a tenant boundary by itself">The API key selects the MindBill organization. <code>subject</code> is audit identity, not a per-user filter. An organization-scoped session can access all bills in that organization. Resolve keys and permissions using trusted server-side membership, never request-body tenant IDs.</Callout>
-    <CodeBlock code={hostContract} language="text" filename="Required host adapter contract" />
-    <p>The recipes deliberately refuse to mint a session until you implement the host adapter. For a single organization, it may select <code>MINDBILL_API_KEY</code> after authenticating membership. Multi-customer apps need a server-owned customer-to-credential mapping. A case-only route must verify access to the host case, resolve the saved MindBill bill ID, and scope the token to that bill. These host routes are yours to implement, not MindBill API endpoints.</p>
-    <p>If frontend and backend are separate origins, use an explicit allowed-origin CORS policy and your existing CSRF protections. Set a <code>getSession</code> callback with the host&apos;s authenticated fetch, rather than weakening the origin guard. Never expose an API key or return raw upstream error bodies.</p>
-    <h2 id="placements">4. Put billing in the places users expect</h2>
-    <p>For React, install <code>@mindbill/react</code> and import its stylesheet once. Rebuild after upgrading and commit the package lockfile with the dependency change. Keep existing routing, authentication, and feature flags.</p>
-    <CodeBlock code="pnpm add @mindbill/react@latest" language="bash" filename="Terminal" />
-    <ul><li><strong>Sidebar → Billing:</strong> <code>ConnectedBillingWorkspace</code> includes task queues, All Bills, bill detail drill-down, procedures, and productivity. It manages bill selection internally.</li><li><strong>Case → Billing tab after Report:</strong> <code>BillSubmissionForm</code> before submission; <code>ConnectedBillLifecycle</code> afterward, using the persisted bill ID.</li><li><strong>Settings → Billing:</strong> <code>BillingSettings</code> for reusable practice setup, with an admin-only session route.</li></ul>
-    <CodeBlock code={reactRecipe} language="jsx" filename="billing.jsx — adapt your existing router" />
-    <p>The workspace needs a bounded, shrinkable parent if the host app disables page scrolling. Use an explicit height and <code>min-height: 0</code> in the flex ancestor chain. Customize the <Link href="/components/react">appearance preset and supported tokens</Link> instead of overriding every button or global border radius.</p>
-    <Callout title="Avoid unnecessary migrations">MindBill owns bills, submissions, EORs, and payments. Reuse existing case metadata to store the returned <code>billId</code> and send your case ID as <code>externalId</code>. External IDs are correlation data, not a uniqueness guarantee. Do not create a second billing schema or recreate bills on component mount. If your app has no durable place for the mapping, agree on the smallest persistence change before running a migration.</Callout>
-    <h2 id="prefill">5. Prefill known data and attach only the final report</h2>
-    <p>Map data you already have: patient name, date of birth and address; claim, employer and injury date; service date; diagnosis codes; procedure codes, modifiers and units. Keep missing values editable. Confirm a canonical claims administrator in the payer picker; a text label from a report is not a verified payer ID.</p>
-    <p>Use your existing structured extraction results. SDK setup should not add ad-hoc regex or AI report parsing, infer clinical codes, or fabricate missing information. Provider templates differ, so preserve review by the user.</p>
-    <CodeBlock code={prefillRecipe} language="jsx" filename="host-billing-adapters.jsx — source field names belong to your app" />
-    <p>Pass <code>billFromCase(caseRecord)</code> as <code>initialBill</code> and <code>finalReportSources(finalizedReportId)</code> as <code>attachments</code>. All supplied source attachments are included unless removed: do not pass every case document or rely on <code>selected: false</code>. Users can add proof of service and other supporting PDFs in the form, including a final report edited outside your app.</p>
-    <h2 id="settings">6. Choose who owns saved practice data</h2>
-    <p>If your app already stores billing provider, rendering provider, service locations, and W-9 documents, keep that ownership and prefill from it. Otherwise offer MindBill&apos;s settings components to avoid building and maintaining duplicate input screens. Check the <Link href="/components/react">current component reference</Link> for saved-profile controls and supported fields.</p>
-    <p>Use a separate admin-authorized session endpoint for <code>organization:manage</code>. Do not grant it to every billing user. Avoid persisting duplicate tax identifiers; keep sensitive values out of browser storage, logs, analytics, screenshots, and coding-agent prompts.</p>
-    <p>For saved choices during bill creation, <code>GET /partner/v2/organization/billing-profile</code> accepts an organization-wide browser session with <code>bills:create</code> and returns a masked organization profile. Bill-scoped sessions cannot perform this lookup. Settings writes still require <code>organization:manage</code>; reading choices does not grant permission to edit them.</p>
-    <CodeBlock code={profileRecipe} language="jsx" filename="Optional saved-profile choices — use the current React release" />
-    <p><code>profileDisplay=&quot;compact&quot;</code> presents saved choices first; <code>&quot;expanded&quot;</code> keeps all fields visible. Host-managed options need no extra storage or organization lookup. Settings support <code>taxIdType: &quot;EIN&quot; | &quot;SSN&quot;</code>; EIN remains the default. Select SSN explicitly rather than putting it in an EIN field.</p>
-    <p>Saved SSNs are encrypted and returned as an empty <code>taxId</code> with <code>taxIdLast4</code> and <code>taxIdConfigured</code>, not as plaintext. In settings, leaving a saved SSN input blank preserves it; entering a replacement changes it; the explicit clear action removes it on save. The components handle these write semantics. Custom API forms should omit <code>taxId</code> to preserve it and send <code>taxId: &quot;&quot;</code> to clear it; do not send read-only masking metadata back in a settings write.</p>
-    <p><code>organizationProfileOptions(profile)</code> creates a server-resolved provider reference for an SSN-backed profile. Do not copy the last four digits into a bill&apos;s tax ID. The browser/API create contract accepts <code>billingProvider: &#123; savedProviderId &#125;</code>. Corrections and duplicates can use <code>billingProvider: &#123; sourceBillId &#125;</code> to reuse that bill&apos;s immutable provider snapshot. Both references are resolved within the authenticated organization. Existing TypeScript code should narrow reference versus inline-provider values before reading fields such as <code>name</code> or <code>taxId</code>.</p>
-    <Callout title="Upgrade the complete integration">This contract requires browser 0.28.0, React 0.47.0, or Angular 0.18.0 (or a later compatible release). Update any directly installed browser client alongside the component package, commit the lockfile, rebuild, and test saved SSN create, unchanged save, replace, clear, and correction flows in sandbox. A password input hides screen entry; it does not make logging or persisting the form state safe.</Callout>
-    <h2 id="verify">7. Verify the complete sandbox workflow</h2>
-    <p>Enable both the sidebar and case tab for the intended test user, and enforce the feature flag on the server too. Test an unenrolled user and a different customer as negative cases. In the sandbox, create a bill, simulate payer responses, open every submission&apos;s details, and test notes, second review, attachments, routing, and payment posting.</p>
-    <p><strong>Sent bills are still bills.</strong> A payer-waiting bill may not be an actionable follow-up task, but must remain visible through All Bills and its lifecycle screen. Check empty states, errors, mobile/laptop scrolling, and your chosen theme before launching.</p>
-    <CodeBlock code={implementationChecklist} language="text" filename="Agent and human acceptance checklist" />
-    <p>For customer notifications, use <Link href="/api-reference/events">signed webhooks</Link>: verify the raw-body signature, deduplicate event IDs, handle retries and out-of-order delivery, and reconcile current bill state. Send PHI-free notifications linking back to authenticated screens. Email notification delivery is host work; it does not appear automatically by rendering a component.</p>
-    <p><Link href="/api-reference/browser-sessions">Browser-session API contract →</Link></p>
+  return <DocPage eyebrow="Get started" title="Make your first API request"
+    description="Create a sandbox key, read the claims-administrator directory, and choose how to add billing to your product."
+    toc={[{ id: "key", label: "Get a sandbox key" }, { id: "request", label: "Make a request" }, { id: "next", label: "Add your billing workflow" }]}
+    previous={{ href: "/", label: "Overview" }} next={{ href: "/guides/bills", label: "Submit a bill" }}>
+    <h2 id="key">1. Get a sandbox key</h2>
+    <p><a href="https://platform.mindbill.org/onboarding">Create a developer account</a> and a sandbox organization. Save its API key as <code>MINDBILL_API_KEY</code> in your server environment or local terminal. The key needs <code>payers:read</code>, included with new self-serve accounts.</p>
+    <Callout title="Keep your API key on the server">Never put it in browser code or a public environment variable. Use invented patients and documents in sandbox; sandbox submissions never reach payers.</Callout>
+    <h2 id="request">2. Read the claims-administrator directory</h2>
+    <CodeBlock code={request} language="bash" filename="Terminal" />
+    <p>A successful request returns <code>200 OK</code> with a top-level <code>results</code> array and <code>total</code>. Each result includes an administrator <code>id</code>, <code>name</code>, and payer choices. You have authenticated against the same directory used by our components.</p>
+    <p>Use <code>q</code> to search by name and <code>offset</code> to page through results. See the <Link href="/api-reference/claims-administrators">directory reference</Link> for the response fields.</p>
+    <details><summary>If the request fails</summary><p><code>400 org_required</code>: an account-scoped key needs <code>X-MindBill-Org-Id</code> set to an organization ID from your console. The default sandbox organization key does not need this header.</p><p><code>401</code>: check that the key is present and valid. <code>403</code>: check for the <code>payers:read</code> scope; an older key may need replacement in <a href="https://platform.mindbill.org/settings/api-keys">API key settings</a>. See <Link href="/guides/authentication">authentication</Link> for credential and permission details.</p></details>
+    <h2 id="next">3. Add your billing workflow</h2>
+    <div className="term-list compact">
+      <div><b>Your own UI</b><p><Link href="/guides/bills">Submit a bill from your backend</Link>. Send the reviewed bill and PDFs together, then save the returned bill ID.</p></div>
+      <div><b>React or Angular</b><p>Add <Link href="/components/react">React components</Link> or <Link href="/components/angular">Angular components</Link>. Your server issues a short-lived browser session using the <Link href="/guides/authentication#session">framework recipes</Link>.</p></div>
+    </div>
+    <p>Both paths use the same <Link href="/api-reference">API endpoints</Link>. Before going live, complete the <Link href="/guides/sandbox#verify">sandbox checks</Link>.</p>
   </DocPage>;
 }

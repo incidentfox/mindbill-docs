@@ -39,11 +39,11 @@ export default function ApiReferencePage() {
       <div className="api-base-url"><small>Base URL</small><code>https://app.mindbill.org/partner/v2</code></div>
       <p>Use the same business endpoints from your server or browser to look up reference data, create and submit bills atomically, and perform allowed lifecycle actions. All resources are isolated to the organization attached to the credential.</p>
 
-      <Callout title="APIs behind the React components">The <Link href="/api-reference/claims-administrators">claims-administrator directory</Link>, diagnosis lookup, ZIP lookup, and delivery preview already exist. Browse the <Link href="/api-reference/browser-api">complete component API inventory</Link> for the routes called by the browser SDK, including reports and organization settings.</Callout>
+      <Callout title="APIs behind the React components">The components use these same endpoints for the <Link href="/api-reference/claims-administrators">claims-administrator directory</Link>, bills, reports, and settings. The <Link href="/api-reference/browser-api">component API inventory</Link> maps each surface to its routes.</Callout>
       <p>The <a href="/openapi.yaml">downloadable OpenAPI contract</a> describes the shared API and the credentials accepted by each operation.</p>
       <h2 id="conventions">Conventions</h2>
       <h3>Authentication</h3>
-      <p>Business endpoints accept either a server API key or a short-lived browser session as a bearer token. Browser requests also require the exact Origin authorized for the session; permissions and resource limits still apply. Keep long-lived keys on your backend. Session issuance, management sessions, events, and webhook-delivery administration require server API keys. Legacy /partner/v2/browser routes remain compatibility aliases; new integrations should use the canonical URLs below.</p>
+      <p>Business endpoints accept a server API key or a short-lived browser session as a bearer token. Browser sessions also require the authorized Origin and remain limited by their permissions and bill scope. Session issuance, management sessions, events, and webhook-delivery administration require a server key. See <Link href="/guides/authentication">authentication</Link> for setup and permission rules.</p>
       <CodeBlock code={authenticate} language="bash" filename="Request" />
       <h3>Idempotency</h3>
       <p>For endpoints marked idempotent, send a stable <code>Idempotency-Key</code> on mutations. Reusing a key with the same request safely returns the original result; reusing it with a different request is rejected.</p>
