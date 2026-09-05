@@ -142,6 +142,8 @@ export default function LifecyclePage() {
 
       <h2 id="events">Use events for durable synchronization</h2>
       <p>Component callbacks keep the current screen responsive. Signed webhooks should update your database in the background. Store the event ID before processing so a retry is harmless.</p>
+      <p>Verified console members can opt into their own status and aging emails in the developer console&apos;s Settings → Notifications. Preferences are separate for each workspace and environment; sandbox previews never send email. Opting in does not send historical catch-up messages. These notices contain no patient or bill details.</p>
+      <Callout title="Notify your own application users">For doctors or staff who do not have a MindBill console membership, use signed webhooks to drive your application&apos;s notification preferences and delivery. Courtesy-copy recipient options are not notification subscriptions, and the console preference API cannot enroll arbitrary recipient addresses.</Callout>
       <CodeBlock code={event} language="json" filename="bill.denied.json" />
     </DocPage>
   );
