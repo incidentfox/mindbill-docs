@@ -227,6 +227,7 @@ button { color: inherit; }
 .api-meta-grid strong { overflow-wrap: anywhere; font-size: 13px; line-height: 1.5; }
 .api-endpoint-list { margin: 20px 0 40px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; }
 .api-endpoint-card { display: grid; grid-template-columns: minmax(200px, .85fr) minmax(150px, .75fr) minmax(240px, 1.4fr); gap: 18px; align-items: center; padding: 17px 18px; border-top: 1px solid var(--line); }
+.browser-api-card { grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .api-endpoint-card:first-child { border-top: 0; }
 .api-endpoint-card:hover { background: var(--surface); }
 .api-endpoint-card > div { display: flex; align-items: center; gap: 10px; min-width: 0; }

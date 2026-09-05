@@ -3,7 +3,16 @@
 import { Command, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { apiEndpoints } from "@/lib/api-reference";
 import { navigation } from "@/lib/navigation";
+
+const searchItems = [
+  ...navigation,
+  ...apiEndpoints.filter((endpoint) => !navigation.some((item) => item.href === `/api-reference/${endpoint.slug}`)).map((endpoint) => ({
+    href: `/api-reference/${endpoint.slug}`, label: endpoint.title, description: endpoint.summary,
+    group: "Reference", icon: Search, keywords: [endpoint.path, endpoint.method, ...(endpoint.permissions ?? [])],
+  })),
+];
 
 export function SearchDialog() {
   const [open, setOpen] = useState(false);
@@ -29,8 +38,8 @@ export function SearchDialog() {
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return navigation;
-    return navigation.filter((item) =>
+    if (!needle) return searchItems;
+    return searchItems.filter((item) =>
       [item.label, item.description, item.group, ...item.keywords]
         .join(" ")
         .toLowerCase()

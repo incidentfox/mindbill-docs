@@ -1,3 +1,5 @@
+import { referenceDataEndpoints } from "./reference-data-api";
+
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export type ApiField = {
@@ -17,7 +19,8 @@ export type ApiExample = {
 
 export type ApiEndpoint = {
   slug: string;
-  group: "Bills" | "Documents" | "Reviews" | "Lifecycle" | "Platform";
+  group: "Bills" | "Documents" | "Reviews" | "Lifecycle" | "Platform" | "Directories";
+  authentication?: "api-key" | "browser-session";
   method: HttpMethod;
   path: string;
   title: string;
@@ -85,6 +88,7 @@ const createBillFields: ApiField[] = [
   { name: "claim.injuryState", type: "string", description: "Two-letter state code governing the claim." },
   { name: "claim.description", type: "string", description: "Short injury description." },
   { name: "claim.claimsAdministrator.id", type: "string", required: true, description: "Opaque MindBill payer-directory identifier selected from the claims-administrator directory." },
+  { name: "claim.claimsAdministrator.payerId", type: "string", description: "Optional payer-choice key from the claims-administrator search results (payers[].key). Required when the selected administrator needs a payer choice; this is not a clearinghouse payer ID." },
   { name: "claim.claimsAdministrator.name", type: "string", required: true, description: "Canonical carrier or third-party administrator display name." },
   { name: "service.date", type: "string", required: true, description: "Primary date of service for the bill.", constraint: "YYYY-MM-DD" },
   { name: "service.endDate", type: "string | null", description: "End date only for a service that spans multiple dates.", constraint: "YYYY-MM-DD" },
@@ -251,6 +255,7 @@ const bill = await mindbill.createAndSubmitBill({
 }, "report_9f7a");`;
 
 export const apiEndpoints: ApiEndpoint[] = [
+  ...referenceDataEndpoints,
   {
     slug: "create-bill",
     group: "Bills",
@@ -706,7 +711,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     requestFields: [
       { name: "subject", type: "string", required: true, description: "Stable identifier for the signed-in user in your system." },
       { name: "allowedOrigin", type: "string", required: true, description: "Exact browser origin. Paths, query strings, fragments, and credentials are rejected.", constraint: "HTTPS; HTTP loopback allowed in sandbox" },
-      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, and eors:read." },
+      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, eors:read, and organization:manage." },
       { name: "resource.billId", type: "string", description: "Optional least-privilege restriction to one existing bill. Cannot be combined with bills:create." },
       { name: "expiresIn", type: "number", description: "Session lifetime in seconds.", constraint: "Integer 60–3600" },
     ],
@@ -880,7 +885,7 @@ export async function POST(request: Request) {
   },
 ];
 
-export const endpointGroups = ["Bills", "Documents", "Reviews", "Lifecycle", "Platform"] as const;
+export const endpointGroups = ["Directories", "Bills", "Documents", "Reviews", "Lifecycle", "Platform"] as const;
 
 export function endpointBySlug(slug: string) {
   return apiEndpoints.find((endpoint) => endpoint.slug === slug);

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 import { EndpointList } from "@/components/api-reference";
@@ -36,14 +37,16 @@ export default function ApiReferencePage() {
       next={{ href: "/api-reference/create-bill", label: "Create and submit a bill" }}
     >
       <div className="api-base-url"><small>Base URL</small><code>https://app.mindbill.org/partner/v2</code></div>
-      <p>Use the REST API from your server to create and submit a bill atomically. After submission, a short-lived browser session lets React, Angular, or browser SDK surfaces read the bill and perform allowed lifecycle actions. All resources are isolated to the organization attached to the credential.</p>
+      <p>Use the REST API from your server to create and submit a bill atomically. Short-lived browser sessions let React, Angular, or browser SDK surfaces look up reference data, submit bills, and perform allowed lifecycle actions. All resources are isolated to the organization attached to the credential.</p>
 
+      <Callout title="APIs behind the React components">The <Link href="/api-reference/claims-administrators">claims-administrator directory</Link>, diagnosis lookup, ZIP lookup, and delivery preview already exist. Browse the <Link href="/api-reference/browser-api">complete component API inventory</Link> for the routes called by the browser SDK, including reports and organization settings.</Callout>
+      <p>The <a href="/openapi.yaml">downloadable OpenAPI contract</a> describes the server API. The browser routes documented here are a separate surface.</p>
       <h2 id="conventions">Conventions</h2>
       <h3>Authentication</h3>
-      <p>Send a server API key as a bearer token. Never expose this key in browser code. Browser sessions are exact-origin, role-permissioned, short-lived credentials minted by your server.</p>
+      <p>Send a server API key as a bearer token. Never expose this key in browser code. Browser sessions are exact-origin, role-permissioned, short-lived credentials minted by your server. Routes under /partner/v2/browser require the session token and a matching Origin header; a server API key is not interchangeable with that token.</p>
       <CodeBlock code={authenticate} language="bash" filename="Request" />
       <h3>Idempotency</h3>
-      <p>Send a stable <code>Idempotency-Key</code> on every mutation. Reusing a key with the same request safely returns the original result; reusing it with a different request is rejected.</p>
+      <p>For endpoints marked idempotent, send a stable <code>Idempotency-Key</code> on mutations. Reusing a key with the same request safely returns the original result; reusing it with a different request is rejected.</p>
       <Callout title="Create and submit are atomic">The public API has no draft bill. Send the reviewed snapshot, delivery route, and payer packet together. Success creates an immutable bill whose first status is <code>submitted</code>; failure creates no public bill.</Callout>
 
       {endpointGroups.map((group) => {
@@ -52,7 +55,7 @@ export default function ApiReferencePage() {
       })}
 
       <h2 id="errors">Errors</h2>
-      <p>Non-2xx responses use RFC 9457-style Problem Details. Use <code>code</code> for program logic and map each <code>errors[].path</code> back to the corresponding form field.</p>
+      <p>Server API errors use RFC 9457-style Problem Details. Browser lookup routes also have endpoint-specific error shapes documented on their reference pages; the diagnosis-code lookup can return an error field with HTTP 200. Use <code>code</code> for program logic and map each <code>errors[].path</code> back to the corresponding form field.</p>
       <CodeBlock code={error} language="json" filename="422 Unprocessable Entity" />
       <div className="term-list compact">
         <div><b>400</b><p>Malformed JSON or an invalid parameter.</p></div>
