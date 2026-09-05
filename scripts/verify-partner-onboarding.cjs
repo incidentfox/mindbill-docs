@@ -30,6 +30,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       assert.match(brief, /assigned_bills/);
       assert.match(brief, /Notifications default OFF/);
       assert.match(brief, /NotificationSettings/);
+      assert.match(brief, /NotificationRecipientsSettings/);
+      assert.match(brief, /requestId/);
+      assert.match(brief, /48.hour/);
       assert.match(brief, /Protect mutations with CSRF/);
       assert.match(brief, /recipients\/\{externalUserId\}\/bills\/\{billId\}/);
       await builder.locator('select').nth(0).selectOption('API only');
@@ -45,6 +48,24 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       assert.match(notificationText, /X-Notification-Request-Id/);
       assert.match(notificationText, /not MindBill exports/);
       assert.match(notificationText, /DELETE removed assignments first/);
+      assert.match(notificationText, /@mindbill\/react@0\.51\.0/);
+      assert.match(notificationText, /ConnectedNotificationRecipientsSettings/);
+      assert.match(notificationText, /An administrator cannot opt someone else in/);
+      assert.match(notificationText, /does not schedule financial report digests/);
+      assert.match(notificationText, /Sandbox sends neither invitation nor alert email/);
+      assert.match(notificationText, /new invitation disables an existing subscription/);
+      await page.locator('.code-block').filter({ hasText: 'components/BillingRecipients.tsx' })
+        .getByRole('button', { name: 'Copy', exact: true }).click();
+      const recipientCode = await page.evaluate(() => navigator.clipboard.readText());
+      assert.match(recipientCode, /NotificationRecipientsSettings/);
+      assert.match(recipientCode, /input\.requestId/);
+      assert.doesNotMatch(recipientCode, /Bearer/);
+      const recipientSection = page.locator('#recipients');
+      await recipientSection.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: `${output}/notification-recipient-guide-${width}.png` });
+      await page.locator('#invitation-api').scrollIntoViewIfNeeded();
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+      await page.screenshot({ path: `${output}/notification-recipient-adapter-${width}.png` });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
       await page.screenshot({ path: `${output}/notifications-${width}.png`, fullPage: true });
       await page.locator('#widget').scrollIntoViewIfNeeded();
@@ -72,6 +93,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     await page.goto(`${base}/components/react`);
     await page.getByRole('heading', { name: 'Notification settings', exact: true }).waitFor();
     assert.match(await page.locator('body').innerText(), /copyable server adapter/);
+    assert.match(await page.locator('body').innerText(), /pnpm add @mindbill\/react@0\.51\.0/);
+    assert.match(await page.locator('body').innerText(), /NotificationRecipientsSettings/);
+    await page.goto(`${base}/learn/quickstart`);
+    await page.getByRole('link', { name: 'administrator recipient list' }).click();
+    await page.locator('#recipients').waitFor();
+    assert.match(page.url(), /\/guides\/notifications#recipients$/);
     assert.deepEqual(errors, []);
     console.log('PASS: desktop/mobile onboarding, notifications, payment review, W-9 settings, historical artifact docs, no page errors');
   } finally { await browser.close(); }
