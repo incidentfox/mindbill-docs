@@ -29,7 +29,7 @@ export const browserApiInventory: BrowserApiInventoryEntry[] = [
     method: "GET",
     path: "/partner/v2/bill-dashboard",
     permission: "bills:read",
-    purpose: "List and filter the partner's bills in the session organization; requires an organization-wide session.",
+    purpose: "List and filter the partner's bills in the session organization; requires an organization-wide session. Use renderingProviderId from filters.renderingProviders for a rendering-doctor filter.",
     sdkMethod: "getBills",
   },
   {
@@ -97,6 +97,13 @@ export const browserApiInventory: BrowserApiInventoryEntry[] = [
   },
   {
     method: "GET",
+    path: "/partner/v2/bills/{billId}/submissions/{attemptId}/artifacts/{artifactId}",
+    permission: "bills:read",
+    purpose: "Download exact retained electronic bill or attachment bytes for the selected submission. Read artifact IDs from lifecycle.submissionDetails; missing retained files return 404, never a regenerated current packet.",
+    sdkMethod: "getSubmissionArtifact",
+  },
+  {
+    method: "GET",
     path: "/partner/v2/claims-administrators",
     permission: "payers:read",
     purpose: "Browse or search claims administrators, payer choices, and matching hints before a bill exists.",
@@ -134,7 +141,7 @@ export const browserApiInventory: BrowserApiInventoryEntry[] = [
     method: "GET",
     path: "/partner/v2/bill-tasks",
     permission: "bills:read",
-    purpose: "Read the partner's bill task dashboard, waiting items, and claims-administrator filters with an organization-wide session.",
+    purpose: "Read the partner's bill task dashboard, waiting items, claims-administrator and rendering-doctor filters with an organization-wide session. renderingProviderId filters both tasks and waiting bills.",
     sdkMethod: "getBillTasks",
   },
   {

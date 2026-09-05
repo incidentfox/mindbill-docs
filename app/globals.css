@@ -114,7 +114,7 @@ button { color: inherit; }
 .doc-content p, .doc-content li { color: var(--muted); font-size: 16px; line-height: 1.75; }
 .doc-content p { margin: 12px 0 20px; }
 .doc-content a:not(.button-link) { color: var(--accent-text); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset: 3px; }
-.doc-content code:not(pre code) { padding: .12em .38em; border-radius: 5px; background: var(--surface-2); color: var(--text); font: 0.88em/1.4 "JetBrains Mono", ui-monospace, monospace; }
+.doc-content code:not(pre code) { padding: .12em .38em; border-radius: 5px; background: var(--surface-2); color: var(--text); font: 0.88em/1.4 "JetBrains Mono", ui-monospace, monospace; overflow-wrap: anywhere; }
 .doc-content ul { padding-left: 22px; }
 .action-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 34px; }
 .button-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 19px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--text) !important; background: var(--surface-raised); font-weight: 750; text-decoration: none !important; }
