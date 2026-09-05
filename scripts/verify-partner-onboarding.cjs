@@ -1,4 +1,5 @@
 // Synthetic production-preview smoke. PLAYWRIGHT_MODULE may point to a shared install.
+/* eslint-disable @typescript-eslint/no-require-imports -- Standalone CommonJS browser verification script. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
@@ -26,12 +27,15 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       assert.match(brief, /Frontend: Angular; backend: FastAPI/);
       assert.match(brief, /Notification ownership/);
       assert.match(brief, /consent/);
+      assert.match(brief, /assigned_bills/);
+      assert.match(brief, /recipients\/\{externalUserId\}\/bills\/\{billId\}/);
       await builder.locator('select').nth(0).selectOption('API only');
       await builder.getByRole('button', { name: 'Copy full agent brief' }).click();
       assert.match(await page.evaluate(() => navigator.clipboard.readText()), /No React package or browser token required/);
       await page.screenshot({ path: `${output}/quickstart-${width}.png`, fullPage: true });
       assert.equal((await page.goto(`${base}/guides/notifications`)).status(), 200);
       await page.getByRole('heading', { name: 'Send useful billing notifications' }).waitFor();
+      assert.match(await page.locator('body').innerText(), /Removing an association suppresses pending notifications/);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
       await page.screenshot({ path: `${output}/notifications-${width}.png`, fullPage: true });
     }
