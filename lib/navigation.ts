@@ -25,6 +25,14 @@ export type DocLink = {
 
 export const navigation: DocLink[] = [
   {
+    href: "/guides/payment-review",
+    label: "Payment review",
+    description: "Review confirmed cash, filter payment entries, and open the matching bill.",
+    group: "Build",
+    icon: CircleDollarSign,
+    keywords: ["reconciliation", "cash", "accounting", "payment", "ledger"],
+  },
+  {
     href: "/",
     label: "Overview",
     description: "What MindBill does and where it fits in a workers' comp product.",

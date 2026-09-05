@@ -49,9 +49,22 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       await page.screenshot({ path: `${output}/notifications-${width}.png`, fullPage: true });
       await page.locator('#widget').scrollIntoViewIfNeeded();
       await page.screenshot({ path: `${output}/notification-widget-guide-${width}.png` });
+      await page.goto(`${base}/guides/payment-review`);
+      await page.getByRole('heading', { name: 'Review confirmed payments', exact: true }).waitFor();
+      assert.match(await page.locator('body').innerText(), /ConnectedPaymentReview/);
+      assert.match(await page.locator('body').innerText(), /Pending EOR or 835 amounts are not confirmed cash/);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+      await page.screenshot({ path: `${output}/payment-review-guide-${width}.png` });
+      await page.goto(`${base}/guides/documents#w9-settings`);
+      await page.locator('#w9-settings').scrollIntoViewIfNeeded();
+      assert.match(await page.locator('body').innerText(), /W9Upload/);
+      assert.match(await page.locator('body').innerText(), /organization:manage/);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+      await page.screenshot({ path: `${output}/w9-settings-guide-${width}.png` });
     }
     await page.goto(`${base}/api-reference/browser-api`);
     assert.match(await page.locator('body').innerText(), /getSubmissionArtifact/);
+    assert.match(await page.locator('body').innerText(), /getPaymentReview/);
     assert.match(await page.locator('body').innerText(), /\/partner\/v2\/bills\/\{billId\}\/submissions\/\{attemptId\}\/artifacts\/\{artifactId\}/);
     await page.goto(`${base}/guides/lifecycle`);
     assert.match(await page.locator('body').innerText(), /getSubmissionArtifact/);
@@ -60,6 +73,6 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     await page.getByRole('heading', { name: 'Notification settings', exact: true }).waitFor();
     assert.match(await page.locator('body').innerText(), /copyable server adapter/);
     assert.deepEqual(errors, []);
-    console.log('PASS: desktop/mobile onboarding copy + download, notifications, historical artifact docs, no page errors');
+    console.log('PASS: desktop/mobile onboarding, notifications, payment review, W-9 settings, historical artifact docs, no page errors');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

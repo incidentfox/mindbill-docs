@@ -19,6 +19,13 @@ export type BrowserApiInventoryEntry = {
 /** Distinct MindBill routes called by @mindbill/browser and @mindbill/react. */
 export const browserApiInventory: BrowserApiInventoryEntry[] = [
   {
+    method: "GET",
+    path: "/partner/v2/reports/payments",
+    permission: "bills:read",
+    purpose: "Review confirmed payment entries and filtered totals; requires an organization-wide session. Pending EOR/835 amounts and historical legacy entries are excluded.",
+    sdkMethod: "getPaymentReview",
+  },
+  {
     method: "POST",
     path: "/partner/v2/bills",
     permission: "bills:create",

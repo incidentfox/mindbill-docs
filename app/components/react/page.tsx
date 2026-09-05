@@ -34,7 +34,7 @@ const connectedWorkspace = `import { ConnectedBillingWorkspace } from "@mindbill
   sessionEndpoint="/api/mindbill/session"
   appearance={{ preset: "calm-clinical" }}
   onCreateBill={() => navigate("/billing/new")}
-  onSelectBill={(bill) => navigate(\`/billing/\${bill.id}\`)}
+  style={{ height: "calc(100dvh - 96px)", minHeight: 0 }}
 />`;
 
 const connectedSearch = `import { ConnectedBillSearch } from "@mindbill/react";
@@ -401,6 +401,7 @@ export default function ReactPage() {
       <h2 id="operations">Dashboard, aging, bill list, and reporting</h2>
       <p><code>ConnectedBillingWorkspace</code> is the default partner integration. It owns fetching, filters, drill-down navigation, selected views, loading and error states, and per-bill lifecycle actions. Use an organization-wide session with bills:create, bills:read, bills:act, documents:read, payers:read, and eors:read. A create-only submission session cannot load the workspace.</p>
       <CodeBlock code={connectedWorkspace} filename="Billing.tsx" />
+      <p>React 0.50.0 includes a <strong>Payment review</strong> tab for confirmed cash, with received-date filters, search, totals, bill drill-down, and page export. Set <code>initialView=&quot;payments&quot;</code> or use <code>ConnectedPaymentReview</code> independently. See <Link href="/guides/payment-review">payment-review data and access rules</Link>. The workspace manages its own bill-detail navigation.</p>
       <Callout title="Bill Tasks and All Bills are intentionally different">Bill Tasks contains only open work that requires action. All Bills is the complete registry, including sent, accepted, processed, rejected, paid, and closed bills.</Callout>
       <p>Use <code>ConnectedBillSearch</code> independently when your product already has its own navigation. It searches patient name, bill ID, and claim number and combines that search with status, billing-provider, claims-administrator, A/R-age, and date filters.</p>
       <CodeBlock code={connectedSearch} filename="AllBills.tsx" />
@@ -420,6 +421,7 @@ export default function ReactPage() {
       <p><code>OrganizationOnboarding</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission — so your users never visit the MindBill dashboard. <code>BillingSettings</code> is the compact edit-after-setup variant. The review step renders MindBill&apos;s onboarding checklist and <code>onCompleted</code> fires when billing setup is done.</p>
       <p>From React 0.47.0, settings accept EIN or SSN with an explicit tax ID type. Saved SSNs are encrypted and masked in responses. A blank saved SSN field preserves it, a replacement changes it, and the clear button requests removal on save. Use <code>organizationProfileOptions(profile)</code> for SSN-backed saved billing choices so submission sends a provider reference rather than a masked identifier. See the saved-profile details below.</p>
       <CodeBlock code={orgOnboardingCode} filename="BillingSetup.tsx" />
+      <p>If your app already stores and extracts W-9s, React 0.50.0&apos;s <code>W9Upload</code> renders the upload, current document, extraction progress, retry, and review states using your host callbacks. It does not create another document store or parser. See <Link href="/guides/documents#w9-settings">choose one W-9 storage owner</Link>.</p>
       <details id="saved-profiles"><summary>Saved profiles, provider references, and tax ID handling</summary>
     <p>If your app already stores billing provider, rendering provider, service locations, and W-9 documents, keep that ownership and prefill from it. Otherwise offer MindBill&apos;s settings components to avoid building and maintaining duplicate input screens. Check the <Link href="/components/react">current component reference</Link> for saved-profile controls and supported fields.</p>
     <p>Use a separate admin-authorized session endpoint for <code>organization:manage</code>. Do not grant it to every billing user. Avoid persisting duplicate tax identifiers; keep sensitive values out of browser storage, logs, analytics, screenshots, and coding-agent prompts.</p>
