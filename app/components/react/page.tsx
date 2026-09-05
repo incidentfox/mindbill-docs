@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
+import { notificationSettingsReact } from "@/lib/notification-settings-recipes";
 import {
   ActivityTimelinePlayground,
   BillingDashboardPlayground,
@@ -310,6 +311,7 @@ export default function ReactPage() {
         { id: "form", label: "Submission form" },
         { id: "sections", label: "Individual form sections" },
         { id: "operations", label: "Dashboard and reporting" },
+        { id: "notifications", label: "Notification settings" },
         { id: "setup", label: "Post-submit setup" },
         { id: "lifecycle", label: "Complete lifecycle" },
         { id: "custom", label: "Custom lifecycle UI" },
@@ -400,6 +402,12 @@ export default function ReactPage() {
       <p><code>OrganizationOnboarding</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission — so your users never visit the MindBill dashboard. <code>BillingSettings</code> is the compact edit-after-setup variant. The review step renders MindBill&apos;s onboarding checklist and <code>onCompleted</code> fires when billing setup is done.</p>
       <p>From React 0.47.0, settings accept EIN or SSN with an explicit tax ID type. Saved SSNs are encrypted and masked in responses. A blank saved SSN field preserves it, a replacement changes it, and the clear button requests removal on save. Use <code>organizationProfileOptions(profile)</code> for SSN-backed saved billing choices so submission sends a provider reference rather than a masked identifier. See the <a href="/learn/quickstart#settings">saved-profile contract and upgrade checklist</a>.</p>
       <CodeBlock code={orgOnboardingCode} filename="BillingSetup.tsx" />
+
+      <h2 id="notifications">Notification settings</h2>
+      <p><code>NotificationSettings</code> (alias <code>ConnectedNotificationSettings</code>) adds a default-off email preferences panel to your existing settings page. It supports explicit consent, status updates, 30/60/90-day aging reminders, quiet hours, and unsubscribe for any partner&apos;s users, including people without a console account.</p>
+      <CodeBlock code={notificationSettingsReact} filename="components/BillingNotificationSettings.tsx" />
+      <p>Your adapter calls an authenticated host-server route and reloads GET after each PUT or DELETE. The server owns identity, verified email, practice/assigned-bill access, consent records, and the permanent API key. Change <code>identityKey</code> when the host user, practice, or environment changes. Use <code>appearance</code>, <code>className</code>, and <code>style</code> for theming. See the <Link href="/guides/notifications#host">copyable server adapter and required host checks</Link> before wiring this up.</p>
+      <Callout title="Never an automatic subscription">Rendering the widget, passing a contact list, and assigning bill access do not opt anyone in. Feature availability and email verification must be confirmed by your server. An empty assigned-bill audience sends nothing, and sandbox never sends email.</Callout>
 
       <h2 id="setup">Post-submission setup</h2>
       <p>Once a bill exists, add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session restricted to that submitted bill.</p>

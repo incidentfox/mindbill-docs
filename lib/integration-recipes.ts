@@ -71,6 +71,16 @@ export function HostProfileBill({ initialBill, savedBillingProvider,
 // Do not send response-only taxIdLast4/taxIdConfigured in a settings write.`;
 
 export const notificationRecipe = `Notification ownership (choose deliberately):
+Notifications default OFF for every partner, not just Docura.
+React: add NotificationSettings (ConnectedNotificationSettings alias) to your existing
+settings page. Use a memoized host-server adapter { load, save, unsubscribe } and an
+identityKey that changes with user/practice/environment. No admin key in the browser.
+The widget submits preference fields + explicit consent only; identity/email/audience,
+verification timestamps and bill IDs are server-owned. Protect mutations with CSRF.
+GET -> PUT/DELETE -> reload GET; mutation acknowledgments are not settings snapshots.
+Any changed enabled settings require fresh consent (including quiet hours). Persist
+the real consent receipt and reuse it for identical retries; do not renew consent in jobs.
+Copyable React and trusted server templates: https://docs.mindbill.org/guides/notifications
 1. MindBill can send alerts to users without console accounts, including doctors
    authorized for only specific bills. Your SERVER supplies the trusted assignments.
    Choose audience: "assigned_bills" for those doctors, "practice" only for users
