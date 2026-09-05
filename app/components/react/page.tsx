@@ -394,6 +394,9 @@ export default function ReactPage() {
       <p>Pass the returned <code>billId</code>. <code>ConnectedBillLifecycle</code> never creates or edits a pre-submission draft.</p>
       <CodeBlock code={lifecycle} filename="SubmittedBill.tsx" />
       <p>The component includes lifecycle progress, the frozen bill snapshot, a consolidated EOR and payment reconciliation surface, rich claims-administrator directory details, history, packet preview, and a sticky state-aware action bar for Second Review, correction, IBR, lien, payment, or closure when eligible.</p>
+      <p>From React 0.48.0, selecting an Original Bill or another submission opens that submission&apos;s <strong>Bill details</strong>, not the history tab. Historical details are read-only: current-bill actions and balances are not presented as historical facts. Older submissions without a stored snapshot show an explicit availability warning instead of substituting the current bill.</p>
+      <p>The current bill also includes workspace-only team notes and <strong>Forward copy</strong>. Forwarding previews one combined PDF, then requires confirmation before emailing it; it does not resubmit the bill or change its status. Sandbox forwarding is simulated and sends no email. See <a href="/guides/lifecycle#communications">communications and permissions</a>.</p>
+      <p>The Second Review dialog supports per-line corrections to units, modifiers, and the explicitly reviewed charge. It does not guess a new charge when units or modifiers change. These corrections apply to the new review submission, preserving the original bill&apos;s history.</p>
       <Callout title="Only bill ID and session">The connected lifecycle accepts no initial bill data. Pass the submitted <code>billId</code> and a short-lived browser session; MindBill remains authoritative for the snapshot, payer directory, EORs, payments, history, and actions.</Callout>
       <LifecyclePlayground />
 

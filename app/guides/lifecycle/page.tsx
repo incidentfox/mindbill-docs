@@ -87,6 +87,7 @@ export default function LifecyclePage() {
         { id: "actions", label: "Take the next action" },
         { id: "history", label: "Show bill history" },
         { id: "reviews", label: "SBR and IBR" },
+        { id: "communications", label: "Notes and courtesy copies" },
         { id: "events", label: "Events and webhooks" },
       ]}
       previous={{ href: "/guides/documents", label: "Documents" }}
@@ -123,13 +124,20 @@ export default function LifecyclePage() {
 
       <h2 id="history">Show bill history</h2>
       <p>The connected lifecycle response includes newest-first <code>activity</code>. <code>BillActivityTimeline</code> renders it directly, or accepts the same records from your own webhook-backed store.</p>
+      <p>In React 0.48.0 and later, submission cards open the selected submission&apos;s Bill details; Bill history remains a separate, explicit tab. Custom interfaces can read <code>lifecycle.submissionDetails</code>, matching both <code>attemptId</code> and <code>billId</code>. A <code>submission_snapshot</code> is the captured outgoing detail, <code>bill_record</code> is a labeled legacy fallback, and <code>unavailable</code> means no trustworthy detail exists. Do not replace missing historical data with today&apos;s bill or turn unrecorded historical payment amounts into zero.</p>
       <ActivityTimelinePlayground />
       <Callout title="Read for UI, webhooks for durable sync">The bill endpoint is enough to render the current screen. Signed webhooks remain the authoritative way to update your database after the browser closes.</Callout>
 
       <h2 id="reviews">Second Bill Review before IBR</h2>
       <p>California payment disputes generally begin with Second Bill Review. If the dispute remains eligible after SBR, the provider may proceed to Independent Bill Review. Medical-legal SBR uses the DWC SBR-1 process and supporting documents.</p>
       <CodeBlock code={review} filename="server/second-review.ts" />
+      <p>The connected Second Review dialog can correct a selected service line&apos;s units, modifiers, and charge for the new submission. Review the charge explicitly: changing units or modifiers does not automatically reprice the bill. For a custom browser UI using <code>@mindbill/browser</code> 0.29.0 or later, <code>submitSecondReview</code> accepts <code>lineItems[].correction</code> with all three absolute values: <code>units</code>, <code>modifiers</code>, and <code>charge</code>. Omit the correction to preserve that line. This browser action contract is separate from the server review-record example above.</p>
       <Callout tone="warning" title="Deadlines matter">Your application should surface the dates and payer instructions returned with the EOR. MindBill provides the workflow primitives, but the provider remains responsible for timely and accurate review requests.</Callout>
+
+      <h2 id="communications">Team notes and courtesy copies</h2>
+      <p><code>ConnectedBillLifecycle</code> includes team notes and Forward copy on the current bill. Notes are workspace-only and do not enter the outgoing bill packet. Historical submission views remain read-only. Server actions require <code>bills:write</code>; browser actions require an origin-bound session with <code>bills:act</code> and access to the bill.</p>
+      <p>Forward copy previews a combined PDF containing the mandatory submission cover sheet, the optional CMS-1500, and selected bill documents. The user reviews recipients, message, and packet before confirming. MindBill uses the workspace inbox for sender and reply routing. Forwarding is for the recipient&apos;s records: it neither submits the claim nor changes its billing status.</p>
+      <Callout title="Preview, confirm, then send">Custom integrations call <code>POST /partner/v2/bills/&#123;billId&#125;/courtesy-forward</code> with <code>mode: &quot;preview&quot;</code>, then confirm with <code>mode: &quot;send&quot;</code>, the returned <code>packetHash</code>, and an <code>Idempotency-Key</code>. Changes to recipients, message, or packet require another preview. Never create a new key to retry an uncertain delivery. A sandbox response is simulated: inspect <code>sent</code> and <code>simulated</code>, not only <code>ok</code>.</Callout>
 
       <h2 id="events">Use events for durable synchronization</h2>
       <p>Component callbacks keep the current screen responsive. Signed webhooks should update your database in the background. Store the event ID before processing so a retry is harmless.</p>
