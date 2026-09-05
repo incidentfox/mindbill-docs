@@ -16,6 +16,15 @@ export function IntegrationBuilder() {
       <button type="button" className="copy-button" onClick={async () => {
         try { await navigator.clipboard.writeText(packet); setStatus("Full implementation brief copied"); } catch { setStatus("Open the full brief below and select the text to copy."); }
       }}>Copy integration brief</button>
+      <button type="button" className="copy-button" onClick={() => {
+        const url = URL.createObjectURL(new Blob([packet], { type: "text/markdown;charset=utf-8" }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "mindbill-implementation-brief.md";
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setStatus("Implementation brief downloaded");
+      }}>Download brief (.md)</button>
     </div>
     <p role="status">{status}</p>
     <p>{frontend === "API only" ? "API-only integrations call bill endpoints server-to-server; no browser session or frontend package is required. Start with the directory request, then submit your reviewed bill." : "This route is intentionally fail-closed. Connect the required host authorization adapter below; copying code alone is not a completed integration."}</p>

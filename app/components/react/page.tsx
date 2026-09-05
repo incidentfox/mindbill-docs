@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 import { prefillRecipe, profileRecipe, reactRecipe } from "@/lib/integration-recipes";
+import { notificationSettingsReact } from "@/lib/notification-settings-recipes";
 import {
   ActivityTimelinePlayground,
   BillingDashboardPlayground,
@@ -309,6 +310,7 @@ export default function ReactPage() {
         { id: "sections", label: "Individual form sections" },
         { id: "operations", label: "Dashboard and reporting" },
         { id: "org-onboarding", label: "Saved practice settings" },
+        { id: "notifications", label: "Notification settings" },
         { id: "setup", label: "Post-submit setup" },
         { id: "lifecycle", label: "Complete lifecycle" },
         { id: "custom", label: "Custom lifecycle UI" },
@@ -428,6 +430,12 @@ export default function ReactPage() {
     <p><code>organizationProfileOptions(profile)</code> creates a server-resolved provider reference for an SSN-backed profile. Do not copy the last four digits into a bill&apos;s tax ID. The browser/API create contract accepts <code>billingProvider: &#123; savedProviderId &#125;</code>. Corrections and duplicates can use <code>billingProvider: &#123; sourceBillId &#125;</code> to reuse that bill&apos;s immutable provider snapshot. Both references are resolved within the authenticated organization. Existing TypeScript code should narrow reference versus inline-provider values before reading fields such as <code>name</code> or <code>taxId</code>.</p>
     <Callout title="Upgrade the complete integration">This contract requires browser 0.28.0, React 0.47.0, or Angular 0.18.0 (or a later compatible release). Update any directly installed browser client alongside the component package, commit the lockfile, rebuild, and test saved SSN create, unchanged save, replace, clear, and correction flows in sandbox. A password input hides screen entry; it does not make logging or persisting the form state safe.</Callout>
       </details>
+
+      <h2 id="notifications">Notification settings</h2>
+      <p><code>NotificationSettings</code> (alias <code>ConnectedNotificationSettings</code>) adds a default-off email preferences panel to your existing settings page. It supports explicit consent, status updates, 30/60/90-day aging reminders, quiet hours, and unsubscribe for any partner&apos;s users, including people without a console account.</p>
+      <CodeBlock code={notificationSettingsReact} filename="components/BillingNotificationSettings.tsx" />
+      <p>Your adapter calls an authenticated host-server route and reloads GET after each PUT or DELETE. The server owns identity, verified email, practice/assigned-bill access, consent records, and the permanent API key. Change <code>identityKey</code> when the host user, practice, or environment changes. Use <code>appearance</code>, <code>className</code>, and <code>style</code> for theming. See the <Link href="/guides/notifications#host">copyable server adapter and required host checks</Link> before wiring this up.</p>
+      <Callout title="Never an automatic subscription">Rendering the widget, passing a contact list, and assigning bill access do not opt anyone in. Feature availability and email verification must be confirmed by your server. An empty assigned-bill audience sends nothing, and sandbox never sends email.</Callout>
 
       <h2 id="setup">Post-submission setup</h2>
       <p>Once a bill exists, add one authenticated server route that exchanges your signed-in user for a short-lived, organization-scoped browser session restricted to that submitted bill.</p>

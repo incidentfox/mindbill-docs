@@ -32,6 +32,7 @@ export default function SandboxPage() {
         <li>For components, test empty and error states, narrow screens, and scrolling inside your app. Bills waiting on payers must remain visible in All Bills.</li>
         <li>Verify <Link href="/api-reference/events">webhook signatures</Link>, duplicate events, and out-of-order delivery. Reconcile current bill state; browser callbacks alone are not a durable record.</li>
       </ol>
+      <p>Add <Link href="/guides/notifications#widget">notification settings</Link> to your existing settings page with <code>NotificationSettings</code> and an authenticated host-server adapter, or use your own settings UI. Notifications are off by default. Once activated for your integration, MindBill can notify explicitly consenting users for assigned bills or an authorized whole practice, without console accounts. Signed webhooks support custom messages or delivery. Contact suggestions and rendering a component never enroll recipients automatically.</p>
       <h2 id="account">Account controls</h2>
       <div className="data-table networks">
         <div className="table-head"><b>Capability</b><b>Server permission</b></div>

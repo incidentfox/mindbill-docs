@@ -12,8 +12,8 @@ importers:
         specifier: 2.20.0
         version: 2.20.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@mindbill/react':
-        specifier: 0.48.1
-        version: 0.48.1(react@19.2.8)
+        specifier: 0.49.0
+        version: 0.49.0(react@19.2.8)
       lucide-react:
         specifier: 1.37.0
         version: 1.37.0(react@19.2.8)
@@ -432,14 +432,14 @@ packages:
   '@marijn/find-cluster-break@1.0.4':
     resolution: {integrity: sha512-Wy0V7+SGUjnF9/TkiM1hKVDPj7jKXduPNboMVtHTA8dySMURWqfg/JZ9E2Sq8JgSJmkl7k7Qe9FLeMSrSraWmQ==}
 
-  '@mindbill/browser@0.29.1':
-    resolution: {integrity: sha512-BYqZ5VsJyfz5mJsT1aEnVaDuiYhqQZGooTG7rP0kQRslcZQXjdzvQkK50u63C/g1oDQMBOqUYxSWIETRs0MRrA==}
+  '@mindbill/browser@0.30.0':
+    resolution: {integrity: sha512-V52M85AsrPOjeQIi1USmnMhZ7ZDvEadW5zHnbRid4bEW3+blpqWSIHEQr0kv7Zai4Myu0K/iw/kX4NaHv9t6/w==}
 
   '@mindbill/embed@0.6.0':
     resolution: {integrity: sha512-xWBMiqv0OX/DLsJshboGNWBRg/YZnAxLCKK/GP5KjtT+AkawhFdkd8HphaGPD8QL8IkVpA3YB5l/OKSbK7+dkQ==}
 
-  '@mindbill/react@0.48.1':
-    resolution: {integrity: sha512-mjnJZGy9bB6XoF+mxjhINeZCVvau1DJgRi4o+zePqjxfbnIMzCc23zo7UaQ+za452IiSDRODo8mXT6Yy3eDZ1g==}
+  '@mindbill/react@0.49.0':
+    resolution: {integrity: sha512-krFZZyokx853vmer+QgAnnte/oMLJd1n9Y316Sg/io6hHP3jb0RrWw6HwBgDWuzO+cAYkFbUCkxNZYyHuOQMIw==}
     peerDependencies:
       react: '>=18'
 
@@ -2598,13 +2598,13 @@ snapshots:
 
   '@marijn/find-cluster-break@1.0.4': {}
 
-  '@mindbill/browser@0.29.1': {}
+  '@mindbill/browser@0.30.0': {}
 
   '@mindbill/embed@0.6.0': {}
 
-  '@mindbill/react@0.48.1(react@19.2.8)':
+  '@mindbill/react@0.49.0(react@19.2.8)':
     dependencies:
-      '@mindbill/browser': 0.29.1
+      '@mindbill/browser': 0.30.0
       '@mindbill/embed': 0.6.0
       react: 19.2.8
 
