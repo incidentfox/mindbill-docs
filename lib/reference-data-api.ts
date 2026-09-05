@@ -3,22 +3,28 @@ import type { ApiEndpoint, ApiField } from "./api-reference";
 const field = (name: string, type: string, description: string, required = false): ApiField => ({ name, type, description, required });
 const json = (value: unknown) => JSON.stringify(value, null, 2);
 const browserNotes = [{
-  title: "Browser session required",
-  body: "Mint a short-lived session through POST /partner/v2/browser-sessions with payers:read and an allowed origin. Send its token as Authorization: Bearer and the exact matching Origin header. These /browser routes do not accept a server API key. The React components use the same routes through @mindbill/browser.",
+  title: "One endpoint, two credentials",
+  body: "Use a server API key with payers:read, or a short-lived browser session with payers:read and its exact allowed Origin. Your backend creates browser sessions through POST /partner/v2/browser-sessions. Both credentials use the same URL and response contract. Keep API keys on your backend.",
 }];
 const example = (path: string) => [{
-  label: "cURL", language: "bash", filename: "Browser session request",
-  code: `curl 'https://app.mindbill.org/partner/v2/browser/${path}' \\\n  --header "Authorization: Bearer $MINDBILL_BROWSER_TOKEN" \\\n  --header 'Origin: https://your-app.example'`,
+  label: "Server", language: "bash", filename: "Server API key request",
+  code: `curl 'https://app.mindbill.org/partner/v2/${path}' \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY"`,
+}, {
+  label: "Browser session", language: "bash", filename: "Browser session request",
+  code: `curl 'https://app.mindbill.org/partner/v2/${path}' \\
+  --header "Authorization: Bearer $MINDBILL_BROWSER_TOKEN" \\
+  --header 'Origin: https://your-app.example'`,
 }];
 
 export const referenceDataEndpoints: ApiEndpoint[] = [
   {
     slug: "claims-administrators", group: "Directories", method: "GET",
-    path: "/browser/claims-administrators", authentication: "browser-session",
+    path: "/claims-administrators", authentication: "api-key-or-browser-session",
     title: "Search claims administrators",
     summary: "Browse the payer directory or search administrators and payer choices before a bill exists.",
     useWhen: "Populate the claims-administrator selector in your own bill-entry form. listClaimsAdministrators() and searchClaimsAdministrators() call this endpoint; the SDK normalizes the raw directory response for the React components.",
-    permissions: ["payers:read"],
+    permissions: ["Server: payers:read", "Browser: payers:read"],
     queryFields: [
       field("q", "string", "Administrator name search. Omit or leave blank to browse the directory."),
       field("claimNumber", "string", "Optional claim number used for matching hints."),
@@ -52,11 +58,11 @@ export const referenceDataEndpoints: ApiEndpoint[] = [
   },
   {
     slug: "claims-administrator", group: "Directories", method: "GET",
-    path: "/browser/claims-administrators/{id}", authentication: "browser-session",
+    path: "/claims-administrators/{id}", authentication: "api-key-or-browser-session",
     title: "Get a claims administrator",
     summary: "Read an administrator's contact information, submission instructions, and payer metadata.",
     useWhen: "Display the directory detail panel after selecting an administrator. getClaimsAdministratorDirectory() calls this endpoint and unwraps data.",
-    permissions: ["payers:read"],
+    permissions: ["Server: payers:read", "Browser: payers:read"],
     pathFields: [field("id", "string", "Directory identifier from the claims-administrator search results.", true)],
     queryFields: [field("injuryState", "string", "State used for directory information; default CA.")],
     responseFields: [
@@ -78,11 +84,11 @@ export const referenceDataEndpoints: ApiEndpoint[] = [
   },
   {
     slug: "diagnosis-codes", group: "Directories", method: "GET",
-    path: "/browser/diagnosis-codes", authentication: "browser-session",
+    path: "/diagnosis-codes", authentication: "api-key-or-browser-session",
     title: "Search diagnosis codes",
     summary: "Look up ICD-10-CM codes by code prefix or description.",
     useWhen: "Populate the diagnosis selector in a bill-entry form. searchDiagnosisCodes() calls this endpoint.",
-    permissions: ["payers:read"],
+    permissions: ["Server: payers:read", "Browser: payers:read"],
     queryFields: [field("q", "string", "Code or description search; blank browses the catalog."), field("limit", "integer", "Page size; default 30, clamped to 1–100."), field("offset", "integer", "Zero-based offset; default 0.")],
     responseFields: [field("results[]", "object[]", "This page's matches, each with code and description. No data wrapper."), field("total", "integer", "Full catalog size, not the number matching the query."), field("matched", "integer", "Number of matches available for the query before pagination."), field("error", "string", "Present when the code set is unavailable; see the error note.")],
     examples: example("diagnosis-codes?q=M25.562&limit=1"),
@@ -91,11 +97,11 @@ export const referenceDataEndpoints: ApiEndpoint[] = [
   },
   {
     slug: "postal-codes", group: "Directories", method: "GET",
-    path: "/browser/postal-codes", authentication: "browser-session",
+    path: "/postal-codes", authentication: "api-key-or-browser-session",
     title: "Look up a postal code",
     summary: "Resolve a US ZIP code into a city and state.",
     useWhen: "Fill city and state after a user enters a ZIP code. lookupPostalCode() calls this endpoint.",
-    permissions: ["payers:read"],
+    permissions: ["Server: payers:read", "Browser: payers:read"],
     queryFields: [field("postalCode", "string", "US ZIP code. The input is trimmed and the first five characters are used, including for ZIP+4 input.", true)],
     responseFields: [field("postalCode", "string", "Normalized five-digit ZIP code. No data wrapper."), field("city", "string", "City name."), field("state", "string", "Two-letter state code.")],
     examples: example("postal-codes?postalCode=94105"),
@@ -104,11 +110,11 @@ export const referenceDataEndpoints: ApiEndpoint[] = [
   },
   {
     slug: "delivery-preview", group: "Directories", method: "GET",
-    path: "/browser/delivery-preview", authentication: "browser-session",
+    path: "/delivery-preview", authentication: "api-key-or-browser-session",
     title: "Preview bill delivery",
     summary: "Read delivery choices and a recommended route before submitting a bill.",
-    useWhen: "Show routing choices after the user selects a claims administrator and payer. getDeliveryPreview() calls this endpoint. For an existing bill, getDeliveryOptions() uses /browser/bills/{billId}/delivery-options with bills:read instead.",
-    permissions: ["payers:read"],
+    useWhen: "Show routing choices after the user selects a claims administrator and payer. getDeliveryPreview() calls this endpoint. For an existing bill, getDeliveryOptions() uses /bills/{billId}/delivery-options with bills:read instead.",
+    permissions: ["Server: payers:read", "Browser: payers:read"],
     queryFields: [field("claimsAdministratorId", "string", "Selected claims-administrator directory id.", true), field("payerId", "string", "Selected payer-choice key from the search response's payers[].key."), field("injuryState", "string", "Two-letter state code; default CA.")],
     responseFields: [
       field("payerName", "string", "Resolved payer display name. No data wrapper."),
