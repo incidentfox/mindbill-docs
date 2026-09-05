@@ -154,7 +154,7 @@ export const navigation: DocLink[] = [
   {
     href: "/api-reference/browser-api",
     label: "Component API inventory",
-    description: "Every browser route called by the React components and browser SDK.",
+    description: "Shared API routes called by the React components and browser SDK.",
     group: "Reference", icon: Braces,
     keywords: ["browser", "react", "sdk", "reports", "organization", "lookup", "endpoints"],
   },

@@ -1,47 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Callout, DocPage } from "@/components/doc-page";
+import { apiEndpoints } from "@/lib/api-reference";
 import { browserApiInventory } from "@/lib/browser-api-inventory";
 
 export const metadata: Metadata = { title: "Component API inventory" };
 
-const references: Record<string, string> = {
-  "/claims-administrators": "claims-administrators",
-  "/claims-administrators/{id}": "claims-administrator",
-  "/diagnosis-codes": "diagnosis-codes",
-  "/postal-codes": "postal-codes",
-  "/delivery-preview": "delivery-preview",
-  "/bills": "list-bills",
-  "/bills/{billId}/actions": "bill-actions",
-  "/organization": "organization-profile",
-  "/organization/billing-profile": "organization-profile",
-  "/organization/locations": "organization-profile",
-  "/organization/w9": "organization-profile",
-};
+const normalizePath = (path: string) => path.replace(/\{[^}]+\}/g, "{}");
 const groups = [
   { id: "lookups", title: "Directories and delivery preview", match: (path: string) => /^\/(claims-administrators|diagnosis-codes|postal-codes|delivery-preview)/.test(path) },
   { id: "organization", title: "Organization settings", match: (path: string) => path.startsWith("/organization") },
-  { id: "bills", title: "Bills, documents, and reports", match: (path: string) => path.startsWith("/bill") || path.startsWith("/reports") },
+  { id: "bills", title: "Bills, documents, and reports", match: (path: string) => path.startsWith("/bill") || path.startsWith("/reports") || path.startsWith("/sandbox") },
 ];
 
 export default function BrowserApiPage() {
   return (
     <DocPage eyebrow="API reference" title="Component API inventory"
-      description={`${new Set(browserApiInventory.map((entry) => entry.path)).size} distinct browser routes called by @mindbill/browser and the connected React components, including lookups available before a bill exists.`}
+      description="The shared business routes called by @mindbill/browser and the connected React components, including lookups available before a bill exists."
       toc={[{ id: "authentication", label: "Authentication and scope" }, ...groups.map(({ id, title }) => ({ id, label: title }))]}
       previous={{ href: "/api-reference", label: "REST API" }} next={{ href: "/api-reference/claims-administrators", label: "Search claims administrators" }}>
       <p>Use this inventory to see which APIs power the components when building your own UI. The routes below use the base URL <code>https://app.mindbill.org</code>. SDK methods can unwrap or normalize responses; their return values are not always identical to raw HTTP JSON.</p>
       <h2 id="authentication">Authentication and scope</h2>
-      <p>Your backend creates a <Link href="/api-reference/browser-sessions">browser session</Link> with the permissions required for the current user. Requests send <code>Authorization: Bearer &lt;session token&gt;</code> and the exact <code>Origin</code> authorized for that session. Keep the long-lived server API key on your backend.</p>
-      <Callout title="Separate server and browser routes">A server route such as <code>/partner/v2/bills</code> and a browser route such as <code>/partner/v2/browser/bills</code> have different authentication. The claims-administrator directory is currently exposed on the browser surface with <code>payers:read</code>. There is no documented server-key directory route.</Callout>
+      <p>Your backend creates a <Link href="/api-reference/browser-sessions">browser session</Link> with the permissions required for the current user. Browser requests send <code>Authorization: Bearer &lt;session token&gt;</code> and the exact <code>Origin</code> authorized for that session. Keep the long-lived server API key on your backend.</p>
+      <Callout title="One API, two credentials">Every business route below accepts either a server API key or a browser session. Both use the same URL and response contract. Browser sessions also require the exact authorized Origin and remain limited by their permissions and allowed resources. Session issuance, management sessions, events, and webhook-delivery administration require server keys.</Callout>
+      <p>The components use <Link href="/api-reference/bill-dashboard">GET /partner/v2/bill-dashboard</Link> for page-based lists, filters, and totals. <Link href="/api-reference/list-bills">GET /partner/v2/bills</Link> retains its cursor-based synchronization contract. Both endpoints accept either credential.</p>
       <p>Use an organization-wide session for bill entry, bill lists, task dashboards, reports, and organization settings. For an existing-bill workflow, a bill-restricted session limits access to its allowed bill IDs. Grant only the permissions that the workflow needs; <code>organization:manage</code> allows settings writes, while the bill-entry profile read uses <code>bills:create</code>.</p>
       {groups.map((group) => (
         <section key={group.id}>
           <h2 id={group.id}>{group.title}</h2>
           <div className="api-endpoint-list">
-            {browserApiInventory.filter((entry) => group.match(entry.path.replace("/partner/v2/browser", ""))).map((entry) => {
-              const suffix = entry.path.replace("/partner/v2/browser", "");
-              const reference = entry.method === "POST" && suffix === "/bills" ? "create-bill" : references[suffix];
+            {browserApiInventory.filter((entry) => group.match(entry.path.replace("/partner/v2", ""))).map((entry) => {
+              const suffix = entry.path.replace("/partner/v2", "");
+              const reference = apiEndpoints.find((endpoint) => endpoint.method === entry.method && normalizePath(endpoint.path) === normalizePath(suffix))?.slug;
               return (
                 <article className="api-endpoint-card browser-api-card" key={`${entry.method} ${entry.path}`}>
                   <div><span className={`method ${entry.method.toLowerCase()}`}>{entry.method}</span><code>{entry.path}</code></div>

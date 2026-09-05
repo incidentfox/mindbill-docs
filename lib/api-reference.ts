@@ -1,3 +1,4 @@
+import { sharedApiEndpoints } from "./shared-api-endpoints";
 import { referenceDataEndpoints } from "./reference-data-api";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -20,7 +21,7 @@ export type ApiExample = {
 export type ApiEndpoint = {
   slug: string;
   group: "Bills" | "Documents" | "Reviews" | "Lifecycle" | "Platform" | "Directories";
-  authentication?: "api-key" | "browser-session";
+  authentication?: "api-key" | "browser-session" | "api-key-or-browser-session";
   method: HttpMethod;
   path: string;
   title: string;
@@ -255,16 +256,18 @@ const bill = await mindbill.createAndSubmitBill({
 }, "report_9f7a");`;
 
 export const apiEndpoints: ApiEndpoint[] = [
+  ...sharedApiEndpoints,
   ...referenceDataEndpoints,
   {
     slug: "create-bill",
     group: "Bills",
+    authentication: "api-key-or-browser-session",
     method: "POST",
     path: "/bills",
     title: "Create and submit a bill",
     summary: "Atomically validate, create, attach the payer packet, and submit an immutable bill snapshot.",
     useWhen: "Call once after the user reviews the complete bill form and presses Submit. A failed request creates no public bill.",
-    permissions: ["Server API key", "Browser: bills:create"],
+    permissions: ["Server: bills:write", "Browser: bills:create"],
     idempotent: true,
     requestFields: [
       ...createBillFields.map((field) => ({ ...field, name: `bill.${field.name}` })),
@@ -315,12 +318,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "list-bills",
     group: "Bills",
+    authentication: "api-key-or-browser-session",
     method: "GET",
     path: "/bills",
     title: "List bills",
     summary: "List bills belonging to the authenticated organization.",
     useWhen: "Use filters to reconcile source records, build receivables views, or recover a bill ID from your external IDs.",
-    permissions: ["Server API key", "Browser: bills:read"],
+    permissions: ["Server: bills:read", "Browser: bills:read"],
     queryFields: [
       { name: "cursor", type: "string", description: "Opaque cursor returned by the previous page." },
       { name: "limit", type: "number", description: "Maximum records to return." },
@@ -343,12 +347,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "get-bill",
     group: "Bills",
+    authentication: "api-key-or-browser-session",
     method: "GET",
     path: "/bills/{billId}",
     title: "Retrieve a bill",
     summary: "Read the complete frozen claim snapshot and payer packet for one bill.",
     useWhen: "Inspect the exact immutable snapshot and payer packet behind a lifecycle or receivables record.",
-    permissions: ["Server API key", "Browser: bills:read"],
+    permissions: ["Server: bills:read", "Browser: bills:read"],
     pathFields: [billId],
     responseFields: billResponseFields,
     examples: [{ label: "cURL", language: "bash", filename: "Retrieve a bill", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID \\
@@ -358,12 +363,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "bill-status",
     group: "Lifecycle",
+    authentication: "api-key-or-browser-session",
     method: "GET",
     path: "/bills/{billId}/status",
     title: "Get bill status",
     summary: "Read normalized lifecycle state, balances, and the latest event position.",
     useWhen: "Use this for compact status surfaces or an on-demand refresh. Use events or webhooks for durable synchronization.",
-    permissions: ["Server API key", "Browser: bills:read"],
+    permissions: ["Server: bills:read", "Browser: bills:read"],
     pathFields: [billId],
     responseFields: [
       { name: "data.billId", type: "string", required: true, description: "Bill identifier." },
@@ -395,12 +401,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "bill-eor",
     group: "Lifecycle",
+    authentication: "api-key-or-browser-session",
     method: "GET",
     path: "/bills/{billId}/eor",
     title: "Get the EOR",
     summary: "Read structured Explanation of Review data and source documents.",
     useWhen: "Show the payer decision, line-level allowed and paid amounts, adjustment reasons, and the original EOR PDF when available.",
-    permissions: ["Server API key", "Browser: eors:read"],
+    permissions: ["Server: bills:read", "Browser: eors:read"],
     pathFields: [billId],
     responseFields: [
       { name: "data.reportedPaid", type: "number | null", required: true, description: "Amount reported by the EOR." },
@@ -429,12 +436,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "bill-actions",
     group: "Lifecycle",
+    authentication: "api-key-or-browser-session",
     method: "POST",
     path: "/bills/{billId}/actions",
     title: "Perform a bill action",
     summary: "Close, post payment, or start a payer review from one state-aware operation.",
     useWhen: "Available actions depend on bill state. The React and Angular lifecycle components already render only valid actions.",
-    permissions: ["Server API key", "Browser: bills:act"],
+    permissions: ["Server: bills:write (payments:write for post_payment)", "Browser: bills:act"],
     idempotent: true,
     pathFields: [billId],
     requestFields: [
@@ -470,12 +478,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "list-documents",
     group: "Documents",
+    authentication: "api-key-or-browser-session",
     method: "GET",
     path: "/bills/{billId}/documents",
     title: "List bill documents",
     summary: "List every document currently included in the payer billing packet.",
     useWhen: "Inspect or reconcile the exact document packet frozen onto a submitted bill.",
-    permissions: ["Server API key", "Browser: documents:read"],
+    permissions: ["Server: bills:read", "Browser: documents:read"],
     pathFields: [billId],
     responseFields: [
       { name: "data[].id", type: "string", required: true, description: "MindBill document identifier." },
@@ -505,12 +514,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "get-document",
     group: "Documents",
+    authentication: "api-key-or-browser-session",
     method: "GET",
     path: "/bills/{billId}/documents/{documentId}",
     title: "Download a bill document",
     summary: "Download the original PDF attached to the payer billing packet.",
     useWhen: "Open or save a document from packet review without copying the file into your own frontend bundle.",
-    permissions: ["Server API key", "Browser: documents:read"],
+    permissions: ["Server: bills:read", "Browser: documents:read"],
     pathFields: [billId, documentId],
     responseFields: [],
     examples: [{ label: "cURL", language: "bash", filename: "Download a document", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/documents/$DOCUMENT_ID \\
@@ -523,12 +533,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "reviews",
     group: "Reviews",
+    authentication: "api-key-or-browser-session",
     method: "POST",
     path: "/bills/{billId}/reviews",
     title: "Create a bill review",
     summary: "Create a Second Bill Review or Independent Bill Review draft with selected evidence.",
     useWhen: "Use second_review for a denial or partial payment; use independent_bill_review when escalating an eligible dispute after SBR.",
-    permissions: ["Server API key", "Browser: bills:act"],
+    permissions: ["Server: bills:write", "Browser: bills:act"],
     idempotent: true,
     pathFields: [billId],
     requestFields: [
@@ -563,12 +574,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "list-reviews",
     group: "Reviews",
+    authentication: "api-key-or-browser-session",
     method: "GET",
     path: "/bills/{billId}/reviews",
     title: "List bill reviews",
     summary: "List Second Bill Review and Independent Bill Review attempts for a bill.",
     useWhen: "Show appeal history, current review state, and supporting evidence after a denial or partial payment.",
-    permissions: ["Server API key", "Browser: bills:act"],
+    permissions: ["Server: bills:read", "Browser: bills:read"],
     pathFields: [billId],
     responseFields: [
       { name: "data[].id", type: "string", required: true, description: "Review identifier." },
@@ -586,12 +598,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "get-review",
     group: "Reviews",
+    authentication: "api-key-or-browser-session",
     method: "GET",
     path: "/bills/{billId}/reviews/{reviewId}",
     title: "Retrieve a bill review",
     summary: "Retrieve one review draft or submitted review with its selected evidence.",
     useWhen: "Open a review editor or render the exact argument and attachments that were submitted.",
-    permissions: ["Server API key", "Browser: bills:act"],
+    permissions: ["Server: bills:read", "Browser: bills:read"],
     pathFields: [billId, reviewId],
     responseFields: [
       { name: "data.id", type: "string", required: true, description: "Review identifier." },
@@ -610,12 +623,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     slug: "submit-review",
     group: "Reviews",
+    authentication: "api-key-or-browser-session",
     method: "POST",
     path: "/bills/{billId}/reviews/{reviewId}/submissions",
     title: "Submit a bill review",
     summary: "Submit a completed SBR or IBR through the bill’s available delivery route.",
     useWhen: "The review reason, payer control number, disputed amount, and evidence have been confirmed by the user.",
-    permissions: ["Server API key", "Browser: bills:act"],
+    permissions: ["Server: bills:submit", "Browser: bills:act"],
     idempotent: true,
     pathFields: [billId, reviewId],
     requestFields: [],
@@ -778,7 +792,7 @@ export async function POST(request: Request) {
     title: "Create a management session",
     summary: "Mint a one-time sign-in URL that opens the hosted MindBill billing workspace for your organization.",
     useWhen: "Use behind the prebuilt Billing-management button (or your own link) so organization staff can open the full MindBill work queue, reports, and denials without a second login. This is a hosted-SSO handoff, not a browser API token.",
-    permissions: ["Server API key with the operator-granted management:write scope"],
+    permissions: ["Server: management:write"],
     idempotent: false,
     requestFields: [
       { name: "subject", type: "string", required: true, description: "Stable identifier for the signed-in user in your system. Recorded for audit; never rendered in the product." },
@@ -835,31 +849,33 @@ export async function POST(request: Request) {
   },
   {
     slug: "organization-profile",
+    authentication: "api-key-or-browser-session",
     group: "Platform",
     method: "PUT",
     path: "/organizations/{id}/billing-profile",
-    title: "Organization billing profile, locations, and W-9",
-    summary: "Optional organization endpoints behind the embeddable onboarding: idempotent upserts for practice identity, billing providers, locations, and the W-9.",
-    useWhen: "Use when your product owns organization setup — the OrganizationOnboarding component drives the browser equivalents under /browser/organization* with the organization:manage session permission; server-side callers use these routes with orgs:write. Partners that never call them see no behavior change.",
-    permissions: ["Server: orgs:read for GETs, orgs:write for PUTs", "Browser settings: organization:manage", "Browser bill-entry profile GET: bills:create with an organization-wide session"],
+    title: "Update organization billing profile",
+    summary: "Upsert practice identity, billing providers, and rendering providers for an authorized organization.",
+    useWhen: "Use when your product owns organization setup — server callers and OrganizationOnboarding use the same business routes. Server writes require orgs:write; browser settings writes require organization:manage. The singular /organization routes address the credential organization; /organizations/{id} addresses an authorized linked organization. Browser sessions and organization-scoped keys must use their fixed organization ID; an account-scoped partner key may address any linked organization it is authorized to manage.",
+    permissions: ["Server: orgs:write", "Browser: organization:manage"],
+    pathFields: [{ name: "id", type: "string", required: true, description: "An authorized linked organization ID. Browser sessions and organization-scoped keys must use their fixed organization ID." }],
     idempotent: true,
     requestFields: [
       { name: "practiceIdentity", type: "object", description: "Practice name, legalName, taxId, npi, phone, email — merged over existing values; unset fields are preserved." },
       { name: "billingProviders[]", type: "object[]", description: "Pay-to providers upserted by id, then externalId, else appended with a generated id. Existing records are never deleted." },
       { name: "practiceIdentity.taxIdType / billingProviders[].taxIdType", type: '"EIN" | "SSN"', description: "Tax identifier type; defaults to EIN. SSNs are encrypted at rest. Changing type requires a replacement taxId." },
       { name: "practiceIdentity.taxId / billingProviders[].taxId", type: "string", description: "Omit to preserve an existing identifier; send an empty string to explicitly clear it. Do not send response-only taxIdConfigured or taxIdLast4 in settings writes." },
-      { name: "locations[]", type: "object[]", description: "PUT /organizations/{id}/locations — same upsert semantics; exactly one location stays primary." },
-      { name: "filename + contentBase64", type: "string", description: "PUT /organizations/{id}/w9 — the practice W-9 as a base64 PDF (max 10 MB); replaces the current record.", constraint: "PDF magic bytes validated" },
+      { name: "renderingProviders[]", type: "object[]", description: "Rendering providers upserted by id or externalId. Each record requires name and npi; omission does not delete saved records." },
     ],
     responseFields: [
-      { name: "organizationId", type: "string", required: true, description: "The organization." },
-      { name: "practiceIdentity / billingProviders / locations / w9", type: "object", required: true, description: "The profile after the write. Saved SSNs return taxId as an empty string, with taxIdType: SSN, taxIdConfigured, and taxIdLast4; no plaintext SSN is returned." },
-      { name: "onboarding", type: "{ status, complete, checklist[] }", required: true, description: "MindBill's onboarding checklist — the same one the embeddable component renders." },
+      { name: "data.organizationId", type: "string", required: true, description: "The organization." },
+      { name: "data.practiceIdentity / billingProviders / renderingProviders / locations / w9", type: "object", required: true, description: "The profile after the write. Saved SSNs return taxId as an empty string, with taxIdType: SSN, taxIdConfigured, and taxIdLast4; no plaintext SSN is returned." },
+      { name: "data.onboarding", type: "{ status, complete, checklist[] }", required: true, description: "MindBill's onboarding checklist — the same one the embeddable component renders." },
     ],
     examples: [
       { label: "cURL", language: "bash", filename: "Save the billing profile", code: `curl https://app.mindbill.org/partner/v2/organizations/$ORG_ID/billing-profile \\
   --request PUT \\
   --header "Authorization: Bearer $MINDBILL_API_KEY" \\
+  --header "Idempotency-Key: organization-profile-0001" \\
   --header "Content-Type: application/json" \\
   --data '{
     "practiceIdentity": { "name": "Example Medical Group", "taxId": "94-1234567", "npi": "1234567893" }
@@ -871,6 +887,7 @@ export async function POST(request: Request) {
     "organizationId": "org_01J4",
     "practiceIdentity": { "name": "Example Medical Group", "taxId": "94-1234567", "npi": "1234567893" },
     "billingProviders": [],
+    "renderingProviders": [],
     "locations": [],
     "w9": null,
     "onboarding": { "status": "configuring", "complete": false, "checklist": [] }
@@ -878,8 +895,8 @@ export async function POST(request: Request) {
 }`,
     notes: [
       { title: "Additive by design", body: "Every write is an idempotent upsert that never deletes records another workflow created. GET /partner/v2/organizations/{id} returns the same composed profile." },
-      { title: "Browser path", body: "Mint the browser session with the optional organization:manage permission and the embeddable components save directly from your frontend — your server never proxies the profile." },
-      { title: "Read-only profile choices for bill entry", body: "GET /partner/v2/browser/organization/billing-profile returns the same masked { data: OrganizationProfile } envelope using bills:create. The session must be organization-wide; bill-scoped sessions are rejected. createOrganizationClient().getBillingProfile() unwraps data for you. This route does not authorize profile writes." },
+      { title: "Same routes in the browser", body: "Mint the browser session with the optional organization:manage permission and the embeddable components save directly from your frontend — your server never proxies the profile." },
+      { title: "Read-only profile choices for bill entry", body: "GET /partner/v2/organization/billing-profile returns the same masked { data: OrganizationProfile } envelope using bills:create. The session must be organization-wide; bill-scoped sessions are rejected. createOrganizationClient().getBillingProfile() unwraps data for you. This route does not authorize profile writes." },
       { title: "Use references for saved SSNs", body: "Bill creation accepts billingProvider: { savedProviderId } so the server resolves the configured provider without returning its SSN. Corrections and duplicates can instead pass { sourceBillId } to reuse the original bill's immutable provider snapshot. References are resolved within the authenticated organization. Never submit the last four digits as a tax ID." },
     ],
   },

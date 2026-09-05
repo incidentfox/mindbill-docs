@@ -52,6 +52,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     }
     await page.goto(`${base}/api-reference/browser-api`);
     assert.match(await page.locator('body').innerText(), /getSubmissionArtifact/);
+    assert.match(await page.locator('body').innerText(), /\/partner\/v2\/bills\/\{billId\}\/submissions\/\{attemptId\}\/artifacts\/\{artifactId\}/);
     await page.goto(`${base}/guides/lifecycle`);
     assert.match(await page.locator('body').innerText(), /getSubmissionArtifact/);
     assert.doesNotMatch(await page.locator('body').innerText(), /Use signed webhooks for assigned-doctor notifications/);
