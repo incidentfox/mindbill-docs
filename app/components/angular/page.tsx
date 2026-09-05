@@ -252,6 +252,7 @@ export default function AngularPage() {
 
       <h2 id="onboarding">Organization onboarding</h2>
       <p><code>MindBillOrganizationOnboardingComponent</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission. Your users never visit the MindBill dashboard. Set <code>variant=&quot;settings&quot;</code> for the compact edit-after-setup layout; the review step renders MindBill&apos;s real onboarding checklist and <code>(completed)</code> fires when billing setup is done.</p>
+      <p>From Angular 0.18.0, settings and bill submission support EIN/SSN selection and password-style SSN inputs. Blank saved SSN inputs preserve the identifier; use the clear button or enter a replacement to change it on save. To submit from a saved profile, pass <code>billingProvider: &#123; savedProviderId &#125;</code>; SSN corrections and duplicates preserve the original provider with <code>&#123; sourceBillId &#125;</code>. The form keeps either reference until the user explicitly chooses a different manual provider. See the <a href="/learn/quickstart#settings">saved-profile contract</a>.</p>
       <ApiTable rows={[
         ["sessionEndpoint", "string", "Your authenticated session route. The session needs the organization:manage permission."],
         ["variant", '"onboarding" | "settings"', "Stepper for first-run setup, stacked sections for editing. Default onboarding."],

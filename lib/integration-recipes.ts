@@ -15,7 +15,60 @@ export const reactRecipe = "\"use client\";\nimport {\n  ConnectedBillingWorkspa
 export const implementationChecklist = "Inspect the existing app first. Do not replace authentication or run a migration.\n1. Gate sidebar Billing, case Billing tab and server endpoints with the EXISTING tenant/user\n   feature flag. Verify enrolled users see both entries and others see neither.\n2. Render ConnectedBillingWorkspace in a bounded, shrinkable layout. Import the CSS once.\n   Case Billing: creation form until submitted, then lifecycle. Settings: admin-only.\n3. Implement the selected server recipe AND host auth adapter using server-owned tenant\n   mapping. Browser sees short-lived tokens only. Never hardcode a subject or API key.\n4. Reuse existing case metadata for externalId and returned billId. externalId is correlation,\n   not an idempotency/uniqueness guarantee. Never recreate a bill on rerender.\n   Avoid local copies of bills/payments/EORs. If no durable mapping exists, explain the\n   smallest necessary persistence change first; do not run a speculative migration.\n5. Prefill known patient/address/injury/claim/service/diagnosis/code/modifier values from\n   structured host data. Leave unknown fields editable; never fabricate clinical values.\n   Do not add regex/AI report parsing during SDK setup. Use existing extraction and user\n   review. Confirm the canonical payer directory choice before submission.\n6. Autoattach ONLY the finalized report, not every case document, medical record or audio\n   file. Let users upload/select proof of service and additional supporting PDFs.\n7. Decide data ownership: host-managed providers/locations/W-9 OR MindBill BillingSettings.\n   Avoid duplicated storage and silently copying sensitive tax identifiers.\n8. Keep API keys/tokens/SSN/tax IDs/PHI out of logs, localStorage and coding-agent prompts.\n9. Verify sandbox Sent -> Accepted/Rejected -> Processed, second review/routing, payments,\n   notes, attachments, All Bills visibility and laptop/mobile scrolling. Sent bills waiting\n   for payers are not follow-up tasks but MUST remain discoverable.\n10. For notifications, verify webhook raw-body signatures, deduplicate event IDs, tolerate\n    retries/out-of-order delivery and reconcile authoritative state. Keep notification\n    email PHI-free with authenticated links. https://docs.mindbill.org/api-reference/events\n11. Test token refresh, 401/403, cross-tenant IDs, disabled feature flags, non-admin settings,\n    missing origin config, empty/error states. Keep sandbox and live keys/data separate.\n12. Run typecheck/build/tests; report changed files, actual package versions and unfinished\n    host adapters. An unwired auth placeholder is NOT a finished integration.";
 export const prefillRecipe = "// Host adapter example: rename these source fields to your existing structured data.\n// Do not infer clinical codes or upload every case document during SDK setup.\nexport function billFromCase(caseRecord) {\n  return {\n    externalId: String(caseRecord.id),\n    patient: {\n      firstName: caseRecord.patient.firstName ?? \"\",\n      lastName: caseRecord.patient.lastName ?? \"\",\n      dateOfBirth: caseRecord.patient.dateOfBirth ?? \"\", // YYYY-MM-DD\n      address: {\n        line1: caseRecord.patient.address?.line1 ?? \"\",\n        city: caseRecord.patient.address?.city ?? \"\",\n        state: caseRecord.patient.address?.state ?? \"\",\n        postalCode: caseRecord.patient.address?.postalCode ?? \"\",\n      },\n    },\n    claim: {\n      claimNumber: caseRecord.claimNumber ?? \"\",\n      employer: caseRecord.employerName,\n      dateOfInjury: caseRecord.dateOfInjury,\n    },\n    service: { date: caseRecord.dateOfService ?? \"\" },\n    diagnoses: caseRecord.diagnosisCodes ?? [],\n    serviceLines: (caseRecord.billingLines ?? []).map((line) => ({\n      code: line.code, modifiers: line.modifiers, units: line.units,\n    })),\n    // Optional: billingProvider, renderingProvider, serviceLocation from\n    // your saved host settings. Otherwise let the user supply/review them.\n  };\n}\n\n// Only pass the finalized report. An empty list leaves upload to the user.\n// documentId identifies a HOST document, not a MindBill document.\nexport function finalReportSources(documentId) {\n  if (!documentId) return [];\n  return [{\n    id: documentId, fileName: \"final-report.pdf\",\n    documentType: \"final_report\", autoAttached: true, removable: true,\n    loadBlob: async () => {\n      // Existing authenticated host endpoint: enforce document/case ownership.\n      const response = await fetch(\"/api/documents/\" + encodeURIComponent(documentId), {\n        credentials: \"same-origin\", cache: \"no-store\",\n      });\n      if (!response.ok) throw new Error(\"Unable to load finalized report\");\n      return response.blob();\n    },\n  }];\n}";
 
-export const profileRecipe = "// MindBill-managed data: fetch only from an admin-authorized settings session.\n// Do not grant organization:manage to every billing user just to fill a bill.\nimport { BillSubmissionForm, organizationProfileOptions } from \"@mindbill/react\";\n\nexport function ProfileBasedBill({ initialBill, profile }) {\n  return <BillSubmissionForm initialBill={initialBill}\n    sessionEndpoint=\"/api/mindbill/session\"\n    profileOptions={organizationProfileOptions(profile)}\n    profileDisplay=\"compact\" />;\n}\n\n// profile is OrganizationProfileData loaded by an authorized settings workflow.\n// Host-managed alternative: pass your OWN saved choices; no MindBill storage needed.\nconst hostProfileOptions = {\n  billingProviders: [{ id: \"practice-1\", label: \"Main practice\", value: savedBillingProvider }],\n  renderingProviders: [{ id: \"doctor-1\", label: \"Rendering doctor\", value: savedRenderingProvider }],\n  serviceLocations: [{ id: \"office-1\", label: \"Main office\", value: savedServiceLocation }],\n};\n// <BillSubmissionForm initialBill={initialBill} profileOptions={hostProfileOptions}\n//   profileDisplay=\"compact\" sessionEndpoint=\"/api/mindbill/session\" />\n// Omit profileDisplay (or use \"expanded\") to show all fields.\n// Selecting a profile copies a bill snapshot; it does not mutate the saved profile.\n// Settings currently supports EIN-only tax information, not encrypted SSN storage.";
+export const profileRecipe = `// Requires @mindbill/react >=0.47.0 and @mindbill/browser >=0.28.0.
+// MindBill-managed profile lookup:
+// GET /partner/v2/browser/organization/billing-profile
+// Use an authenticated organization-wide browser session with bills:create.
+// A bill-scoped session cannot read organization-wide profile choices.
+// Settings writes still need an ADMIN-authorized organization:manage session.
+"use client";
+import { useEffect, useState } from "react";
+import { createOrganizationClient } from "@mindbill/browser";
+import { BillSubmissionForm, organizationProfileOptions } from "@mindbill/react";
+
+export function ProfileBasedBill({ initialBill }) {
+  const [profile, setProfile] = useState(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let active = true;
+    const client = createOrganizationClient({ sessionEndpoint: "/api/mindbill/session" });
+    client.getBillingProfile().then(
+      (value) => { if (active) setProfile(value); },
+      () => { if (active) setFailed(true); },
+    );
+    return () => { active = false; };
+  }, []);
+  if (failed) return <p role="alert">Unable to load billing profiles. Please try again.</p>;
+  if (!profile) return <p role="status">Loading billing profiles…</p>;
+  return <BillSubmissionForm initialBill={initialBill}
+    sessionEndpoint="/api/mindbill/session"
+    profileOptions={organizationProfileOptions(profile)}
+    profileDisplay="compact" />;
+}
+
+// getBillingProfile() returns masked OrganizationProfileData, not the { data } envelope.
+// getOrganization() is the separate admin-only settings read; do not grant admin
+// permission to ordinary bill creators just to populate these choices.
+// SSN-backed choices retain a savedProviderId; the server resolves the SSN.
+// Never put taxIdLast4 in taxId, browser storage, telemetry or agent prompts.
+// Host-managed alternative: pass your OWN saved choices; no MindBill storage needed.
+export function HostProfileBill({ initialBill, savedBillingProvider,
+  savedRenderingProvider, savedServiceLocation }) {
+  const profileOptions = {
+    billingProviders: [{ id: "practice-1", label: "Main practice", value: savedBillingProvider }],
+    renderingProviders: [{ id: "doctor-1", label: "Rendering doctor", value: savedRenderingProvider }],
+    serviceLocations: [{ id: "office-1", label: "Main office", value: savedServiceLocation }],
+  };
+  return <BillSubmissionForm initialBill={initialBill} profileOptions={profileOptions}
+    profileDisplay="compact" sessionEndpoint="/api/mindbill/session" />;
+}
+// Omit profileDisplay (or use "expanded") to show all fields.
+// Selecting a profile does not mutate the saved profile.
+// Settings supports taxIdType: "EIN" | "SSN" (default EIN).
+// Saved SSNs are encrypted. Responses contain empty taxId, taxIdLast4 and
+// taxIdConfigured. In settings: blank preserves, replacement changes, clear removes.
+// Custom settings API writes: omit taxId to preserve; taxId: "" explicitly clears.
+// Do not send response-only taxIdLast4/taxIdConfigured in a settings write.`;
 
 export function integrationPacket(frontend: Frontend, backend: Backend) {
   const client = frontend === "React" ? reactRecipe : frontend === "Angular"
