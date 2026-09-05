@@ -51,12 +51,12 @@ export function SchemaTable({ fields }: { fields: ApiField[] }) {
 }
 
 export function EndpointMeta({ endpoint }: { endpoint: ApiEndpoint }) {
-  const supportsBrowserSession = endpoint.permissions?.some((permission) => permission.startsWith("Browser:"));
+  const browserSession = endpoint.authentication === "browser-session";
 
   return (
     <div className="api-meta-grid">
-      <div><small>Authentication</small><strong>{supportsBrowserSession ? "Bearer API key or browser session" : "Bearer API key"}</strong></div>
-      <div><small>Authorization</small><strong>{endpoint.permissions?.join(" · ") ?? "Server API key"}</strong></div>
+      <div><small>Authentication</small><strong>{browserSession ? "Bearer browser session + Origin" : "Bearer server API key"}</strong></div>
+      <div><small>Permissions by surface</small><strong>{endpoint.permissions?.join(" · ") ?? "Server API key"}</strong></div>
       <div><small>Idempotency</small><strong>{endpoint.idempotent ? "Required for safe retries" : "Not required"}</strong></div>
     </div>
   );

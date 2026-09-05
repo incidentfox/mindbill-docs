@@ -137,6 +137,20 @@ export const navigation: DocLink[] = [
     keywords: ["rest", "endpoint", "openapi", "reference", "curl"],
   },
   {
+    href: "/api-reference/claims-administrators",
+    label: "Claims administrators",
+    description: "Search the payer directory and select an administrator and payer.",
+    group: "Reference", icon: Network,
+    keywords: ["claims admins", "payer", "directory", "payers:read"],
+  },
+  {
+    href: "/api-reference/browser-api",
+    label: "Component API inventory",
+    description: "Every browser route called by the React components and browser SDK.",
+    group: "Reference", icon: Braces,
+    keywords: ["browser", "react", "sdk", "reports", "organization", "lookup", "endpoints"],
+  },
+  {
     href: "/api-reference/create-bill",
     label: "Create and submit a bill",
     description: "Atomically submit an immutable CMS-1500 snapshot and payer packet.",
