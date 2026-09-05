@@ -836,17 +836,19 @@ export async function POST(request: Request) {
     title: "Organization billing profile, locations, and W-9",
     summary: "Optional organization endpoints behind the embeddable onboarding: idempotent upserts for practice identity, billing providers, locations, and the W-9.",
     useWhen: "Use when your product owns organization setup — the OrganizationOnboarding component drives the browser equivalents under /browser/organization* with the organization:manage session permission; server-side callers use these routes with orgs:write. Partners that never call them see no behavior change.",
-    permissions: ["orgs:read for GETs, orgs:write for PUTs (browser: organization:manage)"],
+    permissions: ["Server: orgs:read for GETs, orgs:write for PUTs", "Browser settings: organization:manage", "Browser bill-entry profile GET: bills:create with an organization-wide session"],
     idempotent: true,
     requestFields: [
       { name: "practiceIdentity", type: "object", description: "Practice name, legalName, taxId, npi, phone, email — merged over existing values; unset fields are preserved." },
       { name: "billingProviders[]", type: "object[]", description: "Pay-to providers upserted by id, then externalId, else appended with a generated id. Existing records are never deleted." },
+      { name: "practiceIdentity.taxIdType / billingProviders[].taxIdType", type: '"EIN" | "SSN"', description: "Tax identifier type; defaults to EIN. SSNs are encrypted at rest. Changing type requires a replacement taxId." },
+      { name: "practiceIdentity.taxId / billingProviders[].taxId", type: "string", description: "Omit to preserve an existing identifier; send an empty string to explicitly clear it. Do not send response-only taxIdConfigured or taxIdLast4 in settings writes." },
       { name: "locations[]", type: "object[]", description: "PUT /organizations/{id}/locations — same upsert semantics; exactly one location stays primary." },
       { name: "filename + contentBase64", type: "string", description: "PUT /organizations/{id}/w9 — the practice W-9 as a base64 PDF (max 10 MB); replaces the current record.", constraint: "PDF magic bytes validated" },
     ],
     responseFields: [
       { name: "organizationId", type: "string", required: true, description: "The organization." },
-      { name: "practiceIdentity / billingProviders / locations / w9", type: "object", required: true, description: "The full profile after the write." },
+      { name: "practiceIdentity / billingProviders / locations / w9", type: "object", required: true, description: "The profile after the write. Saved SSNs return taxId as an empty string, with taxIdType: SSN, taxIdConfigured, and taxIdLast4; no plaintext SSN is returned." },
       { name: "onboarding", type: "{ status, complete, checklist[] }", required: true, description: "MindBill's onboarding checklist — the same one the embeddable component renders." },
     ],
     examples: [
@@ -872,6 +874,8 @@ export async function POST(request: Request) {
     notes: [
       { title: "Additive by design", body: "Every write is an idempotent upsert that never deletes records another workflow created. GET /partner/v2/organizations/{id} returns the same composed profile." },
       { title: "Browser path", body: "Mint the browser session with the optional organization:manage permission and the embeddable components save directly from your frontend — your server never proxies the profile." },
+      { title: "Read-only profile choices for bill entry", body: "GET /partner/v2/browser/organization/billing-profile returns the same masked { data: OrganizationProfile } envelope using bills:create. The session must be organization-wide; bill-scoped sessions are rejected. createOrganizationClient().getBillingProfile() unwraps data for you. This route does not authorize profile writes." },
+      { title: "Use references for saved SSNs", body: "Bill creation accepts billingProvider: { savedProviderId } so the server resolves the configured provider without returning its SSN. Corrections and duplicates can instead pass { sourceBillId } to reuse the original bill's immutable provider snapshot. References are resolved within the authenticated organization. Never submit the last four digits as a tax ID." },
     ],
   },
 ];

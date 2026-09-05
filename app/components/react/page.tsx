@@ -382,6 +382,7 @@ export default function ReactPage() {
 
       <h2 id="org-onboarding">Organization onboarding</h2>
       <p><code>OrganizationOnboarding</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission — so your users never visit the MindBill dashboard. <code>BillingSettings</code> is the compact edit-after-setup variant. The review step renders MindBill&apos;s onboarding checklist and <code>onCompleted</code> fires when billing setup is done.</p>
+      <p>From React 0.47.0, settings accept EIN or SSN with an explicit tax ID type. Saved SSNs are encrypted and masked in responses. A blank saved SSN field preserves it, a replacement changes it, and the clear button requests removal on save. Use <code>organizationProfileOptions(profile)</code> for SSN-backed saved billing choices so submission sends a provider reference rather than a masked identifier. See the <a href="/learn/quickstart#settings">saved-profile contract and upgrade checklist</a>.</p>
       <CodeBlock code={orgOnboardingCode} filename="BillingSetup.tsx" />
 
       <h2 id="setup">Post-submission setup</h2>
