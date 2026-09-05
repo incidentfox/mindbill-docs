@@ -85,7 +85,31 @@ curl --fail-with-body https://app.mindbill.org/partner/v2/bills \\
 
 export const notificationRecipe = `Notification ownership (choose deliberately):
 Notifications default OFF for every partner, not just Docura.
-React: add NotificationSettings (ConnectedNotificationSettings alias) to your existing
+Admin recipient list (React >=0.51.0): add NotificationRecipientsSettings (alias
+ConnectedNotificationRecipientsSettings). Any authorized email can be invited; no
+console or host account is needed. Use memoized { load, invite, disable } with an
+identityKey that changes for administrator/practice/environment. The adapter calls
+your authenticated admin server, not the Partner API from a browser. Protect CSRF.
+GET /partner/v2/notifications/recipients?offset=0 lists recipient states.
+POST /partner/v2/notifications/recipients/{externalUserId}/invitations accepts only
+requestId, email, audience, statusUpdates, agingDays, quietHours. Validate/authorize
+these fields and preserve the same UUID requestId on unchanged/uncertain retries.
+Resolve a stable opaque recipient ID and organization/environment from server state.
+Return upstream data, not its envelope. Strip private sandbox previewUrl unless you
+are implementing a purpose-built protected preview. Never log capability URLs.
+Defaults: assigned_bills, no categories, quiet hours 7 pm-7 am Pacific.
+The email owner reviews scope/categories and confirms a 48-hour invitation; opening
+the link alone does nothing. Pending invitations remain OFF. An administrator cannot
+consent for somebody else. Unsubscribe/disable invalidates old invitation links.
+Invitation deliveryStatus is not enrollment: even sent is only transport acknowledgment.
+Do not automatically resend unknown outcomes or loop on rate limits. Changed input
+with the same UUID is a conflict. Sandbox sends no invitations or alerts.
+Supports status/payment and 30/60/90-day aging alerts, NOT financial-report digests,
+patient reports or attachments. Practice scope includes future bills; assigned_bills
+requires trusted server assignment sync (below). A new invitation disables the old
+subscription until reconfirmed; email/scope changes require assignment resync.
+
+Personal preferences: add NotificationSettings (ConnectedNotificationSettings alias) to your existing
 settings page. Use a memoized host-server adapter { load, save, unsubscribe } and an
 identityKey that changes with user/practice/environment. No admin key in the browser.
 The widget submits preference fields + explicit consent only; identity/email/audience,
@@ -129,7 +153,7 @@ export function integrationPacket(frontend: Frontend, backend: Backend) {
     "Send the reviewed bill snapshot and selected PDFs in one request. Persist the returned bill ID.",
     "Reuse the same idempotency key and payload when retrying; externalId is correlation only.",
     "Verify signed webhook events and reconcile current bill state. Test with synthetic sandbox data.",
-    "Notifications default OFF. For MindBill delivery, your trusted server must check availability, record explicit consent, and maintain authorized assigned_bills or practice access. API-only integrations provide their own settings UI: https://docs.mindbill.org/guides/notifications",
+    "Notifications default OFF. API-only integrations provide their own settings UI. Your trusted server can invite any authorized email through POST /partner/v2/notifications/recipients/{externalUserId}/invitations; the email owner must explicitly confirm before alerts start. Alternatively, enroll a verified signed-in user with their actual consent receipt. Check availability and maintain authorized assigned_bills or practice access: https://docs.mindbill.org/guides/notifications",
     "API reference: https://docs.mindbill.org/api-reference",
   ].join("\n\n");
   const client = frontend === "React" ? reactRecipe : frontend === "Angular"

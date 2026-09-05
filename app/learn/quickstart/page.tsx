@@ -28,5 +28,6 @@ export default function QuickstartPage() {
       <div><b>React or Angular</b><p>Add <Link href="/components/react">React components</Link> or <Link href="/components/angular">Angular components</Link>. Your server issues a short-lived browser session using the <Link href="/guides/authentication#session">framework recipes</Link>.</p></div>
     </div>
     <p>Both paths use the same <Link href="/api-reference">API endpoints</Link>. Before going live, complete the <Link href="/guides/sandbox#verify">sandbox checks</Link>.</p>
+    <p>Add <Link href="/components/react#org-onboarding">billing settings</Link> for reusable providers, locations and W-9 documents. For alerts, React 0.51.0 includes an <Link href="/guides/notifications#recipients">administrator recipient list</Link>: enter any authorized email address, choose its bill access and alert categories, and let the email owner confirm. Notifications default off; no console account is required. Your server still owns permissions and bill assignments, and sandbox never sends email.</p>
   </DocPage>;
 }
