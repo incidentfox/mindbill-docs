@@ -43,7 +43,7 @@ export default async function EndpointPage({ params }: PageProps) {
       <MethodPath method={endpoint.method} path={endpoint.path} />
       <p>{endpoint.useWhen}</p>
       <EndpointMeta endpoint={endpoint} />
-      <p>{endpoint.authentication === "browser-session" ? <>Authorize this route with a <Link href="/api-reference/browser-sessions">browser session</Link>.</> : <>The URL above uses a server API key. Component calls use separate browser routes and session permissions.</>} See the <Link href="/api-reference/browser-api">component API inventory</Link> for exact paths and SDK methods.</p>
+      <p>{endpoint.authentication === "api-key-or-browser-session" ? <>Use this URL with a server API key or a <Link href="/api-reference/browser-sessions">browser session</Link> and its exact allowed Origin. Both credentials use the same request and response contract.</> : endpoint.authentication === "browser-session" ? <>Authorize this route with a <Link href="/api-reference/browser-sessions">browser session</Link>.</> : <>This endpoint requires a server API key and is unavailable to browser sessions.</>} See the <Link href="/api-reference/browser-api">component API inventory</Link> for exact paths and SDK methods.</p>
       {endpoint.notes?.map((note) => <Callout key={note.title} title={note.title}>{note.body}</Callout>)}
 
       {endpoint.pathFields?.length ? <><h2 id="path-parameters">Path parameters</h2><SchemaTable fields={endpoint.pathFields} /></> : null}

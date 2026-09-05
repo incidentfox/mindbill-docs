@@ -17,7 +17,7 @@ export const prefillRecipe = "// Host adapter example: rename these source field
 
 export const profileRecipe = `// Requires @mindbill/react >=0.47.0 and @mindbill/browser >=0.28.0.
 // MindBill-managed profile lookup:
-// GET /partner/v2/browser/organization/billing-profile
+// GET /partner/v2/organization/billing-profile
 // Use an authenticated organization-wide browser session with bills:create.
 // A bill-scoped session cannot read organization-wide profile choices.
 // Settings writes still need an ADMIN-authorized organization:manage session.

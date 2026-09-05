@@ -37,13 +37,13 @@ export default function ApiReferencePage() {
       next={{ href: "/api-reference/create-bill", label: "Create and submit a bill" }}
     >
       <div className="api-base-url"><small>Base URL</small><code>https://app.mindbill.org/partner/v2</code></div>
-      <p>Use the REST API from your server to create and submit a bill atomically. Short-lived browser sessions let React, Angular, or browser SDK surfaces look up reference data, submit bills, and perform allowed lifecycle actions. All resources are isolated to the organization attached to the credential.</p>
+      <p>Use the same business endpoints from your server or browser to look up reference data, create and submit bills atomically, and perform allowed lifecycle actions. All resources are isolated to the organization attached to the credential.</p>
 
       <Callout title="APIs behind the React components">The <Link href="/api-reference/claims-administrators">claims-administrator directory</Link>, diagnosis lookup, ZIP lookup, and delivery preview already exist. Browse the <Link href="/api-reference/browser-api">complete component API inventory</Link> for the routes called by the browser SDK, including reports and organization settings.</Callout>
-      <p>The <a href="/openapi.yaml">downloadable OpenAPI contract</a> describes the server API. The browser routes documented here are a separate surface.</p>
+      <p>The <a href="/openapi.yaml">downloadable OpenAPI contract</a> describes the shared API and the credentials accepted by each operation.</p>
       <h2 id="conventions">Conventions</h2>
       <h3>Authentication</h3>
-      <p>Send a server API key as a bearer token. Never expose this key in browser code. Browser sessions are exact-origin, role-permissioned, short-lived credentials minted by your server. Routes under /partner/v2/browser require the session token and a matching Origin header; a server API key is not interchangeable with that token.</p>
+      <p>Business endpoints accept either a server API key or a short-lived browser session as a bearer token. Browser requests also require the exact Origin authorized for the session; permissions and resource limits still apply. Keep long-lived keys on your backend. Session issuance, management sessions, events, and webhook-delivery administration require server API keys. Legacy /partner/v2/browser routes remain compatibility aliases; new integrations should use the canonical URLs below.</p>
       <CodeBlock code={authenticate} language="bash" filename="Request" />
       <h3>Idempotency</h3>
       <p>For endpoints marked idempotent, send a stable <code>Idempotency-Key</code> on mutations. Reusing a key with the same request safely returns the original result; reusing it with a different request is rejected.</p>
@@ -55,7 +55,7 @@ export default function ApiReferencePage() {
       })}
 
       <h2 id="errors">Errors</h2>
-      <p>Server API errors use RFC 9457-style Problem Details. Browser lookup routes also have endpoint-specific error shapes documented on their reference pages; the diagnosis-code lookup can return an error field with HTTP 200. Use <code>code</code> for program logic and map each <code>errors[].path</code> back to the corresponding form field.</p>
+      <p>API errors generally use RFC 9457-style Problem Details. Lookup routes also have endpoint-specific error shapes documented on their reference pages; the diagnosis-code lookup can return an error field with HTTP 200. Use <code>code</code> for program logic and map each <code>errors[].path</code> back to the corresponding form field.</p>
       <CodeBlock code={error} language="json" filename="422 Unprocessable Entity" />
       <div className="term-list compact">
         <div><b>400</b><p>Malformed JSON or an invalid parameter.</p></div>

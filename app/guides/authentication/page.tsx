@@ -63,8 +63,9 @@ export default function AuthenticationPage() {
     <DocPage
       eyebrow="Build"
       title="Authentication and authorization"
-      description="An API key fixes the organization. A short-lived browser session identifies the signed-in user, carries role permissions, and is valid only on your exact origin."
+      description="Use a server API key or a short-lived browser session. Browser sessions identify the signed-in user, carry role permissions, and stay limited to their organization and exact origin."
       toc={[
+        { id: "shared", label: "One API, two credentials" },
         { id: "boundaries", label: "Security boundaries" },
         { id: "permissions", label: "Permission reference" },
         { id: "roles", label: "Map roles" },
@@ -75,6 +76,11 @@ export default function AuthenticationPage() {
       previous={{ href: "/learn/quickstart", label: "Quickstart" }}
       next={{ href: "/guides/bills", label: "The bill resource" }}
     >
+      <h2 id="shared">One API, two credentials</h2>
+      <p>Business endpoints use the same <code>/partner/v2</code> URLs, payloads, and responses from your backend and frontend. A trusted server sends its API key; a browser sends a short-lived session token with its exact authorized <code>Origin</code>. The browser SDK accepts session credentials only.</p>
+      <p>Browser sessions and organization-scoped API keys are fixed to one organization. Account-scoped partner keys may use <code>{"/organizations/{id}"}</code> for any linked organization they are authorized to manage. The singular <code>/organization</code> routes use the credential’s current organization.</p>
+      <p>Each endpoint lists the required server scope and browser permission separately. Browser sessions remain restricted to their organization, permissions, allowed bill resources, origin, and expiration. Existing <code>/partner/v2/browser</code> business URLs remain compatibility aliases; use the canonical URLs for new integrations.</p>
+      <Callout title="Server-only control operations">Creating organizations, issuing browser or management sessions, reading ordered events, and administering webhook deliveries require a server API key. These operations are not available to browser sessions.</Callout>
       <h2 id="boundaries">Three boundaries protect browser access</h2>
       <div className="term-list compact">
         <div><b>Organization</b><p>The permanent API key binds the session to one MindBill organization. A bill ID cannot cross that boundary.</p></div>
@@ -91,7 +97,8 @@ export default function AuthenticationPage() {
         <div><code>bills:read</code><span>Read bill review data, status, balances, and available actions.</span></div>
         <div><code>bills:act</code><span>Post payment, close, correct, or start payer-review actions allowed by the bill state.</span></div>
         <div><code>documents:read</code><span>List and open payer-packet documents.</span></div>
-        <div><code>payers:read</code><span>Search the claims-administrator directory and resolve available delivery routes.</span></div>
+        <div><code>payers:read</code><span>Search claims administrators, diagnosis and postal codes, and preview delivery routes.</span></div>
+        <div><code>organization:manage</code><span>Read and update organization settings, providers, locations, and W-9. Requires an organization-wide session.</span></div>
         <div><code>eors:read</code><span>Read normalized EOR data and original payer documents when available.</span></div>
       </div>
 
