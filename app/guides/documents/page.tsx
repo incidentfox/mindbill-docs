@@ -37,6 +37,7 @@ export default function DocumentsPage() {
         { id: "packet", label: "What belongs in the packet" },
         { id: "review", label: "Review in the component" },
         { id: "submit", label: "Submit atomically" },
+        { id: "w9-settings", label: "Practice W-9 settings" },
         { id: "limits", label: "Size limits" },
         { id: "types", label: "Document types" },
       ]}
@@ -61,6 +62,29 @@ export default function DocumentsPage() {
       <p>The connected component resolves selected source attachments and new uploads, encodes their PDF bytes, and includes them in the same atomic request as the bill data. For API-only integrations, perform the equivalent operation on your server. Store the returned bill ID only after success.</p>
       <CodeBlock code={serverSubmission} filename="server/submit-with-documents.ts" />
       <Callout title="No partially assembled bill">The public API does not expose initial document upload, removal, or separate submit mutations. If validation or packet preparation fails before submission, MindBill creates no public bill.</Callout>
+
+      <h2 id="w9-settings">Choose one owner for practice W-9 settings</h2>
+      <p>If you want MindBill to store the practice profile and W-9, embed <code>BillingSettings</code> or <code>OrganizationOnboarding</code> with a separate, admin-authorized <code>organization:manage</code> session. Reuse the saved profile when prefilling future bills.</p>
+      <p>If your app already uploads, stores, and extracts W-9s, keep that source of truth. React 0.50.0&apos;s <code>W9Upload</code> provides the common UI through host callbacks; it does not upload to MindBill or run a parser itself. Reuse your existing server upload and extraction workflow, then reload the persisted document and extraction state:</p>
+      <CodeBlock filename="PracticeW9.tsx" code={`import { W9Upload } from "@mindbill/react";
+
+<W9Upload
+  document={profile.w9} // { filename, addedAt? } or undefined
+  extractionStatus={profile.w9ExtractionStatus}
+  onUpload={async (file) => {
+    await uploadPracticeW9(file); // YOUR authenticated host-server adapter
+    await reloadPracticeProfile();
+  }}
+  onView={() => openAuthorizedW9()}
+  onRetryExtraction={async () => {
+    await retryPracticeW9Extraction();
+    await reloadPracticeProfile();
+  }}
+  appearance={{ preset: "mindbill" }}
+/>`} />
+      <p>Extraction statuses are <code>idle</code>, <code>queued</code>, <code>processing</code>, <code>complete</code>, <code>not_found</code>, and <code>failed</code>. Pass the real server state; upload success does not mean extraction succeeded. Continue your existing polling or refresh until extraction finishes, and let an authorized user review extracted billing details before using them.</p>
+      <p><code>onView</code> and <code>onRetryExtraction</code> are optional. The adapter also accepts <code>maxSizeBytes</code>, <code>disabled</code>, <code>className</code>, <code>style</code>, and the shared <code>appearance</code> tokens. Ensure the upload limit matches your host server.</p>
+      <Callout tone="warning" title="The server still owns authorization and sensitive data">Protect upload, retry, and download routes with practice-admin authorization and CSRF controls. Validate actual PDF bytes and size on your server, not just client MIME types or filenames. Use your existing secure tax-ID storage; never expose plaintext SSNs in widget state, logs, analytics, browser storage, or agent prompts. Do not duplicate a host-owned W-9 in MindBill settings solely to use the UI.</Callout>
 
       <h2 id="limits">Size limits</h2>
       <p>Documents travel base64-encoded inside the JSON body, and base64 adds about 33% to every file. Budget against the decoded PDF bytes:</p>
