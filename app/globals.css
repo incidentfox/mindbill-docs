@@ -368,3 +368,10 @@ button { color: inherit; }
 .integration-builder pre { max-height: 480px; overflow: auto; padding: 16px; font-size: 12px; line-height: 1.7; }
 .integration-builder .integration-brief { white-space: pre-wrap; overflow-wrap: anywhere; }
 .integration-builder summary { cursor: pointer; font-weight: 600; }
+
+/* Keep optional setup and reference detail out of the main reading path. */
+.doc-content > details { margin: 20px 0; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-raised); }
+.doc-content > details > summary { color: var(--text); font-size: 15px; font-weight: 650; line-height: 1.5; cursor: pointer; }
+.doc-content > details > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; border-radius: 2px; }
+.doc-content > details[open] > summary { margin-bottom: 16px; }
+.doc-content > details > :last-child { margin-bottom: 0; }

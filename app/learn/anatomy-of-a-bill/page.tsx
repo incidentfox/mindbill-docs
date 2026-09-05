@@ -45,7 +45,7 @@ export default function AnatomyPage() {
       <p>MindBill performs that translation and validates the destination requirements. Your integration stays on the typed bill resource.</p>
 
       <h2 id="packet">The payer packet is explicit</h2>
-      <p>Documents are separate resources attached to the bill. For a California medical-legal claim, a typical packet may include the final report, proof of service, W-9, letter of attestation, Form 122, or another required form.</p>
+      <p>Send documents together with the bill at submission. After submission, document resources identify the frozen payer packet. For a California medical-legal claim, a typical packet may include the final report, proof of service, W-9, letter of attestation, Form 122, or another required form.</p>
       <Callout tone="warning" title="Medical records are never silently attached">A report-service packet sent to attorneys is not the same as the payer billing packet. Attach medical records or other supporting documents only when you deliberately want the claims administrator to receive them.</Callout>
     </DocPage>
   );

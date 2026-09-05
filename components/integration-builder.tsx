@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { backends, frontends, integrationPacket, serverRecipes, type Backend, type Frontend } from "@/lib/integration-recipes";
+import { apiOnlyRecipe, backends, frontends, integrationPacket, serverRecipes, type Backend, type Frontend } from "@/lib/integration-recipes";
 
 export function IntegrationBuilder() {
   const [frontend, setFrontend] = useState<Frontend>("React");
@@ -12,10 +12,10 @@ export function IntegrationBuilder() {
   return <section className="integration-builder" aria-label="Integration recipe builder">
     <div className="integration-controls">
       <label>Frontend<select value={frontend} onChange={(event) => { setFrontend(event.target.value as Frontend); setStatus(""); }}>{frontends.map((value) => <option key={value}>{value}</option>)}</select></label>
-      <label>Backend<select value={backend} onChange={(event) => { setBackend(event.target.value as Backend); setStatus(""); }}>{backends.map((value) => <option key={value}>{value}</option>)}</select></label>
+      {frontend !== "API only" && <label>Backend<select value={backend} onChange={(event) => { setBackend(event.target.value as Backend); setStatus(""); }}>{backends.map((value) => <option key={value}>{value}</option>)}</select></label>}
       <button type="button" className="copy-button" onClick={async () => {
         try { await navigator.clipboard.writeText(packet); setStatus("Full implementation brief copied"); } catch { setStatus("Open the full brief below and select the text to copy."); }
-      }}>Copy full agent brief</button>
+      }}>Copy integration brief</button>
       <button type="button" className="copy-button" onClick={() => {
         const url = URL.createObjectURL(new Blob([packet], { type: "text/markdown;charset=utf-8" }));
         const link = document.createElement("a");
@@ -27,8 +27,8 @@ export function IntegrationBuilder() {
       }}>Download brief (.md)</button>
     </div>
     <p role="status">{status}</p>
-    <p>{frontend === "API only" ? "API-only integrations call bill endpoints server-to-server; no browser session or frontend package is required. The contract below is only for adding browser UI later." : "This route is intentionally fail-closed. Connect the required host authorization adapter below; copying code alone is not a completed integration."}</p>
-    <pre tabIndex={0} aria-label={`${backend} session recipe`}><code>{serverRecipes[frontend === "API only" ? "Plain HTTP" : backend]}</code></pre>
+    <p>{frontend === "API only" ? "API-only integrations call bill endpoints server-to-server; no browser session or frontend package is required. Start with the directory request, then submit your reviewed bill." : "This route is intentionally fail-closed. Connect the required host authorization adapter below; copying code alone is not a completed integration."}</p>
+    <pre tabIndex={0} aria-label={frontend === "API only" ? "Server API recipe" : `${backend} session recipe`}><code>{frontend === "API only" ? apiOnlyRecipe : serverRecipes[backend]}</code></pre>
     <details><summary>Full brief for Cursor, Codex, or Claude Code</summary><pre tabIndex={0} className="integration-brief"><code>{packet}</code></pre></details>
     {frontend === "Angular" && <p><Link href="/components/angular">Follow the Angular component guide →</Link></p>}
     {frontend === "API only" && <p><Link href="/api-reference/create-bill">Follow the backend-only bill API guide →</Link></p>}

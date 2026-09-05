@@ -38,7 +38,7 @@ export default function NotificationsPage() {
     <p><strong>Custom content or delivery:</strong> you can still consume <Link href="/api-reference/events">signed webhooks</Link> and route notifications yourself. Verify raw-body signatures, deduplicate event IDs, tolerate retries and out-of-order delivery, and reconcile current bill state before notifying.</p>
     <p><strong>Courtesy copies:</strong> passing recipient options only supplies suggestions for a user-initiated bill email. It neither selects recipients automatically nor subscribes anyone to future notifications.</p>
     <h2 id="widget">Add the React settings widget</h2>
-    <p>Place <code>NotificationSettings</code> (also exported as <code>ConnectedNotificationSettings</code>) on your existing settings page. Its adapter calls your authenticated host server, never the administrative Partner API directly. The component handles loading, save errors, default-off preferences, fresh consent, and unsubscribe. The example requires a package version exporting this component; upgrade older installations first.</p>
+    <p>Place <code>NotificationSettings</code> (also exported as <code>ConnectedNotificationSettings</code>) on your existing settings page. Its adapter calls your authenticated host server, never the administrative Partner API directly. The component handles loading, save errors, default-off preferences, fresh consent, and unsubscribe. Requires <code>@mindbill/react</code> 0.49.0 or later; upgrade older installations first.</p>
     <CodeBlock code={notificationSettingsReact} filename="components/BillingNotificationSettings.tsx" />
     <p>Keep the adapter stable with <code>useMemo</code>. Change <code>identityKey</code> when the host user, practice, or environment changes so stale requests cannot replace the next account&apos;s settings. This key is only a UI reset key, not authorization. Pass <code>appearance</code>, <code>className</code>, and <code>style</code> to match your product. <code>onSaved(snapshot)</code> can refresh your own settings summary.</p>
     <p>The adapter returns <code>NotificationSettingsSnapshot</code>: <code>preferences</code> (null or enabled/statusUpdates/agingDays/quietHours), a display-only <code>email</code>, server-authorized <code>audience</code>, <code>environment</code>, and <code>canEnable</code>. The widget sends only those preference fields plus a <code>consent</code> boolean. It never supplies identity, verification proof, an audience grant, or bill assignments. All changed enabled settings, including quiet hours, require fresh explicit consent.</p>
@@ -69,6 +69,6 @@ export default function NotificationsPage() {
     <h2 id="verify">Verify without sending real customer mail</h2>
     <p>Sandbox creates preview ledger entries and never sends email. Test explicit opt-in, duplicate requests, email changes, revocation, stale retries, cross-tenant denial, and unavailable-feature handling before enabling live delivery. MindBill does not backfill consent or automatically enroll your users.</p>
     <CodeBlock code={notificationRecipe} language="text" filename="Notification implementation brief" />
-    <p><Link href="/learn/quickstart">Back to the full integration quickstart →</Link></p>
+    <p><Link href="/learn/quickstart">Back to the quickstart →</Link></p>
   </DocPage>;
 }

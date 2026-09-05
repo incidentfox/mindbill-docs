@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 import {
@@ -12,27 +13,13 @@ export const metadata: Metadata = { title: "Billing lifecycle and actions" };
 const read = `const { data: status } = await mindbill.getBillStatus(billId);
 const { data: eor } = await mindbill.getBillEor(billId);
 
-console.log(status.state, status.balanceDue);
-console.log(eor.lineItems, eor.documents);`;
+// Render status.state and status.balanceDue in your application.
+// eor.lineItems and eor.documents contain payer response details.`;
 
-const actions = `// A clearinghouse rejection: submit a new corrected snapshot.
-const correction = await mindbill.createAndSubmitBill({
-  bill: {
-    ...correctedBillInput,
-    externalId: "bill-123-correction-1",
-  },
-  submission: { route: "ebill" },
-  documents: correctedPacket,
-},
-  "correct-bill-123-v1",
-);
-
-// Payment received after an EOR.
+const actions = `// Payment received after an EOR.
 await mindbill.performBillAction(billId, {
   action: "post_payment",
   amount: 650,
-  penaltyAmount: 35,
-  interestAmount: 15,
   method: "eft",
   depositDate: "2026-09-04",
 }, "payment-bill-123-1");
@@ -61,6 +48,27 @@ await mindbill.submitBillReview(
   secondReview.id,
   "submit-sbr-bill-123",
 );`;
+
+const correction = `// correctedBill is the full, reviewed bill payload.
+const response = await fetch(
+  \`https://app.mindbill.org/partner/v2/bills/\${billId}/actions\`,
+  {
+    method: "POST",
+    headers: {
+      Authorization: \`Bearer \${process.env.MINDBILL_API_KEY}\`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": "correct-bill-123-attempt-2",
+    },
+    body: JSON.stringify({
+      action: "resubmit",
+      actorName: authorizedUser.displayName,
+      reason: "Corrected the rejected claim number",
+      bill: correctedBill,
+      documents: selectedBillingDocuments,
+    }),
+  },
+);
+if (!response.ok) throw new Error(\`Correction failed: \${response.status}\`);`;
 
 const event = `{
   "id": "evt_0189",
@@ -121,6 +129,11 @@ export default function LifecyclePage() {
       </div>
       <LifecycleActionsPlayground />
       <CodeBlock code={actions} filename="server/bill-actions.ts" />
+      <details className="optional-detail"><summary>Correct a rejected bill</summary>
+        <p>Use the <code>resubmit</code> action on the original bill. It preserves the logical bill ID and creates a new immutable submission attempt. Send the full corrected bill and the documents selected for that attempt; this is not a partial update or a new unrelated bill.</p>
+        <CodeBlock code={correction} filename="server/correct-bill.ts" />
+        <p>This server-side example assumes your application has authenticated <code>authorizedUser</code>, checked their access to <code>billId</code>, and prepared the <Link href="/api-reference/create-bill">bill and document payloads</Link>. The <Link href="/api-reference/bill-actions">action endpoint</Link> also accepts browser credentials. The connected lifecycle component provides the correction dialog for you.</p>
+      </details>
 
       <h2 id="history">Show bill history</h2>
       <p>The connected lifecycle response includes newest-first <code>activity</code>. <code>BillActivityTimeline</code> renders it directly, or accepts the same records from your own webhook-backed store.</p>
@@ -128,12 +141,12 @@ export default function LifecyclePage() {
       <ActivityTimelinePlayground />
       <p>When retained transmission files exist, each submission detail includes <code>artifacts</code> with opaque IDs, labels, kind, and content type. Keep the lifecycle client configured with the original bill ID and call <code>client.getSubmissionArtifact(attemptId, artifactId)</code> to receive a Blob. The connected component downloads the selected submission&apos;s exact electronic bill or attachments, not a packet regenerated from today&apos;s records. The equivalent server-key route is <code>GET /partner/v2/bills/&#123;billId&#125;/submissions/&#123;attemptId&#125;/artifacts/&#123;artifactId&#125;</code>, with <code>bills:read</code>.</p>
       <Callout title="Historical files are not reconstructed">An empty artifact list means no retained transmission files are available. Missing files return 404. This does not manufacture historical EOR documents or a historical combined CMS-1500 packet when those were not retained.</Callout>
-      <Callout title="Read for UI, webhooks for durable sync">The bill endpoint is enough to render the current screen. Signed webhooks remain the authoritative way to update your database after the browser closes.</Callout>
+      <Callout title="Read for UI, webhooks for durable sync">The bill endpoint is enough to render the current screen. Use signed webhooks to trigger synchronization after the browser closes, then reconcile the current state from the API.</Callout>
 
       <h2 id="reviews">Second Bill Review before IBR</h2>
       <p>California payment disputes generally begin with Second Bill Review. If the dispute remains eligible after SBR, the provider may proceed to Independent Bill Review. Medical-legal SBR uses the DWC SBR-1 process and supporting documents.</p>
       <CodeBlock code={review} filename="server/second-review.ts" />
-      <p>The connected Second Review dialog can correct a selected service line&apos;s units, modifiers, and charge for the new submission. Review the charge explicitly: changing units or modifiers does not automatically reprice the bill. For a custom browser UI using <code>@mindbill/browser</code> 0.29.0 or later, <code>submitSecondReview</code> accepts <code>lineItems[].correction</code> with all three absolute values: <code>units</code>, <code>modifiers</code>, and <code>charge</code>. Omit the correction to preserve that line. This browser action contract is separate from the server review-record example above.</p>
+      <p>The connected Second Review dialog can correct a selected service line&apos;s units, modifiers, and charge for the new submission. Review the charge explicitly: changing units or modifiers does not automatically reprice the bill. For a custom browser UI using <code>@mindbill/browser</code> 0.29.0 or later, <code>submitSecondReview</code> accepts <code>lineItems[].correction</code> with all three absolute values: <code>units</code>, <code>modifiers</code>, and <code>charge</code>. Omit the correction to preserve that line. This lifecycle-action payload differs from the review-record example above; both endpoints accept server or browser credentials.</p>
       <Callout tone="warning" title="Deadlines matter">Your application should surface the dates and payer instructions returned with the EOR. MindBill provides the workflow primitives, but the provider remains responsible for timely and accurate review requests.</Callout>
 
       <h2 id="communications">Team notes and courtesy copies</h2>

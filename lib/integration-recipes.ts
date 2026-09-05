@@ -70,6 +70,19 @@ export function HostProfileBill({ initialBill, savedBillingProvider,
 // Custom settings API writes: omit taxId to preserve; taxId: "" explicitly clears.
 // Do not send response-only taxIdLast4/taxIdConfigured in a settings write.`;
 
+export const apiOnlyRecipe = `# Run on your server with a sandbox key that includes payers:read.
+curl --fail-with-body \\
+  'https://app.mindbill.org/partner/v2/claims-administrators?limit=1' \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY"
+
+# Next: construct the reviewed snapshot and PDFs as bill.json.
+# https://docs.mindbill.org/guides/bills
+curl --fail-with-body https://app.mindbill.org/partner/v2/bills \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
+  --header "Content-Type: application/json" \\
+  --header "Idempotency-Key: submit-example-case-1" \\
+  --data @bill.json`;
+
 export const notificationRecipe = `Notification ownership (choose deliberately):
 Notifications default OFF for every partner, not just Docura.
 React: add NotificationSettings (ConnectedNotificationSettings alias) to your existing
@@ -110,13 +123,22 @@ Copyable React and trusted server templates: https://docs.mindbill.org/guides/no
    Rendering billing components does not automatically turn notification delivery on.`;
 
 export function integrationPacket(frontend: Frontend, backend: Backend) {
+  if (frontend === "API only") return [
+    "# MindBill server API integration", "No React package or browser token required.", apiOnlyRecipe,
+    "Keep credentials server-side and select the customer credential from trusted membership data.",
+    "Send the reviewed bill snapshot and selected PDFs in one request. Persist the returned bill ID.",
+    "Reuse the same idempotency key and payload when retrying; externalId is correlation only.",
+    "Verify signed webhook events and reconcile current bill state. Test with synthetic sandbox data.",
+    "Notifications default OFF. For MindBill delivery, your trusted server must check availability, record explicit consent, and maintain authorized assigned_bills or practice access. API-only integrations provide their own settings UI: https://docs.mindbill.org/guides/notifications",
+    "API reference: https://docs.mindbill.org/api-reference",
+  ].join("\n\n");
   const client = frontend === "React" ? reactRecipe : frontend === "Angular"
     ? "Use https://docs.mindbill.org/components/angular. Do not paste React JSX into Angular. Reuse the server-owned session boundary."
     : "Use server-only REST APIs: https://docs.mindbill.org/api-reference/create-bill. No React package or browser token required.";
   return ["# MindBill implementation brief", "Frontend: " + frontend + "; backend: " + backend,
     "Docs: https://docs.mindbill.org/learn/quickstart", "Sandbox key: https://platform.mindbill.org/settings/api-keys",
     frontend === "React" ? "Install: pnpm add @mindbill/react@latest" : "", hostContract, client,
-    frontend === "API only" ? serverRecipes["Plain HTTP"] : serverRecipes[backend], prefillRecipe,
+    serverRecipes[backend], prefillRecipe,
     frontend === "React" ? profileRecipe : "", notificationRecipe, implementationChecklist
   ].filter(Boolean).join("\n\n");
 }

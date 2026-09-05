@@ -33,6 +33,14 @@ export const navigation: DocLink[] = [
     keywords: ["workers compensation", "clearinghouse", "infrastructure", "overview"],
   },
   {
+    href: "/learn/quickstart",
+    label: "Quickstart",
+    description: "Make your first authenticated sandbox request.",
+    group: "Start here",
+    icon: SquareCode,
+    keywords: ["install", "first bill", "rest", "node", "sandbox"],
+  },
+  {
     href: "/learn/workers-comp-billing",
     label: "Workers' comp billing",
     description: "The parties, formats, and rules developers need to understand.",
@@ -47,14 +55,6 @@ export const navigation: DocLink[] = [
     group: "Start here",
     icon: FileText,
     keywords: ["cms 1500", "837p", "patient", "claim", "service lines"],
-  },
-  {
-    href: "/learn/quickstart",
-    label: "Quickstart",
-    description: "Review, submit, and track your first sandbox bill.",
-    group: "Start here",
-    icon: SquareCode,
-    keywords: ["install", "first bill", "rest", "node", "sandbox"],
   },
   {
     href: "/learn/routing",
@@ -91,7 +91,7 @@ export const navigation: DocLink[] = [
   {
     href: "/guides/authentication",
     label: "Authentication",
-    description: "Mint organization-bound, role-permissioned browser sessions safely.",
+    description: "Use server API keys or authorize browser components.",
     group: "Build",
     icon: KeyRound,
     keywords: ["api key", "token", "origin", "security", "session"],

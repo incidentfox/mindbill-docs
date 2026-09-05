@@ -16,7 +16,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     page.on('pageerror', error => errors.push(error.message));
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 960 });
-      assert.equal((await page.goto(`${base}/learn/quickstart`)).status(), 200);
+      assert.equal((await page.goto(`${base}/guides/authentication`)).status(), 200);
       const builder = page.getByRole('region', { name: 'Integration recipe builder' });
       await builder.locator('select').nth(0).selectOption('Angular');
       await builder.locator('select').nth(1).selectOption('FastAPI');
@@ -33,9 +33,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       assert.match(brief, /Protect mutations with CSRF/);
       assert.match(brief, /recipients\/\{externalUserId\}\/bills\/\{billId\}/);
       await builder.locator('select').nth(0).selectOption('API only');
-      await builder.getByRole('button', { name: 'Copy full agent brief' }).click();
+      await builder.getByRole('button', { name: 'Copy integration brief' }).click();
       assert.match(await page.evaluate(() => navigator.clipboard.readText()), /No React package or browser token required/);
-      await page.screenshot({ path: `${output}/quickstart-${width}.png`, fullPage: true });
+      await page.screenshot({ path: `${output}/authentication-${width}.png`, fullPage: true });
       assert.equal((await page.goto(`${base}/guides/notifications`)).status(), 200);
       await page.getByRole('heading', { name: 'Send useful billing notifications' }).waitFor();
       assert.match(await page.locator('body').innerText(), /Removing an association suppresses pending notifications/);
