@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
+import { IntegrationBuilder } from "@/components/integration-builder";
 
 export const metadata: Metadata = { title: "Quickstart" };
 
@@ -23,11 +24,13 @@ export default function QuickstartPage() {
     <p>Use <code>q</code> to search by name and <code>offset</code> to page through results. See the <Link href="/api-reference/claims-administrators">directory reference</Link> for the response fields.</p>
     <details><summary>If the request fails</summary><p><code>400 org_required</code>: an account-scoped key needs <code>X-MindBill-Org-Id</code> set to an organization ID from your console. The default sandbox organization key does not need this header.</p><p><code>401</code>: check that the key is present and valid. <code>403</code>: check for the <code>payers:read</code> scope; an older key may need replacement in <a href="https://platform.mindbill.org/settings/api-keys">API key settings</a>. See <Link href="/guides/authentication">authentication</Link> for credential and permission details.</p></details>
     <h2 id="next">3. Add your billing workflow</h2>
+    <p>Choose your stack for a copyable implementation brief, or hand it directly to a supported desktop editor. Already integrated? Use the <Link href="/guides/upgrade">short partner upgrade guide</Link>.</p>
+    <IntegrationBuilder />
     <div className="term-list compact">
       <div><b>Your own UI</b><p><Link href="/guides/bills">Submit a bill from your backend</Link>. Send the reviewed bill and PDFs together, then save the returned bill ID.</p></div>
       <div><b>React or Angular</b><p>Add <Link href="/components/react">React components</Link> or <Link href="/components/angular">Angular components</Link>. Your server issues a short-lived browser session using the <Link href="/guides/authentication#session">framework recipes</Link>.</p></div>
     </div>
     <p>Both paths use the same <Link href="/api-reference">API endpoints</Link>. Before going live, complete the <Link href="/guides/sandbox#verify">sandbox checks</Link>.</p>
-    <p>Add <Link href="/components/react#org-onboarding">billing settings</Link> for reusable providers, locations and W-9 documents. For alerts, React 0.51.0 includes an <Link href="/guides/notifications#recipients">administrator recipient list</Link>: enter any authorized email address, choose its bill access and alert categories, and let the email owner confirm. Notifications default off; no console account is required. Your server still owns permissions and bill assignments, and sandbox never sends email.</p>
+    <p>Add <Link href="/components/react#org-onboarding">billing settings</Link> for reusable providers, locations and W-9 documents. For alerts, React 0.52.0 includes an <Link href="/guides/notifications#recipients">administrator recipient list</Link>: enter any authorized email address, choose its bill access, alert categories and optional daily/weekly digest, and let the email owner confirm. Notifications default off; no console account is required. Your server still owns permissions and bill assignments, and sandbox never sends email.</p>
   </DocPage>;
 }

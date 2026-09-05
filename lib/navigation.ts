@@ -49,6 +49,14 @@ export const navigation: DocLink[] = [
     keywords: ["install", "first bill", "rest", "node", "sandbox"],
   },
   {
+    href: "/guides/upgrade",
+    label: "Upgrade guide",
+    description: "Update an existing integration and add optional billing or notification settings.",
+    group: "Start here",
+    icon: SquareCode,
+    keywords: ["docura", "upgrade", "versions", "coding agent", "digest"],
+  },
+  {
     href: "/learn/workers-comp-billing",
     label: "Workers' comp billing",
     description: "The parties, formats, and rules developers need to understand.",

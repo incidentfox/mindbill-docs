@@ -69,16 +69,18 @@ const json = (data: unknown, status = 200) => Response.json(data, {
 function parseUpdate(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw json({}, 400);
   const x = value as Record<string, unknown>;
-  const fields = ["enabled", "statusUpdates", "agingDays", "quietHours", "consent"];
+  const fields = ["enabled", "statusUpdates", "agingDays", "quietHours", "reportDigest", "consent"];
+  const reportDigest = x.reportDigest === undefined ? "off" : x.reportDigest;
   if (Object.keys(x).some(key => !fields.includes(key)) || x.enabled !== true
     || typeof x.statusUpdates !== "boolean" || typeof x.quietHours !== "boolean"
     || x.consent !== true || !Array.isArray(x.agingDays)
     || x.agingDays.some(day => ![30, 60, 90].includes(day))
-    || (!x.statusUpdates && x.agingDays.length === 0)) throw json({}, 400);
+    || !["off", "daily", "weekly"].includes(reportDigest as string)
+    || (!x.statusUpdates && x.agingDays.length === 0 && reportDigest === "off")) throw json({}, 400);
   const days = x.agingDays as number[];
   return { enabled: true as const, statusUpdates: x.statusUpdates,
     agingDays: [30, 60, 90].filter(day => days.includes(day)),
-    quietHours: x.quietHours };
+    quietHours: x.quietHours, reportDigest };
 }
 
 async function handle(request: Request) {
@@ -135,7 +137,7 @@ async function handle(request: Request) {
       environment: access.environment,
       canEnable: state.available && access.canEnable && !!access.emailVerifiedAt,
       preferences: p ? { enabled: p.enabled, statusUpdates: p.statusUpdates,
-        agingDays: p.agingDays, quietHours: p.quietHours } : null });
+        agingDays: p.agingDays, quietHours: p.quietHours, reportDigest: p.reportDigest ?? "off" } : null });
   } catch (error) {
     return error instanceof Response ? error : json({ error: "notification_settings_failed" }, 500);
   }

@@ -46,7 +46,8 @@ Content-Type: application/json
   "audience": "assigned_bills",
   "statusUpdates": true,
   "agingDays": [30, 60, 90],
-  "quietHours": true
+  "quietHours": true,
+  "reportDigest": "off"
 }
 
 # A sent invitation is NOT an enabled subscription.
