@@ -70,6 +70,26 @@ export function HostProfileBill({ initialBill, savedBillingProvider,
 // Custom settings API writes: omit taxId to preserve; taxId: "" explicitly clears.
 // Do not send response-only taxIdLast4/taxIdConfigured in a settings write.`;
 
+export const notificationRecipe = `Notification ownership (choose deliberately):
+1. For doctor-assigned alerts or custom content, consume signed webhooks on YOUR server.
+   Verify the raw body signature, deduplicate event IDs, handle retries/out-of-order
+   delivery and reconcile current bill state. Resolve recipients from trusted host
+   assignment/role records; never broadcast all practice events to a case-only user.
+2. Optional MindBill-hosted practice-wide alerts for users without console accounts:
+   GET/PUT/DELETE /partner/v2/notifications/recipients/{externalUserId}
+   Server API key with orgs:write + X-MindBill-Org-Id for a partner-managed practice.
+   Check GET availability first. This feature requires MindBill rollout/activation;
+   do not claim success while disabled. Browser session tokens cannot enroll users.
+   Authenticate the host user, verify their email and practice-wide authorization,
+   and collect explicit opt-in before PUT. Use real server-recorded consent and
+   verification timestamps, never Date.now() as a substitute for proof of consent.
+   Revoke via DELETE when membership/access ends. Email/contact suggestions are
+   NOT notification consent. Never automatically enroll courtesy-copy recipients.
+   https://docs.mindbill.org/guides/notifications
+3. Keep notification messages PHI-free and route users through authenticated screens.
+   Test sandbox consent, unsubscribe, stale retries, tenant isolation and disabled gates.
+   Rendering billing components does not automatically turn notification delivery on.`;
+
 export function integrationPacket(frontend: Frontend, backend: Backend) {
   const client = frontend === "React" ? reactRecipe : frontend === "Angular"
     ? "Use https://docs.mindbill.org/components/angular. Do not paste React JSX into Angular. Reuse the server-owned session boundary."
@@ -78,6 +98,6 @@ export function integrationPacket(frontend: Frontend, backend: Backend) {
     "Docs: https://docs.mindbill.org/learn/quickstart", "Sandbox key: https://platform.mindbill.org/settings/api-keys",
     frontend === "React" ? "Install: pnpm add @mindbill/react@latest" : "", hostContract, client,
     frontend === "API only" ? serverRecipes["Plain HTTP"] : serverRecipes[backend], prefillRecipe,
-    frontend === "React" ? profileRecipe : "", implementationChecklist
+    frontend === "React" ? profileRecipe : "", notificationRecipe, implementationChecklist
   ].filter(Boolean).join("\n\n");
 }

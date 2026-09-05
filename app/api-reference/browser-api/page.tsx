@@ -27,7 +27,7 @@ const groups = [
 export default function BrowserApiPage() {
   return (
     <DocPage eyebrow="API reference" title="Component API inventory"
-      description="The 23 distinct browser routes called by @mindbill/browser and the connected React components, including lookups available before a bill exists."
+      description={`${new Set(browserApiInventory.map((entry) => entry.path)).size} distinct browser routes called by @mindbill/browser and the connected React components, including lookups available before a bill exists.`}
       toc={[{ id: "authentication", label: "Authentication and scope" }, ...groups.map(({ id, title }) => ({ id, label: title }))]}
       previous={{ href: "/api-reference", label: "REST API" }} next={{ href: "/api-reference/claims-administrators", label: "Search claims administrators" }}>
       <p>Use this inventory to see which APIs power the components when building your own UI. The routes below use the base URL <code>https://app.mindbill.org</code>. SDK methods can unwrap or normalize responses; their return values are not always identical to raw HTTP JSON.</p>

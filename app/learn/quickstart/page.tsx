@@ -49,7 +49,7 @@ export default function QuickstartPage() {
     <p>Enable both the sidebar and case tab for the intended test user, and enforce the feature flag on the server too. Test an unenrolled user and a different customer as negative cases. In the sandbox, create a bill, simulate payer responses, open every submission&apos;s details, and test notes, second review, attachments, routing, and payment posting.</p>
     <p><strong>Sent bills are still bills.</strong> A payer-waiting bill may not be an actionable follow-up task, but must remain visible through All Bills and its lifecycle screen. Check empty states, errors, mobile/laptop scrolling, and your chosen theme before launching.</p>
     <CodeBlock code={implementationChecklist} language="text" filename="Agent and human acceptance checklist" />
-    <p>For customer notifications, use <Link href="/api-reference/events">signed webhooks</Link>: verify the raw-body signature, deduplicate event IDs, handle retries and out-of-order delivery, and reconcile current bill state. Send PHI-free notifications linking back to authenticated screens. Email notification delivery is host work; it does not appear automatically by rendering a component.</p>
+    <p>Choose <Link href="/guides/notifications">notification ownership</Link> explicitly. Use signed webhooks for doctor-assigned recipients or custom messages. MindBill-hosted practice-wide alerts can also support opted-in partner users without console accounts when enabled for your integration. Contact suggestions and rendering a component never enroll recipients automatically.</p>
     <p><Link href="/api-reference/browser-sessions">Browser-session API contract →</Link></p>
   </DocPage>;
 }

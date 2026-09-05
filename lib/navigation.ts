@@ -97,6 +97,14 @@ export const navigation: DocLink[] = [
     keywords: ["api key", "token", "origin", "security", "session"],
   },
   {
+    href: "/guides/notifications",
+    label: "Notification emails",
+    description: "Choose host-routed alerts or explicit opt-in for partner-only users.",
+    group: "Build",
+    icon: Activity,
+    keywords: ["email", "doctor", "consent", "unsubscribe", "webhooks", "recipients"],
+  },
+  {
     href: "/guides/sandbox",
     label: "Sandbox and live access",
     description: "Create test keys, accept the BAA, and promote an integration to live traffic.",
