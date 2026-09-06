@@ -48,10 +48,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       assert.match(notificationText, /X-Notification-Request-Id/);
       assert.match(notificationText, /not MindBill exports/);
       assert.match(notificationText, /DELETE removed assignments first/);
-      assert.match(notificationText, /@mindbill\/react@0\.51\.0/);
+      assert.match(notificationText, /@mindbill\/react@0\.52\.0/);
       assert.match(notificationText, /ConnectedNotificationRecipientsSettings/);
       assert.match(notificationText, /An administrator cannot opt someone else in/);
-      assert.match(notificationText, /does not schedule financial report digests/);
+      assert.match(notificationText, /Scheduled billing-activity digests/);
+      assert.match(notificationText, /reportDigest/);
+      assert.match(notificationText, /not current statuses, financial balances or confirmed cash totals/);
       assert.match(notificationText, /Sandbox sends neither invitation nor alert email/);
       assert.match(notificationText, /new invitation disables an existing subscription/);
       await page.locator('.code-block').filter({ hasText: 'components/BillingRecipients.tsx' })
@@ -93,7 +95,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     await page.goto(`${base}/components/react`);
     await page.getByRole('heading', { name: 'Notification settings', exact: true }).waitFor();
     assert.match(await page.locator('body').innerText(), /copyable server adapter/);
-    assert.match(await page.locator('body').innerText(), /pnpm add @mindbill\/react@0\.51\.0/);
+    assert.match(await page.locator('body').innerText(), /pnpm add @mindbill\/react@0\.52\.0/);
     assert.match(await page.locator('body').innerText(), /NotificationRecipientsSettings/);
     await page.goto(`${base}/learn/quickstart`);
     await page.getByRole('link', { name: 'administrator recipient list' }).click();

@@ -27,7 +27,7 @@ import {
 
 export const metadata: Metadata = { title: "React components" };
 
-const install = `pnpm add @mindbill/react@0.51.0`;
+const install = `pnpm add @mindbill/react@0.52.0`;
 
 const connectedWorkspace = `import { ConnectedBillingWorkspace } from "@mindbill/react";
 
@@ -435,11 +435,11 @@ export default function ReactPage() {
       </details>
 
       <h2 id="notifications">Notification settings</h2>
-      <p><strong>Administrative recipient list (React 0.51.0):</strong> <code>NotificationRecipientsSettings</code> (alias <code>ConnectedNotificationRecipientsSettings</code>) lets an administrator invite any authorized email address, including someone without a console account. Choose practice-wide or explicitly assigned-bill access, status/payment alerts, aging reminders and quiet hours. Everything stays off until the email owner reviews and confirms the invitation; the list includes pending states and a disable action.</p>
+      <p><strong>Administrative recipient list (React 0.52.0):</strong> <code>NotificationRecipientsSettings</code> (alias <code>ConnectedNotificationRecipientsSettings</code>) lets an administrator invite any authorized email address, including someone without a console account. Choose practice-wide or explicitly assigned-bill access, status/payment alerts, aging reminders, quiet hours and daily/weekly billing-activity digests. Everything stays off until the email owner reviews and confirms the invitation; the list includes pending states and a disable action.</p>
       <CodeBlock code={notificationRecipientsReact} filename="components/BillingRecipients.tsx" />
-      <p>Connect <code>load</code>, <code>invite</code> and <code>disable</code> to your authenticated host administrator route, return upstream <code>data</code> rather than its envelope, and preserve invitation request IDs on unchanged retries. Keep API keys and bill-assignment authority on the server. See the <Link href="/guides/notifications#invitation-api">invitation API, receipt handling and required host checks</Link>. These are bill alerts, not scheduled report digests or patient attachments; sandbox sends no email.</p>
+      <p>Connect <code>load</code>, <code>invite</code> and <code>disable</code> to your authenticated host administrator route, return upstream <code>data</code> rather than its envelope, and preserve invitation request IDs on unchanged retries. Forward <code>reportDigest</code> (off, daily or weekly) through your server adapter. Keep API keys and bill-assignment authority on the server. See the <Link href="/guides/notifications#invitation-api">invitation API, receipt handling and required host checks</Link>. Digests contain activity counts, not financial reports or patient attachments; sandbox sends no email.</p>
       <h3>Personal preferences</h3>
-      <p><code>NotificationSettings</code> (alias <code>ConnectedNotificationSettings</code>) adds a default-off email preferences panel to your existing settings page. It supports explicit consent, status updates, 30/60/90-day aging reminders, quiet hours, and unsubscribe for any partner&apos;s users, including people without a console account.</p>
+      <p><code>NotificationSettings</code> (alias <code>ConnectedNotificationSettings</code>) adds a default-off email preferences panel to your existing settings page. It supports explicit consent, status updates, 30/60/90-day aging reminders, quiet hours, daily/weekly billing-activity digests, and unsubscribe for any partner&apos;s users, including people without a console account. Return <code>reportDigest</code> in your adapter&apos;s preference snapshot. New or changed digest schedules require fresh consent.</p>
       <CodeBlock code={notificationSettingsReact} filename="components/BillingNotificationSettings.tsx" />
       <p>Your adapter calls an authenticated host-server route and reloads GET after each PUT or DELETE. The server owns identity, verified email, practice/assigned-bill access, consent records, and the permanent API key. Change <code>identityKey</code> when the host user, practice, or environment changes. Use <code>appearance</code>, <code>className</code>, and <code>style</code> for theming. See the <Link href="/guides/notifications#host">copyable server adapter and required host checks</Link> before wiring this up.</p>
       <Callout title="Never an automatic subscription">Rendering the widget, passing a contact list, and assigning bill access do not opt anyone in. Feature availability and email verification must be confirmed by your server. An empty assigned-bill audience sends nothing, and sandbox never sends email.</Callout>
