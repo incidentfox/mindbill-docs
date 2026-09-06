@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { compatDocsPath, compatEndpoints, compatResources } from "@/lib/daisybill-compat-reference";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 
@@ -52,27 +54,18 @@ export default function DaisybillCompatibilityPage() {
 <p>{"Resource creation is synchronous. There is no creation-event polling step. Submission and payer processing still have asynchronous delivery states; a saved draft or queued submission does not establish payer acceptance."}</p>
 
 <h2 id="endpoints">Endpoints</h2>
-<p>{"Suffixes below are relative to the base. Resource updates use PATCH, not PUT."}</p>
-<div className="data-table networks">
-<div className="table-head"><b>{"Methods"}</b><b>{"Suffix"}</b></div>
-<div><span>{"GET"}</span><span><code>{"/billing_providers"}</code>{", "}<code>{"/billing_providers/{id}"}</code></span></div>
-<div><span>{"GET, POST"}</span><span><code>{"/billing_providers/{id}/places_of_service"}</code></span></div>
-<div><span>{"GET, PATCH, DELETE"}</span><span><code>{"/places_of_service/{id}"}</code></span></div>
-<div><span>{"GET, POST"}</span><span><code>{"/billing_providers/{id}/rendering_providers"}</code></span></div>
-<div><span>{"GET, PATCH, DELETE"}</span><span><code>{"/rendering_providers/{id}"}</code></span></div>
-<div><span>{"GET, POST"}</span><span><code>{"/billing_providers/{id}/patients"}</code></span></div>
-<div><span>{"GET"}</span><span><code>{"/billing_providers/{id}/patients/search"}</code></span></div>
-<div><span>{"GET, PATCH, DELETE"}</span><span><code>{"/patients/{id}"}</code></span></div>
-<div><span>{"GET, POST"}</span><span><code>{"/patients/{id}/injuries"}</code></span></div>
-<div><span>{"GET"}</span><span><code>{"/billing_providers/{id}/injuries"}</code></span></div>
-<div><span>{"GET, PATCH, DELETE"}</span><span><code>{"/injuries/{id}"}</code></span></div>
-<div><span>{"GET, POST"}</span><span><code>{"/injuries/{id}/bills"}</code></span></div>
-<div><span>{"GET"}</span><span><code>{"/billing_providers/{id}/bills"}</code></span></div>
-<div><span>{"GET, PATCH, DELETE"}</span><span><code>{"/bills/{id}"}</code></span></div>
-<div><span>{"GET"}</span><span><code>{"/claims_administrators"}</code>{", "}<code>{"/claims_administrators/{id}"}</code></span></div>
-<div><span>{"POST"}</span><span><code>{"/bills/{id}/attachments"}</code></span></div>
-<div><span>{"POST"}</span><span><code>{"/bills/{id}/bill_submissions"}</code></span></div>
-</div>
+<p>Choose a method below for its path and query parameters, request fields and JSON, cURL example, complete response body, and errors. Paths are relative to the compatibility base URL. Updates use PATCH.</p>
+{compatResources.map(resource => (
+  <section key={resource.key} aria-label={resource.label}>
+    <h3>{resource.label}</h3>
+    <div className="data-table networks">
+      <div className="table-head"><b>Method</b><b>Endpoint reference</b></div>
+      {compatEndpoints.filter(endpoint => endpoint.resource.key === resource.key).map(endpoint => (
+        <div key={endpoint.slug}><span className={`method ${endpoint.method.toLowerCase()}`}>{endpoint.method}</span><span><Link href={`${compatDocsPath}/${endpoint.slug}`}><code>{endpoint.path}</code></Link><br />{endpoint.title}</span></div>
+      ))}
+    </div>
+  </section>
+))}
 <p>{"There is no separate claims resource in the referenced daisyBill API: claim number, ADJ number, administrator, employer, and diagnosis details belong to the injury. Billing-provider/address writes, attachment downloads/listing, second reviews, independent reviews, event feeds, imports, and arbitrary unsupported operations are outside this contract. Unsupported authorized operations return 501."}</p>
 
 <h2 id="differences-to-plan-for">Differences to plan for</h2>
