@@ -1,0 +1,2141 @@
+[
+  {
+    "key": "billing_provider",
+    "singular": "billing_provider",
+    "plural": "billing_providers",
+    "label": "Billing providers",
+    "collectionPath": "/billing_providers",
+    "itemPath": "/billing_providers/{billing_provider_id}",
+    "scopeRead": "orgs:read",
+    "requestFields": [],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Numeric compatibility ID."
+      },
+      {
+        "name": "created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "name",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "npi",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "telephone",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "physical_address",
+        "type": "null",
+        "description": "Always null. MindBill exposes its pay-to address separately."
+      },
+      {
+        "name": "billing_address",
+        "type": "object | null",
+        "description": "Pay-to address object, or null if not configured. Its ID/timestamps repeat provider values."
+      },
+      {
+        "name": "billing_address.id",
+        "type": "integer",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "billing_address.created_at",
+        "type": "string",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "billing_address.updated_at",
+        "type": "string",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "billing_address.address_1",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "billing_address.city",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "billing_address.state",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "billing_address.zip_code",
+        "type": "string | null",
+        "description": "Returned resource field."
+      }
+    ],
+    "responseExample": {
+      "id": 101,
+      "created_at": "2026-09-05T12:00:00.000Z",
+      "updated_at": "2026-09-05T12:00:00.000Z",
+      "name": "Example Medical Group",
+      "npi": "1234567893",
+      "telephone": "4155550100",
+      "physical_address": null,
+      "billing_address": {
+        "id": 101,
+        "created_at": "2026-09-05T12:00:00.000Z",
+        "updated_at": "2026-09-05T12:00:00.000Z",
+        "address_1": "100 Example Street",
+        "city": "San Francisco",
+        "state": "CA",
+        "zip_code": "94105"
+      }
+    },
+    "notes": [
+      "Read only. Billing address is included in the billing provider response; there is no separate address-write route.",
+      "No FEIN, fax, address_2, or links fields returned. Native name, NPI and telephone may be null."
+    ],
+    "errors": [
+      {
+        "status": 404,
+        "description": "Billing provider does not exist in this partner, organization, or environment."
+      }
+    ]
+  },
+  {
+    "key": "place_of_service",
+    "singular": "place_of_service",
+    "plural": "places_of_service",
+    "label": "Locations",
+    "collectionPath": "/billing_providers/{billing_provider_id}/places_of_service",
+    "itemPath": "/places_of_service/{place_of_service_id}",
+    "scopeRead": "orgs:read",
+    "scopeWrite": "orgs:write",
+    "requestFields": [
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Trimmed nonempty text.",
+        "required": true,
+        "constraint": "1\u2013255 characters"
+      },
+      {
+        "name": "nick_name",
+        "type": "string",
+        "description": "Trimmed nonempty text.",
+        "required": true,
+        "constraint": "1\u2013255 characters"
+      },
+      {
+        "name": "county",
+        "type": "string",
+        "description": "Trimmed nonempty text.",
+        "required": true,
+        "constraint": "1\u2013255 characters"
+      },
+      {
+        "name": "place_of_service_type_code",
+        "type": "string",
+        "description": "Place-of-service code.",
+        "required": true,
+        "constraint": "Exactly two digits"
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "description": "Defaults to false on create. Also accepts strings true, false, 1 and 0."
+      },
+      {
+        "name": "address_attributes",
+        "type": "object",
+        "description": "Location address. PATCH merges supplied address fields.",
+        "required": true
+      },
+      {
+        "name": "address_attributes.address_1",
+        "type": "string",
+        "description": "Trimmed nonempty text.",
+        "required": true,
+        "constraint": "1\u2013255 characters"
+      },
+      {
+        "name": "address_attributes.city",
+        "type": "string",
+        "description": "Trimmed nonempty text.",
+        "required": true,
+        "constraint": "1\u2013255 characters"
+      },
+      {
+        "name": "address_attributes.state",
+        "type": "string",
+        "description": "State abbreviation.",
+        "required": true,
+        "constraint": "Two uppercase letters"
+      },
+      {
+        "name": "address_attributes.zip_code",
+        "type": "string",
+        "description": "ZIP code.",
+        "required": true,
+        "constraint": "5 digits or 9 digits with optional hyphen"
+      },
+      {
+        "name": "address_attributes.address_2",
+        "type": "null | empty string",
+        "description": "Only omission, null, or an empty string is accepted. Nonempty data cannot be preserved and is rejected."
+      },
+      {
+        "name": "telephone",
+        "type": "null | empty string",
+        "description": "Only omission, null, or an empty string is accepted. Nonempty data cannot be preserved and is rejected."
+      },
+      {
+        "name": "npi",
+        "type": "null | empty string",
+        "description": "Only omission, null, or an empty string is accepted. Nonempty data cannot be preserved and is rejected."
+      },
+      {
+        "name": "authorization_fax_number",
+        "type": "null | empty string",
+        "description": "Only omission, null, or an empty string is accepted. Nonempty data cannot be preserved and is rejected."
+      },
+      {
+        "name": "authorization_telephone_number",
+        "type": "null | empty string",
+        "description": "Only omission, null, or an empty string is accepted. Nonempty data cannot be preserved and is rejected."
+      }
+    ],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Numeric compatibility ID."
+      },
+      {
+        "name": "created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "name",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "nick_name",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "county",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "place_of_service_type_code",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "description": "False after DELETE (archive)."
+      },
+      {
+        "name": "address",
+        "type": "object",
+        "description": "Address object. ID and timestamps repeat location values."
+      },
+      {
+        "name": "address.id",
+        "type": "integer",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.created_at",
+        "type": "string",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.updated_at",
+        "type": "string",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.address_1",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.city",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.state",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.zip_code",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "description": "Billing-provider link when available; otherwise an empty array."
+      }
+    ],
+    "createExample": {
+      "place_of_service": {
+        "name": "Example Downtown Office",
+        "nick_name": "Downtown",
+        "county": "San Francisco",
+        "place_of_service_type_code": "11",
+        "active": true,
+        "address_attributes": {
+          "address_1": "100 Example Street",
+          "city": "San Francisco",
+          "state": "CA",
+          "zip_code": "94105"
+        }
+      }
+    },
+    "patchExample": {
+      "place_of_service": {
+        "nick_name": "Main office",
+        "address_attributes": {
+          "zip_code": "94107"
+        }
+      }
+    },
+    "responseExample": {
+      "id": 102,
+      "created_at": "2026-09-05T12:00:00.000Z",
+      "updated_at": "2026-09-05T12:00:00.000Z",
+      "name": "Example Downtown Office",
+      "nick_name": "Downtown",
+      "county": "San Francisco",
+      "place_of_service_type_code": "11",
+      "active": true,
+      "address": {
+        "id": 102,
+        "created_at": "2026-09-05T12:00:00.000Z",
+        "updated_at": "2026-09-05T12:00:00.000Z",
+        "address_1": "100 Example Street",
+        "city": "San Francisco",
+        "state": "CA",
+        "zip_code": "94105"
+      },
+      "links": [
+        {
+          "rel": "billing_provider",
+          "href": "/partner/compat/daisybill/v1/billing_providers/101"
+        }
+      ]
+    },
+    "notes": [
+      "POST requires the listed required fields; all fields are optional on PATCH, including nested address fields. Supported nonempty fields cannot be null.",
+      "New locations default to inactive. Send active:true to activate.",
+      "DELETE archives the location and returns it with active:false (200); it remains readable.",
+      "Nested list includes locations assigned to the requested billing provider and unassigned locations. Configuration is shared with native organization settings.",
+      "Request fields that only accept empty values are not returned in the response."
+    ],
+    "errors": [
+      {
+        "status": 400,
+        "description": "Missing or invalid fields; unsupported nonempty fields."
+      },
+      {
+        "status": 404,
+        "description": "Location or billing provider not found."
+      },
+      {
+        "status": 409,
+        "description": "Organization settings must be initialized or their current format cannot be updated."
+      }
+    ]
+  },
+  {
+    "key": "rendering_provider",
+    "singular": "rendering_provider",
+    "plural": "rendering_providers",
+    "label": "Rendering providers",
+    "collectionPath": "/billing_providers/{billing_provider_id}/rendering_providers",
+    "itemPath": "/rendering_providers/{rendering_provider_id}",
+    "scopeRead": "orgs:read",
+    "scopeWrite": "orgs:write",
+    "requestFields": [
+      {
+        "name": "type",
+        "type": "\"Person\"",
+        "description": "Only person rendering providers are supported."
+      },
+      {
+        "name": "entity_name",
+        "type": "null | empty string",
+        "description": "Only omission, null, or an empty string is accepted."
+      },
+      {
+        "name": "first_name",
+        "type": "string",
+        "description": "Trimmed nonempty name.",
+        "required": true,
+        "constraint": "1\u2013100 characters"
+      },
+      {
+        "name": "last_name",
+        "type": "string",
+        "description": "Trimmed nonempty name.",
+        "required": true,
+        "constraint": "1\u2013100 characters"
+      },
+      {
+        "name": "npi",
+        "type": "string",
+        "description": "Rendering-provider NPI.",
+        "required": true,
+        "constraint": "Exactly 10 digits"
+      },
+      {
+        "name": "state_license_number",
+        "type": "string",
+        "description": "Trimmed nonempty license number.",
+        "required": true,
+        "constraint": "1\u201350 characters"
+      },
+      {
+        "name": "taxonomy_code",
+        "type": "string",
+        "description": "Trimmed nonempty taxonomy code.",
+        "required": true,
+        "constraint": "1\u201320 characters"
+      },
+      {
+        "name": "type_of_specialty",
+        "type": "string",
+        "description": "Provider specialty.",
+        "required": true,
+        "constraint": "Physician | Non-Physician Practitioner | Clinical Social Worker"
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "description": "Defaults to false on create. Also accepts strings true, false, 1 and 0."
+      }
+    ],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Numeric compatibility ID."
+      },
+      {
+        "name": "created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "first_name",
+        "type": "string | null",
+        "description": "Structured first name, or null if the existing native name cannot be reliably split."
+      },
+      {
+        "name": "last_name",
+        "type": "string | null",
+        "description": "Structured last name, or null if unavailable."
+      },
+      {
+        "name": "npi",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "state_license_number",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "taxonomy_code",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "type_of_specialty",
+        "type": "string | null",
+        "description": "Supported specialty enum, otherwise null."
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "description": "Nested list/create returns a billing-provider link. Direct GET/PATCH/DELETE returns an empty array."
+      }
+    ],
+    "createExample": {
+      "rendering_provider": {
+        "type": "Person",
+        "first_name": "Alex",
+        "last_name": "Example",
+        "npi": "1234567893",
+        "state_license_number": "A12345",
+        "taxonomy_code": "207X00000X",
+        "type_of_specialty": "Physician",
+        "active": true
+      }
+    },
+    "patchExample": {
+      "rendering_provider": {
+        "state_license_number": "A54321"
+      }
+    },
+    "responseExample": {
+      "id": 103,
+      "created_at": "2026-09-05T12:00:00.000Z",
+      "updated_at": "2026-09-05T12:00:00.000Z",
+      "first_name": "Alex",
+      "last_name": "Example",
+      "npi": "1234567893",
+      "state_license_number": "A12345",
+      "taxonomy_code": "207X00000X",
+      "type_of_specialty": "Physician",
+      "active": true,
+      "links": [
+        {
+          "rel": "billing_provider",
+          "href": "/partner/compat/daisybill/v1/billing_providers/101"
+        }
+      ]
+    },
+    "notes": [
+      "All request fields are optional on PATCH. If an existing provider lacks reliable structured names, send both first_name and last_name when changing either.",
+      "New providers default to inactive. Send active:true to activate.",
+      "DELETE archives and returns active:false with status200; provider remains readable.",
+      "Providers are organization-wide. Nested collection validates the billing provider but does not restrict results to it.",
+      "Response does not include type, entity_name, or display name. Direct item responses have links:[]."
+    ],
+    "errors": [
+      {
+        "status": 400,
+        "description": "Invalid fields, or incomplete name change for provider without structured names."
+      },
+      {
+        "status": 404,
+        "description": "Rendering provider or billing provider not found."
+      },
+      {
+        "status": 409,
+        "description": "Organization settings must be initialized or their current format cannot be updated."
+      }
+    ]
+  },
+  {
+    "key": "patient",
+    "singular": "patient",
+    "plural": "patients",
+    "label": "Patients",
+    "collectionPath": "/billing_providers/{billing_provider_id}/patients",
+    "itemPath": "/patients/{patient_id}",
+    "scopeRead": "bills:read",
+    "scopeWrite": "bills:write",
+    "requestFields": [
+      {
+        "name": "first_name",
+        "type": "string",
+        "description": "Trimmed nonempty name.",
+        "required": true,
+        "constraint": "1\u2013255 characters"
+      },
+      {
+        "name": "last_name",
+        "type": "string",
+        "description": "Trimmed nonempty name.",
+        "required": true,
+        "constraint": "1\u2013255 characters"
+      },
+      {
+        "name": "gender",
+        "type": "string | null",
+        "description": "Empty string becomes null.",
+        "constraint": "Male | Female | Unknown"
+      },
+      {
+        "name": "date_of_birth",
+        "type": "string | null",
+        "description": "Valid calendar date. Empty string becomes null.",
+        "constraint": "YYYY-MM-DD"
+      },
+      {
+        "name": "ssn",
+        "type": "string | null",
+        "description": "Empty string becomes null.",
+        "constraint": "9 digits or XXX-XX-XXXX"
+      },
+      {
+        "name": "suffix",
+        "type": "string | null",
+        "description": "Optional nullable text; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      },
+      {
+        "name": "middle_initial",
+        "type": "string | null",
+        "description": "Optional nullable text; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      },
+      {
+        "name": "practice_internal_id",
+        "type": "string | null",
+        "description": "Optional nullable text; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      },
+      {
+        "name": "telephone",
+        "type": "string | null",
+        "description": "Optional nullable text; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      },
+      {
+        "name": "address_attributes",
+        "type": "object",
+        "description": "Optional address object; cannot be null. PATCH merges supplied fields."
+      },
+      {
+        "name": "address_attributes.address_1",
+        "type": "string | null",
+        "description": "Optional nullable address field; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      },
+      {
+        "name": "address_attributes.address_2",
+        "type": "string | null",
+        "description": "Optional nullable address field; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      },
+      {
+        "name": "address_attributes.city",
+        "type": "string | null",
+        "description": "Optional nullable address field; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      },
+      {
+        "name": "address_attributes.state",
+        "type": "string | null",
+        "description": "Optional nullable address field; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      },
+      {
+        "name": "address_attributes.zip_code",
+        "type": "string | null",
+        "description": "Optional nullable address field; null clears the value.",
+        "constraint": "Maximum 255 characters"
+      }
+    ],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Numeric compatibility ID."
+      },
+      {
+        "name": "first_name",
+        "type": "string",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "last_name",
+        "type": "string",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "gender",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "date_of_birth",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "ssn",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "middle_initial",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "suffix",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "practice_internal_id",
+        "type": "string | null",
+        "description": "Provided external patient identifier, or null; not unique or automatically generated."
+      },
+      {
+        "name": "telephone",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address",
+        "type": "object",
+        "description": "Always an object, including when all address strings are null. ID and timestamps repeat patient alias values."
+      },
+      {
+        "name": "address.id",
+        "type": "integer",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.created_at",
+        "type": "string",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.updated_at",
+        "type": "string",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.address_1",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.address_2",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.city",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.state",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "address.zip_code",
+        "type": "string | null",
+        "description": "Returned resource field."
+      },
+      {
+        "name": "created_at",
+        "type": "string",
+        "description": "Compatibility-alias creation timestamp."
+      },
+      {
+        "name": "updated_at",
+        "type": "string",
+        "description": "Compatibility-alias update timestamp."
+      },
+      {
+        "name": "review_status",
+        "type": "string",
+        "description": "Always passed; create completes synchronously."
+      },
+      {
+        "name": "review_errors",
+        "type": "array",
+        "description": "Always an empty array."
+      },
+      {
+        "name": "review_warnings",
+        "type": "array",
+        "description": "Always an empty array."
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "description": "Billing-provider link, or an empty array if unassigned."
+      }
+    ],
+    "createExample": {
+      "patient": {
+        "first_name": "Jamie",
+        "last_name": "Example",
+        "gender": "Unknown",
+        "date_of_birth": "1990-01-15",
+        "practice_internal_id": "qlinica-patient-001",
+        "address_attributes": {
+          "address_1": "100 Example Street",
+          "city": "San Francisco",
+          "state": "CA",
+          "zip_code": "94105"
+        }
+      }
+    },
+    "patchExample": {
+      "patient": {
+        "telephone": "4155550101",
+        "address_attributes": {
+          "address_2": null
+        }
+      }
+    },
+    "responseExample": {
+      "id": 104,
+      "first_name": "Jamie",
+      "last_name": "Example",
+      "gender": "Unknown",
+      "date_of_birth": "1990-01-15",
+      "ssn": null,
+      "middle_initial": null,
+      "suffix": null,
+      "practice_internal_id": "qlinica-patient-001",
+      "telephone": null,
+      "address": {
+        "id": 104,
+        "created_at": "2026-09-05T12:00:00.000Z",
+        "updated_at": "2026-09-05T12:00:00.000Z",
+        "address_1": "100 Example Street",
+        "address_2": null,
+        "city": "San Francisco",
+        "state": "CA",
+        "zip_code": "94105"
+      },
+      "created_at": "2026-09-05T12:00:00.000Z",
+      "updated_at": "2026-09-05T12:00:00.000Z",
+      "review_status": "passed",
+      "review_errors": [],
+      "review_warnings": [],
+      "links": [
+        {
+          "rel": "billing_provider",
+          "href": "/partner/compat/daisybill/v1/billing_providers/101"
+        }
+      ]
+    },
+    "notes": [
+      "Only first_name and last_name are required on POST. All fields are optional on PATCH.",
+      "Optional omitted POST values default to null; address is still returned as an object.",
+      "DELETE archives and returns the previous patient object with status200. Later GET returns404. Patients with injuries or bills cannot be deleted.",
+      "Search endpoint: GET /billing_providers/{billing_provider_id}/patients/search. Optional first_name, last_name, ssn, date_of_birth and practice_internal_id, each maximum255 characters, plus pagination.",
+      "Search filters combine with AND. Names match exactly, case-insensitively; SSNs ignore hyphens; date of birth and practice_internal_id match exactly.",
+      "Patient list (without /search) accepts pagination only. Only records mapped for this partner/organization/environment are accessible. No automatic matching or importing native patients."
+    ],
+    "errors": [
+      {
+        "status": 400,
+        "description": "Invalid or missing fields, unsupported queries, or search value longer than 255 characters."
+      },
+      {
+        "status": 404,
+        "description": "Patient or billing provider not found."
+      },
+      {
+        "status": 409,
+        "description": "A patient with injuries or bills cannot be deleted."
+      }
+    ]
+  },
+  {
+    "key": "claims_administrator",
+    "singular": "claims_administrator",
+    "plural": "claims_administrators",
+    "label": "Claims administrators",
+    "collectionPath": "/claims_administrators",
+    "itemPath": "/claims_administrators/{claims_administrator_id}",
+    "scopeRead": "payers:read",
+    "requestFields": [],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Numeric compatibility ID; use this adapter-issued ID in injuries."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Public directory name."
+      },
+      {
+        "name": "created_at",
+        "type": "null",
+        "description": "Always null; directory history is not exposed."
+      },
+      {
+        "name": "updated_at",
+        "type": "null",
+        "description": "Always null."
+      },
+      {
+        "name": "description",
+        "type": "null",
+        "description": "Always null."
+      },
+      {
+        "name": "also_known_as",
+        "type": "string | null",
+        "description": "Aliases joined with comma and space, or null."
+      },
+      {
+        "name": "affiliated_entities",
+        "type": "string | null",
+        "description": "Affiliated entities joined with comma and space, or null."
+      },
+      {
+        "name": "payer_required",
+        "type": "boolean",
+        "description": "Whether a specific payer selection is required."
+      },
+      {
+        "name": "main_payer_present",
+        "type": "boolean",
+        "description": "Whether the administrator has a main payer."
+      }
+    ],
+    "responseExample": {
+      "id": 105,
+      "name": "Example Claims Administrator",
+      "created_at": null,
+      "updated_at": null,
+      "description": null,
+      "also_known_as": "Example Claims",
+      "affiliated_entities": null,
+      "payer_required": false,
+      "main_payer_present": true
+    },
+    "notes": [
+      "Read only. Optional search query, maximum255 characters, and pagination. Searches the complete public directory before pagination. The name query parameter is unsupported.",
+      "Directory IDs must be obtained from this adapter under the same partner/organization/environment.",
+      "Alias and affiliation fields are strings, not arrays. No routing/contact/history fields are exposed."
+    ],
+    "errors": [
+      {
+        "status": 400,
+        "description": "Unsupported query or search longer than 255 characters."
+      },
+      {
+        "status": 404,
+        "description": "Claims administrator not found or alias no longer matches a public directory record."
+      }
+    ]
+  },
+  {
+    "key": "injury",
+    "singular": "injury",
+    "plural": "injuries",
+    "label": "Injury",
+    "collectionPath": "/patients/{patient_id}/injuries",
+    "itemPath": "/injuries/{injury_id}",
+    "scopeRead": "bills:read",
+    "scopeWrite": "bills:write",
+    "requestFields": [
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Description of the injury.",
+        "required": true,
+        "constraint": "Trimmed; 1\u20132000 characters."
+      },
+      {
+        "name": "patient_id",
+        "type": "integer | null",
+        "description": "Optional cross-check only; if supplied must equal the patient ID in the parent path. Cannot reassign an injury. A null value fails that cross-check.",
+        "constraint": "1\u20132147483647; digit strings accepted."
+      },
+      {
+        "name": "start_date",
+        "type": "string | null",
+        "description": "Injury start date; empty string clears.",
+        "constraint": "Valid YYYY-MM-DD."
+      },
+      {
+        "name": "end_date",
+        "type": "string | null",
+        "description": "Injury end date; requires start_date and must be on or after it. Empty string clears.",
+        "constraint": "Valid YYYY-MM-DD."
+      },
+      {
+        "name": "adj_number",
+        "type": "string | null",
+        "description": "Optional injury identifier; omitted fields are preserved on PATCH.",
+        "constraint": "Trimmed; at most 255 characters."
+      },
+      {
+        "name": "claim_number",
+        "type": "string | null",
+        "description": "Optional injury identifier; omitted fields are preserved on PATCH.",
+        "constraint": "Trimmed; at most 255 characters."
+      },
+      {
+        "name": "practice_internal_id",
+        "type": "string | null",
+        "description": "Optional injury identifier; omitted fields are preserved on PATCH.",
+        "constraint": "Trimmed; at most 255 characters."
+      },
+      {
+        "name": "state",
+        "type": "string | null",
+        "description": "Injury state; empty string clears.",
+        "constraint": "Two uppercase letters."
+      },
+      {
+        "name": "claims_administrator_id",
+        "type": "integer | null",
+        "description": "Compatibility ID from the claims-administrator directory. Null or empty string clears.",
+        "constraint": "1\u20132147483647; digit strings accepted."
+      },
+      {
+        "name": "diagnosis_codes",
+        "type": "string[]",
+        "description": "ICD-10-CM codes; dotted or compact input accepted and normalized; responses use compact codes. Omitted on create defaults to [].",
+        "constraint": "At most 12; must resolve to the current catalog; duplicates after normalization rejected."
+      },
+      {
+        "name": "employer_attributes",
+        "type": "object",
+        "description": "Employer name only; null is not accepted."
+      },
+      {
+        "name": "employer_attributes.name",
+        "type": "string | null",
+        "description": "Employer name.",
+        "constraint": "Trimmed; at most 255 characters."
+      },
+      {
+        "name": "employer_attributes.address_attributes",
+        "type": "object",
+        "description": "Employer address storage is unsupported. The object may contain only omitted, null, or empty address fields."
+      },
+      {
+        "name": "payer_id",
+        "type": "null | empty string",
+        "description": "Unsupported; nonempty values are rejected with 422."
+      },
+      {
+        "name": "payer_list_payer_id",
+        "type": "null | empty string",
+        "description": "Unsupported; nonempty values are rejected with 422."
+      },
+      {
+        "name": "wcb_claim_number",
+        "type": "null | empty string",
+        "description": "Unsupported; nonempty values are rejected with 422."
+      },
+      {
+        "name": "employer_attributes.address_attributes.address_1",
+        "type": "null | empty string",
+        "description": "Unsupported; nonempty values are rejected with 422."
+      },
+      {
+        "name": "employer_attributes.address_attributes.address_2",
+        "type": "null | empty string",
+        "description": "Unsupported; nonempty values are rejected with 422."
+      },
+      {
+        "name": "employer_attributes.address_attributes.city",
+        "type": "null | empty string",
+        "description": "Unsupported; nonempty values are rejected with 422."
+      },
+      {
+        "name": "employer_attributes.address_attributes.state",
+        "type": "null | empty string",
+        "description": "Unsupported; nonempty values are rejected with 422."
+      },
+      {
+        "name": "employer_attributes.address_attributes.zip_code",
+        "type": "null | empty string",
+        "description": "Unsupported; nonempty values are rejected with 422."
+      }
+    ],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Stable numeric compatibility ID scoped to this integration and environment."
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "claim_number",
+        "type": "string | null",
+        "description": "Stored injury value, or null when absent."
+      },
+      {
+        "name": "adj_number",
+        "type": "string | null",
+        "description": "Stored injury value, or null when absent."
+      },
+      {
+        "name": "start_date",
+        "type": "string | null",
+        "description": "Stored injury value, or null when absent."
+      },
+      {
+        "name": "end_date",
+        "type": "string | null",
+        "description": "Stored injury value, or null when absent."
+      },
+      {
+        "name": "state",
+        "type": "string | null",
+        "description": "Stored injury value, or null when absent."
+      },
+      {
+        "name": "practice_internal_id",
+        "type": "string | null",
+        "description": "Stored injury value, or null when absent."
+      },
+      {
+        "name": "claims_administrator_id",
+        "type": "integer | null",
+        "description": "Directory compatibility ID, or null if absent or unrepresentable."
+      },
+      {
+        "name": "payer_id",
+        "type": "null",
+        "description": ""
+      },
+      {
+        "name": "diagnosis_codes",
+        "type": "string[]",
+        "description": ""
+      },
+      {
+        "name": "employer",
+        "type": "object | null",
+        "description": "Employer object when a name is stored; otherwise null. Employer id equals the injury id."
+      },
+      {
+        "name": "employer.id",
+        "type": "integer",
+        "description": "Stable numeric compatibility ID scoped to this integration and environment."
+      },
+      {
+        "name": "employer.name",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "employer.created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "employer.updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "employer.address",
+        "type": "null",
+        "description": ""
+      },
+      {
+        "name": "claims_administrator",
+        "type": "object | null",
+        "description": "Directory summary, or null when no representable administrator is linked."
+      },
+      {
+        "name": "created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "review_status",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "review_errors",
+        "type": "array",
+        "description": "Empty array in the current adapter response."
+      },
+      {
+        "name": "review_warnings",
+        "type": "string[]",
+        "description": "Usually []; contains a warning when a native claims administrator cannot be represented by this adapter."
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "description": "Related resource links with relative href paths."
+      },
+      {
+        "name": "links[].rel",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "links[].href",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "claims_administrator.id",
+        "type": "integer",
+        "description": "Directory compatibility ID."
+      },
+      {
+        "name": "claims_administrator.name",
+        "type": "string",
+        "description": "Administrator name."
+      },
+      {
+        "name": "claims_administrator.created_at",
+        "type": "string",
+        "description": "ISO timestamp of compatibility ID allocation."
+      },
+      {
+        "name": "claims_administrator.updated_at",
+        "type": "string",
+        "description": "ISO timestamp of compatibility ID update."
+      }
+    ],
+    "createExample": {
+      "injury": {
+        "description": "Left knee injury",
+        "claim_number": "DEMO-CLAIM-001",
+        "start_date": "2026-08-01",
+        "state": "CA",
+        "diagnosis_codes": [
+          "M25562"
+        ],
+        "employer_attributes": {
+          "name": "Example Employer"
+        }
+      }
+    },
+    "patchExample": {
+      "injury": {
+        "claim_number": "DEMO-CLAIM-002"
+      }
+    },
+    "responseExample": {
+      "id": 201,
+      "description": "Left knee injury",
+      "claim_number": "DEMO-CLAIM-001",
+      "adj_number": null,
+      "start_date": "2026-08-01",
+      "end_date": null,
+      "state": "CA",
+      "practice_internal_id": null,
+      "claims_administrator_id": null,
+      "payer_id": null,
+      "diagnosis_codes": [
+        "M25562"
+      ],
+      "employer": {
+        "id": 201,
+        "name": "Example Employer",
+        "created_at": "2026-09-01T12:00:00.000Z",
+        "updated_at": "2026-09-01T12:00:00.000Z",
+        "address": null
+      },
+      "claims_administrator": null,
+      "created_at": "2026-09-01T12:00:00.000Z",
+      "updated_at": "2026-09-01T12:00:00.000Z",
+      "review_status": "passed",
+      "review_errors": [],
+      "review_warnings": [],
+      "links": [
+        {
+          "rel": "patient",
+          "href": "/partner/compat/daisybill/v1/patients/101"
+        }
+      ]
+    },
+    "notes": [
+      "Responses return the resource directly, with its numeric ID, after synchronous creation. No creation-result polling is required.",
+      "Use compatibility IDs returned by this adapter, not existing daisyBill IDs or native MindBill string IDs.",
+      "Unknown payload fields are rejected. Writes reject query parameters.",
+      "Collection pagination: page=1 (1\u20131000000), per_page=25 (1\u2013100), or offset (0\u2013100000000). Do not combine page and offset. Unknown/repeated parameters return 400. Headers: X-Page, X-Per-Page, X-Total-Pages, X-Prev-Page, X-Next-Page; no total-count body field.",
+      "GET list: 200 {\"injuries\":[...]}; GET item: 200 raw resource; POST under patient: 201 raw resource; PATCH: 200 raw resource; DELETE: 200 deleted resource, followed by 404 on later reads.",
+      "Also GET /billing_providers/{billing_provider_id}/injuries. POST is only supported under patients.",
+      "Additional list filters: claim_number (exact match, 1\u2013255 characters), created_at and updated_at (YYYY-MM-DD UTC calendar day on compatibility timestamps). All supplied filters are combined.",
+      "PATCH requires at least one meaningful supported field. Omitted values stay unchanged. A submitted billing record prevents edits. Diagnoses cannot change once any bill references the injury.",
+      "DELETE archives the injury and requires no linked bills.",
+      "Injury writes accept application/json or application/x-www-form-urlencoded, up to 32 KiB. JSON arrays are the reliable way to submit diagnosis_codes."
+    ],
+    "errors": [
+      {
+        "status": 400,
+        "description": "Invalid/malformed body or query parameters."
+      },
+      {
+        "status": 404,
+        "description": "Unknown or inaccessible injury, parent, or referenced compatibility ID."
+      },
+      {
+        "status": 409,
+        "description": "Submitted billing history prevents edits; linked bills prevent diagnosis changes or deletion."
+      },
+      {
+        "status": 422,
+        "description": "Invalid/unsupported fields or filters, missing meaningful PATCH field, invalid date range, unknown/duplicate diagnoses, patient mismatch, or unavailable administrator."
+      },
+      {
+        "status": 413,
+        "description": "Request body exceeds 32 KiB."
+      },
+      {
+        "status": 415,
+        "description": "Content-Type must be application/json or application/x-www-form-urlencoded."
+      }
+    ]
+  },
+  {
+    "key": "bill",
+    "singular": "bill",
+    "plural": "bills",
+    "label": "Bill",
+    "collectionPath": "/injuries/{injury_id}/bills",
+    "itemPath": "/bills/{bill_id}",
+    "scopeRead": "bills:read",
+    "scopeWrite": "bills:write",
+    "requestFields": [
+      {
+        "name": "date_of_service",
+        "type": "string",
+        "description": "Start date of service.",
+        "required": true,
+        "constraint": "Valid YYYY-MM-DD."
+      },
+      {
+        "name": "date_of_service_end",
+        "type": "string | null",
+        "description": "Optional end date; cannot precede date_of_service. Empty string clears."
+      },
+      {
+        "name": "diagnosis_type",
+        "type": "string",
+        "description": "Diagnosis coding system.",
+        "required": true,
+        "constraint": "Exactly Icd10."
+      },
+      {
+        "name": "place_of_service_id",
+        "type": "integer",
+        "description": "Compatibility location ID.",
+        "required": true,
+        "constraint": "1\u20132147483647; digit strings accepted."
+      },
+      {
+        "name": "rendering_provider_id",
+        "type": "integer | null",
+        "description": "Optional rendering provider compatibility ID; null or empty string clears.",
+        "constraint": "1\u20132147483647; digit strings accepted."
+      },
+      {
+        "name": "diagnosis_codes",
+        "type": "string[]",
+        "description": "Must exactly match the parent injury diagnosis codes in the same order.",
+        "required": true,
+        "constraint": "1\u201312 unique uppercase compact ICD-10 codes; no dots."
+      },
+      {
+        "name": "authorization_number",
+        "type": "string | null",
+        "description": "Optional authorization number; at most 255 characters."
+      },
+      {
+        "name": "practice_bill_id",
+        "type": "integer | null",
+        "description": "Optional external bill number. Integer input is returned as a string. Empty string clears.",
+        "constraint": "0\u20132147483647; digit strings accepted."
+      },
+      {
+        "name": "admission_date",
+        "type": "string | null",
+        "description": "Valid YYYY-MM-DD no later than date_of_service. Empty string clears."
+      },
+      {
+        "name": "service_line_items_attributes",
+        "type": "object[]",
+        "description": "Optional lines; omitted on create defaults to []. On PATCH supplied array replaces all lines and allocates new line IDs. Numeric-index Rails objects are also accepted.",
+        "constraint": "At most 50 lines; null rejected."
+      },
+      {
+        "name": "service_line_items_attributes[].procedure_code",
+        "type": "string",
+        "description": "Med-legal procedure code.",
+        "required": true,
+        "constraint": "ML200, ML201, ML202, ML203, ML204, ML205, MLPRR."
+      },
+      {
+        "name": "service_line_items_attributes[].units",
+        "type": "integer",
+        "description": "Units.",
+        "required": true,
+        "constraint": "1\u20131000000; digit strings accepted."
+      },
+      {
+        "name": "service_line_items_attributes[].modifier_codes",
+        "type": "string[]",
+        "description": "Optional modifiers, default []. Must be unique and apply to the procedure.",
+        "constraint": "At most 4; values 92, 93, 94, 95, 96, 97, 98."
+      },
+      {
+        "name": "service_line_items_attributes[].diagnosis_code_1",
+        "type": "string",
+        "description": "First diagnosis, present in diagnosis_codes.",
+        "required": true,
+        "constraint": "Uppercase compact ICD-10."
+      },
+      {
+        "name": "service_line_items_attributes[].diagnosis_code_2",
+        "type": "string | null",
+        "description": "Optional diagnosis; no gaps, duplicates, or codes outside diagnosis_codes. Empty string clears."
+      },
+      {
+        "name": "service_line_items_attributes[].diagnosis_code_3",
+        "type": "string | null",
+        "description": "Optional diagnosis; no gaps, duplicates, or codes outside diagnosis_codes. Empty string clears."
+      },
+      {
+        "name": "service_line_items_attributes[].diagnosis_code_4",
+        "type": "string | null",
+        "description": "Optional diagnosis; no gaps, duplicates, or codes outside diagnosis_codes. Empty string clears."
+      },
+      {
+        "name": "service_line_items_attributes[].unit_charge_cents",
+        "type": "integer | null",
+        "description": "Optional supplied unit charge must exactly match MindBill fee-schedule calculation; arbitrary prices are rejected. Empty string clears.",
+        "constraint": "0\u20132147483647; digit strings accepted."
+      },
+      {
+        "name": "service_line_items_attributes[].custom_unit_charge_cents",
+        "type": "integer | null",
+        "description": "Optional supplied unit charge must exactly match MindBill fee-schedule calculation; arbitrary prices are rejected. Empty string clears.",
+        "constraint": "0\u20132147483647; digit strings accepted."
+      }
+    ],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Stable numeric compatibility ID scoped to this integration and environment."
+      },
+      {
+        "name": "created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "review_status",
+        "type": "string",
+        "description": "Always pending; shape validation is not completed submission review."
+      },
+      {
+        "name": "review_errors",
+        "type": "array",
+        "description": "Empty array in the current adapter response."
+      },
+      {
+        "name": "review_warnings",
+        "type": "array",
+        "description": "Empty array in the current adapter response."
+      },
+      {
+        "name": "date_of_service",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "date_of_service_end",
+        "type": "string | null",
+        "description": "Service end date or null."
+      },
+      {
+        "name": "diagnosis_type",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "diagnosis_codes",
+        "type": "string[]",
+        "description": ""
+      },
+      {
+        "name": "authorization_number",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "practice_bill_id",
+        "type": "string",
+        "description": "External bill number as a string, or empty string if absent."
+      },
+      {
+        "name": "admission_date",
+        "type": "string | null",
+        "description": "Admission date or null."
+      },
+      {
+        "name": "additional_information",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Native status: incomplete, send, sent, accepted, accepted_no_response, processed, paid, denied, rejected, appealing, lien, ibr, closed."
+      },
+      {
+        "name": "charge_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "expected_payment_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "allowed_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "balance_due_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "write_off_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "service_line_items",
+        "type": "array",
+        "description": ""
+      },
+      {
+        "name": "service_line_items[].id",
+        "type": "integer",
+        "description": "Stable numeric compatibility ID scoped to this integration and environment."
+      },
+      {
+        "name": "service_line_items[].created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "service_line_items[].updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "service_line_items[].procedure_code",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "service_line_items[].units",
+        "type": "integer",
+        "description": ""
+      },
+      {
+        "name": "service_line_items[].modifier_codes",
+        "type": "string[]",
+        "description": ""
+      },
+      {
+        "name": "service_line_items[].diagnosis_code_1",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "service_line_items[].diagnosis_code_2",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "service_line_items[].diagnosis_code_3",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "service_line_items[].diagnosis_code_4",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "service_line_items[].charge_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "service_line_items[].expected_payment_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "service_line_items[].allowed_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "service_line_items[].balance_due_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "service_line_items[].write_off_cents",
+        "type": "integer",
+        "description": "Integer cents."
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "description": "Related resource links with relative href paths."
+      },
+      {
+        "name": "links[].rel",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "links[].href",
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "createExample": {
+      "bill": {
+        "date_of_service": "2026-09-01",
+        "diagnosis_type": "Icd10",
+        "place_of_service_id": 301,
+        "rendering_provider_id": 401,
+        "diagnosis_codes": [
+          "M25562"
+        ],
+        "service_line_items_attributes": [
+          {
+            "procedure_code": "ML201",
+            "units": 1,
+            "diagnosis_code_1": "M25562",
+            "modifier_codes": []
+          }
+        ]
+      }
+    },
+    "patchExample": {
+      "bill": {
+        "authorization_number": "DEMO-AUTH-001"
+      }
+    },
+    "responseExample": {
+      "id": 501,
+      "created_at": "2026-09-01T12:00:00.000Z",
+      "updated_at": "2026-09-01T12:00:00.000Z",
+      "review_status": "pending",
+      "review_errors": [],
+      "review_warnings": [],
+      "date_of_service": "2026-09-01",
+      "date_of_service_end": null,
+      "diagnosis_type": "Icd10",
+      "diagnosis_codes": [
+        "M25562"
+      ],
+      "authorization_number": "",
+      "practice_bill_id": "",
+      "admission_date": null,
+      "additional_information": "",
+      "status": "incomplete",
+      "charge_cents": 201500,
+      "expected_payment_cents": 201500,
+      "allowed_cents": 0,
+      "balance_due_cents": 201500,
+      "write_off_cents": 0,
+      "service_line_items": [
+        {
+          "id": 601,
+          "created_at": "2026-09-01T12:00:00.000Z",
+          "updated_at": "2026-09-01T12:00:00.000Z",
+          "procedure_code": "ML201",
+          "units": 1,
+          "modifier_codes": [],
+          "diagnosis_code_1": "M25562",
+          "diagnosis_code_2": "",
+          "diagnosis_code_3": "",
+          "diagnosis_code_4": "",
+          "charge_cents": 201500,
+          "expected_payment_cents": 201500,
+          "allowed_cents": 0,
+          "balance_due_cents": 201500,
+          "write_off_cents": 0
+        }
+      ],
+      "links": [
+        {
+          "rel": "injury",
+          "href": "/partner/compat/daisybill/v1/injuries/201"
+        },
+        {
+          "rel": "place_of_service",
+          "href": "/partner/compat/daisybill/v1/places_of_service/301"
+        },
+        {
+          "rel": "rendering_provider",
+          "href": "/partner/compat/daisybill/v1/rendering_providers/401"
+        }
+      ]
+    },
+    "notes": [
+      "Responses return the resource directly, with its numeric ID, after synchronous creation. No creation-result polling is required.",
+      "Use compatibility IDs returned by this adapter, not existing daisyBill IDs or native MindBill string IDs.",
+      "Unknown payload fields are rejected. Writes reject query parameters.",
+      "Collection pagination: page=1 (1\u20131000000), per_page=25 (1\u2013100), or offset (0\u2013100000000). Do not combine page and offset. Unknown/repeated parameters return 400. Headers: X-Page, X-Per-Page, X-Total-Pages, X-Prev-Page, X-Next-Page; no total-count body field.",
+      "GET list: 200 {\"bills\":[...]}; GET item: 200 raw resource; POST under injury: 201 raw resource; PATCH: 200 raw resource; DELETE: 204 with no body.",
+      "Also GET /billing_providers/{billing_provider_id}/bills. POST is only supported under injuries. Lists support pagination only.",
+      "Create requires the parent patient to have a billing provider. A created bill is an incomplete draft, with no transmission.",
+      "Writes accept JSON or form-encoded data up to 32 KiB. Nested Rails numeric line keys are supported; nested id and _destroy edits are rejected.",
+      "PATCH fields are optional; {} is accepted. Omitted lines retain their IDs. Supplied lines replace the complete array with new IDs. The merged bill is revalidated.",
+      "Only incomplete, unsubmitted drafts without payments, financial history, corrections, submission history, or unfinished operations may be edited/deleted.",
+      "Charges use the native med-legal fee schedule. This example ML201 at one unit with no modifiers is 201500 cents. All response monetary values are integer cents.",
+      "Bill resource responses use empty strings for absent authorization_number, practice_bill_id and unused line diagnoses. No direct injury_id/place_of_service_id/rendering_provider_id fields are returned; use links.",
+      "Creating a valid draft does not establish submission readiness. Attach required documents, then create a bill submission."
+    ],
+    "errors": [
+      {
+        "status": 400,
+        "description": "Invalid payload/unknown fields, malformed dates or diagnoses, invalid line references/modifiers/prices, or invalid queries."
+      },
+      {
+        "status": 404,
+        "description": "Unknown or inaccessible bill, parent, location or rendering provider."
+      },
+      {
+        "status": 409,
+        "description": "Bill is not a mutable draft; existing native relationships, charges, service dates, or diagnosis pointers cannot be represented safely."
+      },
+      {
+        "status": 422,
+        "description": "Patient lacks billing provider, or bill diagnoses differ from the injury or their order."
+      },
+      {
+        "status": 413,
+        "description": "Request body exceeds 32 KiB."
+      },
+      {
+        "status": 415,
+        "description": "Content-Type must be application/json or application/x-www-form-urlencoded."
+      }
+    ]
+  },
+  {
+    "key": "attachment",
+    "singular": "attachment",
+    "plural": "attachments",
+    "label": "Attachment",
+    "collectionPath": "/bills/{bill_id}/attachments",
+    "itemPath": "",
+    "scopeRead": "bills:read",
+    "scopeWrite": "bills:write",
+    "requestFields": [
+      {
+        "name": "document_file_name",
+        "type": "string",
+        "description": "PDF filename.",
+        "required": true,
+        "constraint": "1\u2013255 characters, .pdf suffix; no surrounding whitespace, slash, backslash or control characters."
+      },
+      {
+        "name": "document_file_content",
+        "type": "string",
+        "description": "Standard padded base64 of real PDF bytes. Ruby-style CR/LF line breaks are accepted. Data URLs and URL-safe base64 are rejected.",
+        "required": true,
+        "constraint": "Decoded PDF at most 25 MiB; readable, unencrypted and at least one page."
+      },
+      {
+        "name": "report_type",
+        "type": "string",
+        "description": "A supported PWK01 code, for example OZ:J4 for a medical-legal report.",
+        "required": true,
+        "constraint": "Allowed values: OZ:J1, OZ:J2, OZ:J3, OZ:J4, OZ:J5, OZ:J6, OZ:J7, OZ:J8, OZ:J9, 03, 04, 05, 06, 07, 08, 09, 10, 11, 13, 15, 21, A3, A4, AM, AS, B2, B3, B4, BR, BS, BT, CB, CK, CT, D2, DA, DB, DG, DJ, DS, EB, HC, HR, I5, IR, LA, M1, MT, NN, OB, OC, OD, OE, OX, OZ, P4, P5, PE, PN, PO, PQ, PY, PZ, RB, RR, RT, RX, SG, V5, XP."
+      }
+    ],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Stable numeric compatibility ID scoped to this integration and environment."
+      },
+      {
+        "name": "created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "document_file_name",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "document_content_type",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "document_file_size",
+        "type": "integer",
+        "description": ""
+      },
+      {
+        "name": "report_type",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "review_status",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "review_errors",
+        "type": "array",
+        "description": "Empty array in the current adapter response."
+      },
+      {
+        "name": "review_warnings",
+        "type": "array",
+        "description": "Empty array in the current adapter response."
+      },
+      {
+        "name": "inactive",
+        "type": "boolean",
+        "description": ""
+      },
+      {
+        "name": "document_url",
+        "type": "null",
+        "description": ""
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "description": "Related resource links with relative href paths."
+      },
+      {
+        "name": "links[].rel",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "links[].href",
+        "type": "string",
+        "description": ""
+      }
+    ],
+    "createExample": {
+      "attachment": {
+        "document_file_name": "report.pdf",
+        "document_file_content": "JVBERi0xLjcKJYGBgYEKCjUgMCBvYmoKPDwKL0ZpbHRlciAvRmxhdGVEZWNvZGUKL1R5cGUgL09ialN0bQovTiA0Ci9GaXJzdCAyMAovTGVuZ3RoIDI1OQo+PgpzdHJlYW0KeJzVUk1LxDAQvedXzFFPmU6zSSul4PbjIsKyeFL2ELZhKchmSVvQf++kWRUP4lmSRz7em8wkLxkgECgFOZgCFGxygqoS8un94kDu7MlNQj6MwwQvzCLs4SBk45fzDJmoa/GtbexsX/1JpCDIovhTsQt+WI4uQNV3fY9oEFErhkaklseGUTKI18xRwXOGUVfwnskR83vm+gRtUkzkV+3mGt/xyFodNW3SqiKtv/LGXF06g/6qp6yFfPRDa2cHN+0dIWksUWNGHPZ8y88RnJ39/73cWv/oz7/e8IfP0d5ocnDxD6wuy72b/BKObDvr6vhebhjt1r/xr0FuhmI/ROoDG2aNdAplbmRzdHJlYW0KZW5kb2JqCgo2IDAgb2JqCjw8Ci9TaXplIDcKL1Jvb3QgMiAwIFIKL0luZm8gMyAwIFIKL0ZpbHRlciAvRmxhdGVEZWNvZGUKL1R5cGUgL1hSZWYKL0xlbmd0aCAzNAovVyBbIDEgMiAyIF0KL0luZGV4IFsgMCA3IF0KPj4Kc3RyZWFtCnicFcQxDgAgCASwHsbd7/p6CB2K7nLZstV24pF8BkOGAq0KZW5kc3RyZWFtCmVuZG9iagoKc3RhcnR4cmVmCjM3NwolJUVPRg==",
+        "report_type": "OZ:J4"
+      }
+    },
+    "responseExample": {
+      "id": 701,
+      "created_at": "2026-09-01T12:00:00.000Z",
+      "updated_at": "2026-09-01T12:00:00.000Z",
+      "document_file_name": "report.pdf",
+      "document_content_type": "application/pdf",
+      "document_file_size": 574,
+      "report_type": "OZ:J4",
+      "review_status": "passed",
+      "review_errors": [],
+      "review_warnings": [],
+      "inactive": false,
+      "document_url": null,
+      "links": [
+        {
+          "rel": "bill",
+          "href": "/partner/compat/daisybill/v1/bills/501"
+        }
+      ]
+    },
+    "notes": [
+      "POST only: 201 with the raw attachment resource. No attachment list, GET, PATCH, DELETE, or download endpoint exists in this compatibility adapter.",
+      "JSON only, body at most 38 MiB, decoded PDF at most 25 MiB. Base64 is actual content, not a URL. This example contains a real one-page blank synthetic PDF; replace it with your report before submitting.",
+      "Bill must be a mutable draft without existing submission history, corrections, or unfinished operations.",
+      "document_url is always null; the response does not include the bytes or a download URL.",
+      "Original bill submission includes every document attached to the bill."
+    ],
+    "errors": [
+      {
+        "status": 400,
+        "description": "Invalid filename, report_type, base64, unreadable/encrypted/empty PDF, or unsupported fields."
+      },
+      {
+        "status": 404,
+        "description": "Bill not found or inaccessible."
+      },
+      {
+        "status": 409,
+        "description": "Bill cannot accept changes after billing/submission history or while another operation is unfinished."
+      },
+      {
+        "status": 413,
+        "description": "Request body exceeds 38 MiB or decoded PDF exceeds 25 MiB."
+      },
+      {
+        "status": 415,
+        "description": "Content-Type must be application/json."
+      }
+    ]
+  },
+  {
+    "key": "bill_submission",
+    "singular": "bill_submission",
+    "plural": "bill_submissions",
+    "label": "Bill submission",
+    "collectionPath": "/bills/{bill_id}/bill_submissions",
+    "itemPath": "",
+    "scopeRead": "bills:read",
+    "scopeWrite": "bills:submit",
+    "requestFields": [
+      {
+        "name": "comment",
+        "type": "string | null",
+        "description": "Optional team note; trimmed, at most 4000 characters."
+      },
+      {
+        "name": "supporting_document_ids",
+        "type": "array",
+        "description": "Must be omitted or []; all already-attached documents are included.",
+        "constraint": "Nonempty arrays and null are rejected."
+      }
+    ],
+    "responseFields": [
+      {
+        "name": "id",
+        "type": "integer",
+        "description": "Stable numeric compatibility ID scoped to this integration and environment."
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "mode",
+        "type": "string",
+        "description": "Selected delivery route; ebill, fax, email, or mail for supported original submissions."
+      },
+      {
+        "name": "created_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "updated_at",
+        "type": "string",
+        "description": "ISO 8601 timestamp."
+      },
+      {
+        "name": "claims_administrator",
+        "type": "object",
+        "description": ""
+      },
+      {
+        "name": "claims_administrator.id",
+        "type": "integer",
+        "description": "Stable numeric compatibility ID scoped to this integration and environment."
+      },
+      {
+        "name": "claims_administrator.name",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "claims_administrator.created_at",
+        "type": "null",
+        "description": "Unavailable; always null."
+      },
+      {
+        "name": "claims_administrator.updated_at",
+        "type": "null",
+        "description": "Unavailable; always null."
+      },
+      {
+        "name": "claims_administrator.description",
+        "type": "null",
+        "description": ""
+      },
+      {
+        "name": "claims_administrator.also_known_as",
+        "type": "string | null",
+        "description": "Comma-separated public directory values, or null."
+      },
+      {
+        "name": "claims_administrator.affiliated_entities",
+        "type": "string | null",
+        "description": "Comma-separated public directory values, or null."
+      },
+      {
+        "name": "claims_administrator.payer_required",
+        "type": "boolean",
+        "description": ""
+      },
+      {
+        "name": "claims_administrator.main_payer_present",
+        "type": "boolean",
+        "description": ""
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "description": "Related resource links with relative href paths."
+      },
+      {
+        "name": "links[].rel",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "links[].href",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "transmission_state",
+        "type": "string",
+        "description": "queued or submitted. This is transmission progress, not payer acknowledgement."
+      },
+      {
+        "name": "dry_run",
+        "type": "boolean",
+        "description": "True in sandbox, or when the live dispatcher reports a dry run."
+      },
+      {
+        "name": "livemode",
+        "type": "boolean",
+        "description": "True when the API key uses the live environment; independent of dry_run."
+      },
+      {
+        "name": "dispatched",
+        "type": "boolean",
+        "description": "True only in live mode, with dry_run false and transmission_state submitted."
+      }
+    ],
+    "createExample": {
+      "comment": "Ready for submission",
+      "supporting_document_ids": []
+    },
+    "responseExample": {
+      "id": 801,
+      "type": "OriginalSubmission",
+      "mode": "ebill",
+      "created_at": "2026-09-01T12:00:00.000Z",
+      "updated_at": "2026-09-01T12:00:00.000Z",
+      "claims_administrator": {
+        "id": 901,
+        "name": "Example Claims Administrator",
+        "created_at": null,
+        "updated_at": null,
+        "description": null,
+        "also_known_as": null,
+        "affiliated_entities": null,
+        "payer_required": false,
+        "main_payer_present": true
+      },
+      "links": [
+        {
+          "rel": "bill",
+          "href": "/partner/compat/daisybill/v1/bills/501"
+        }
+      ],
+      "transmission_state": "submitted",
+      "dry_run": true,
+      "livemode": false,
+      "dispatched": false
+    },
+    "notes": [
+      "POST only: 201 with the original-submission resource. No list, GET, PATCH or DELETE endpoint exists for submissions.",
+      "The request is a flat JSON object, not a bill_submission envelope. {} is valid. JSON only, up to 32 KiB.",
+      "Original submissions only. Second reviews, independent bill reviews and selecting a document subset are not supported.",
+      "The bill must be an unsubmitted draft with complete billing details, unambiguous administrator/payer selection, available report bytes, and a supported delivery route and destination.",
+      "Creation returns synchronously but delivery may remain queued. 201 is not payer acknowledgement. Use GET /bills/{bill_id} for subsequent bill status.",
+      "Sandbox performs readiness validation and simulation without external dispatch. A live API key can still yield dry_run=true. Inspect all three dry_run/livemode/dispatched flags.",
+      "After an unconfirmed native dispatch error, inspect bill status before retrying; the transport may already have acted.",
+      "A failed native dispatcher response preserves its HTTP 400\u2013599 status, with a generic error; other unconfirmed dispatcher responses return 502."
+    ],
+    "errors": [
+      {
+        "status": 400,
+        "description": "Malformed JSON or invalid write query parameters."
+      },
+      {
+        "status": 404,
+        "description": "Bill not found or inaccessible."
+      },
+      {
+        "status": 409,
+        "description": "Bill is not a mutable draft or has submission history/unfinished operation."
+      },
+      {
+        "status": 422,
+        "description": "Unsupported payload, incomplete billing information/documents, ambiguous payer selection, or missing route/destination."
+      },
+      {
+        "status": 502,
+        "description": "Native dispatch did not confirm success or a queued/submitted state. Inspect the bill before retrying."
+      },
+      {
+        "status": 413,
+        "description": "Request body exceeds 32 KiB."
+      },
+      {
+        "status": 415,
+        "description": "Content-Type must be application/json."
+      }
+    ]
+  }
+]
