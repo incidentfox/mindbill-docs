@@ -43,6 +43,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       await page.getByRole('heading', { name: 'Send useful billing notifications' }).waitFor();
       assert.match(await page.locator('body').innerText(), /Removing an association suppresses pending notifications/);
       const notificationText = await page.locator('body').innerText();
+      assert.doesNotMatch(notificationText, /docura|akhil|qme[ -]companion|spectrum medical evaluators/i);
       assert.match(notificationText, /ConnectedNotificationSettings/);
       assert.match(notificationText, /X-CSRF-Token/);
       assert.match(notificationText, /X-Notification-Request-Id/);

@@ -255,7 +255,7 @@ export default function AngularPage() {
         <div><code>MindBillLifecycleStore</code><span>injectable</span><span>Connected lifecycle state, actions, and downloads for custom layouts.</span></div>
       </div>
       <p>Presentation-free utilities: <code>summarizeMindBillDashboard</code>, <code>buildMindBillReportRows</code>, <code>buildMindBillReportCsv</code>, <code>buildMindBillStatusAgingMatrix</code>, <code>buildMindBillStatusAgingCsv</code>, <code>mindBillAgingDays</code>, <code>mindBillAgingBucket</code>, and <code>ensureTrailingProcedureLine</code>.</p>
-      <p>Available appearance presets are <code>mindbill</code>, <code>qme-companion</code>, <code>orange-bright</code>, and <code>clinical-blue</code>. Every visual token can also be overridden.</p>
+      <p>Appearance presets include <code>mindbill</code>, <code>orange-bright</code>, and <code>clinical-blue</code>. Every visual token can also be overridden.</p>
     </DocPage>
   );
 }

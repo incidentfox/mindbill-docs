@@ -54,7 +54,7 @@ export const navigation: DocLink[] = [
     description: "Update an existing integration and add optional billing or notification settings.",
     group: "Start here",
     icon: SquareCode,
-    keywords: ["docura", "upgrade", "versions", "coding agent", "digest"],
+    keywords: ["integration", "upgrade", "versions", "coding agent", "digest"],
   },
   {
     href: "/learn/workers-comp-billing",

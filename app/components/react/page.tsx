@@ -509,7 +509,7 @@ export default function ReactPage() {
       <div className="term-list compact">
         <div><b><code>BILL_SUBMISSION_REQUIRED_FIELDS</code></b><p>The canonical required fields used by <code>BillSubmissionForm</code>.</p></div>
         <div><b><code>validateBillSubmission</code></b><p>Run the same submission validation outside the rendered form.</p></div>
-        <div><b><code>mindBillThemePresets</code></b><p><code>mindbill</code>, <code>qme-companion</code>, <code>orange-bright</code>, <code>clinical-blue</code>, and the generic warm <code>calm-clinical</code> partner preset.</p></div>
+        <div><b><code>mindBillThemePresets</code></b><p><code>mindbill</code>, <code>orange-bright</code>, <code>clinical-blue</code>, and the generic warm <code>calm-clinical</code> preset.</p></div>
         <div><b><code>resolveMindBillAppearance</code></b><p>Resolve a preset plus token overrides.</p></div>
         <div><b><code>mindBillAppearanceStyle</code></b><p>Convert appearance tokens to CSS custom properties.</p></div>
         <div><b><code>ensureTrailingProcedureLine</code></b><p>Keep exactly one empty procedure row after populated rows.</p></div>

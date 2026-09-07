@@ -15,6 +15,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       assert.match(response.headers.get('content-type'), /text\/markdown/);
       assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
       const brief = await response.text();
+      assert.doesNotMatch(brief, /docura|akhil|qme[ -]companion|spectrum medical evaluators/i);
       assert.match(brief, /^---\ndescription:/);
       if (frontend === 'API only') assert.match(brief, /No React package or browser token required/);
       else assert.ok(brief.includes(`Frontend: ${frontend}; backend: ${backend}`));
@@ -84,6 +85,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       await page.screenshot({ path: `${output}/editor-launch-${width}.png` });
       await page.goto(`${base}/guides/upgrade`);
       await page.getByRole('heading', { name: 'Upgrade an existing integration' }).waitFor();
+      assert.doesNotMatch(await page.locator('body').innerText(), /docura|akhil|qme[ -]companion|spectrum medical evaluators/i);
       await page.locator('.code-block').getByRole('button', { name: 'Copy', exact: true }).click();
       assert.match(await page.evaluate(() => navigator.clipboard.readText()), /Forward reportDigest/);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));

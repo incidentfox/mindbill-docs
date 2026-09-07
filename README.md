@@ -3,6 +3,13 @@
 Standalone documentation and interactive examples for the MindBill partner API,
 React components, Angular components, and hosted billing workflow.
 
+## Public documentation privacy
+
+Never name partners or customers in public documentation, examples, search metadata,
+copyable integration prompts, or screenshots. Use generic integration descriptions
+and fictional example identities. Demonstrate generic theme presets, not named
+customer integrations.
+
 ```bash
 pnpm install
 pnpm dev
