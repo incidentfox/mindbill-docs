@@ -84,7 +84,7 @@ curl --fail-with-body https://app.mindbill.org/partner/v2/bills \\
   --data @bill.json`;
 
 export const notificationRecipe = `Notification ownership (choose deliberately):
-Notifications default OFF for every partner, not just Docura.
+Notifications default OFF for every integration.
 Admin recipient list (React >=0.52.0, including digests): add NotificationRecipientsSettings (alias
 ConnectedNotificationRecipientsSettings). Any authorized email can be invited; no
 console or host account is needed. Use memoized { load, invite, disable } with an

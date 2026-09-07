@@ -117,7 +117,7 @@ export default function App() {
     <BillSubmissionForm
       initialBill={initialBill}
       attachments={attachments}
-      appearance={{ preset: "qme-companion" }}
+      appearance={{ preset: "clinical-blue" }}
       submitLabel="Submit bill"
       onSubmit={async ({ sourceAttachmentIds, uploads }) => {
         setNotice(

@@ -23,7 +23,7 @@ No host database migration is required just to upgrade packages. Explain any opt
 storage/auth changes before making them. Never put permanent API keys in the browser.`;
 
 export default function UpgradePage() {
-  return <DocPage eyebrow="Start here" title="Upgrade an existing integration" description="A short checklist for Docura and other partners already using MindBill."
+  return <DocPage eyebrow="Start here" title="Upgrade an existing integration" description="A short checklist for existing MindBill integrations."
     toc={[{ id: "packages", label: "Update packages" }, { id: "optional", label: "Optional settings" }, { id: "agent", label: "Copy for your agent" }]}>
     <h2 id="packages">Update packages, keep your integration</h2>
     <p>Update <code>@mindbill/react</code> to <code>0.52.0</code> and any directly installed <code>@mindbill/browser</code> to <code>0.30.0</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
