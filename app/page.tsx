@@ -11,6 +11,7 @@ export default function HomePage() {
       title="Submit workers' comp bills through one API."
       description="Send the bill data and supporting documents you already have. MindBill validates the claim, routes it through the appropriate workers' compensation network, and gives your product one normalized lifecycle to track."
       toc={[
+        { id: "launch-video", label: "Video overview" },
         { id: "what", label: "What MindBill does" },
         { id: "why", label: "Why this API exists" },
         { id: "lifecycle", label: "One bill lifecycle" },
@@ -22,6 +23,30 @@ export default function HomePage() {
         <Link className="button-link primary" href="/learn/quickstart">Start the quickstart</Link>
         <Link className="button-link" href="/learn/workers-comp-billing">Learn the domain</Link>
       </div>
+
+      <section className="launch-video" aria-labelledby="launch-video">
+        <h2 id="launch-video">Build billing into your product</h2>
+        <p>See the integration in 81 seconds: a reviewed bill, an embedded workspace, and lifecycle events that keep your product in sync.</p>
+        <figure>
+          <video controls playsInline preload="none" poster="/video/mindbill-developers-poster.jpg" aria-label="MindBill developer integration overview">
+            <source src="/video/mindbill-developers.mp4" type="video/mp4" />
+            <track kind="captions" src="/video/mindbill-developers.vtt" srcLang="en" label="English" />
+            <a href="/video/mindbill-developers.mp4">Watch the developer overview</a>.
+          </video>
+          <figcaption>From your first sandbox submission to a connected billing workflow.</figcaption>
+        </figure>
+        <details>
+          <summary>Read the video transcript</summary>
+            <p>Bring workers&apos; comp billing into your product. MindBill connects the workflow, from the first submission to the final payment.</p>
+            <p>Start with a sandbox and a server-side API key. Bring the case data and documents you already have. California medical-legal billing is available today.</p>
+            <p>Send one reviewed bill and its supporting documents. MindBill validates the packet, routes the submission, and returns one bill ID to track.</p>
+            <p>Build your own interface, or embed a connected billing workspace. Give users bill tasks, reports, and the full lifecycle, right inside your application.</p>
+            <p>Keep your product in sync with signed webhooks and lifecycle events. Follow acknowledgements, review payment details, and respond when a bill needs attention.</p>
+            <p>Test the full flow in the sandbox, where submissions never reach payers. Then connect your approved live organization and move the integration into production.</p>
+            <p>Your product. One connected billing workflow. Start building with MindBill.</p>
+          <p><a href="/video/mindbill-developers.mp4" target="_blank" rel="noopener">Open the video in a new tab</a></p>
+        </details>
+      </section>
 
       <h2 id="what">What MindBill does</h2>
       <p>MindBill is a developer-first API for the full workers&apos; compensation billing lifecycle. You integrate once instead of building separate connections to clearinghouses, payer portals, fax vendors, and mail workflows.</p>
