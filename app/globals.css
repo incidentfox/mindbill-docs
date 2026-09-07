@@ -381,3 +381,13 @@ button { color: inherit; }
 .doc-content > details > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; border-radius: 2px; }
 .doc-content > details[open] > summary { margin-bottom: 16px; }
 .doc-content > details > :last-child { margin-bottom: 0; }
+
+/* Optional, user-controlled video overview; no media downloads until playback. */
+.launch-video { margin: 32px 0 40px; min-width: 0; }
+.launch-video figure { margin: 20px 0 14px; }
+.launch-video video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; border: 1px solid var(--line); background: #f4f1ea; }
+.launch-video figcaption { margin-top: 12px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.launch-video details { padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.launch-video summary { cursor: pointer; color: var(--text); font-size: 13px; font-weight: 600; }
+.launch-video summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.launch-video details p { font-size: 14px; }
