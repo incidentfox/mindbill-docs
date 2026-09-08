@@ -6,6 +6,7 @@ import { ApiKeyStep, BackendAuthStep, FrontendCode, QuickstartNav } from "@/comp
 import { QuickstartFramework, QuickstartTabs } from "@/components/quickstart-tabs";
 import { angularDashboardLoader } from "@/lib/quickstart-api-recipes";
 import * as recipes from "@/lib/quickstart-recipes";
+import { saveBillHandler, saveBillRoute } from "@/lib/quickstart-persistence-recipes";
 
 export const metadata: Metadata = { title: "Components quickstart" };
 
@@ -30,12 +31,20 @@ export default function QuickstartPage() {
         <p>Copy this page, open <code>/billing/new</code>, and fill out the form. After submission, it displays the bill’s status, documents, payments, and actions.</p>
         <FrontendCode label="Single bill framework" react={recipes.singleBillReact} angular={recipes.singleBillAngular}
           reactFilename="app/billing/new/page.tsx" angularFilename="new-bill.component.ts" />
-        <p className="quickstart-note">The empty fields are editable. Replace <code>report_demo_001</code> with your report or work-item ID; a case may have several bills. The bill is saved in MindBill. This page’s selection resets on reload; open saved bills from the dashboard below.</p>
+        <p className="quickstart-note">The empty fields are editable. The sample <code>report</code> represents a record already in your database: use its <code>id</code> as <code>externalId</code>, and save the returned <code>billId</code> in its <code>mindbillBillId</code> field. Use a report or billable work-item ID, since a case may have several bills; no separate ID-generation endpoint is needed.</p>
+        <p className="quickstart-note">Saving that link is a good default for reopening the bill. Load the report before mounting and initialize from its saved ID; show loading errors separately. Until you connect the TODOs, the example’s selection resets on reload, but the bill remains saved in MindBill and is available from the dashboard.</p>
+        <details id="persist-bill-id" className="quickstart-details"><summary>Save billId in your database <small>Optional</small></summary>
+          <p>Once your app has authentication and a database, replace the TODO with a request to your own backend. This React handler updates the screen immediately and reports a failed save without submitting the bill again.</p>
+          <CodeBlock language="typescript" filename="Inside NewBillPage · replace handleSubmitted" code={saveBillHandler} />
+          <p>The route below illustrates a Prisma-style database write. <code>authorizeReport</code> and <code>db</code> are your app’s integrations, not MindBill exports: adapt the imports and model fields to your existing code. The auth helper must validate sign-in, billing access, and CSRF, load the authorized report, and select that report organization’s server-held MindBill token. Return <code>null</code> when access is denied. Keep the token on the server.</p>
+          <CodeBlock language="typescript" filename="app/api/reports/[id]/route.ts · adapt to your database" code={saveBillRoute} />
+          <p>The server verifies both the organization and <code>externalId</code> before storing <code>mindbillBillId</code>. Repeating the save with the same ID is safe; a different existing link returns a conflict. For a failed save or a closed browser, recover the ID using the lookup below.</p>
+        </details>
         <details id="save-bill-id" className="quickstart-details"><summary>Find the same bill after a reload</summary>
-          <p>You do not need a new database table. MindBill stores <code>externalId</code> with the bill, so your server can look it up using the report ID you already have. This optional Next.js page opens that bill at <code>/billing/report</code>.</p>
+          <p>If the report has no saved <code>mindbillBillId</code>, your server can recover it using the report’s existing ID as <code>externalId</code>. This optional Next.js page opens that bill at <code>/billing/report</code>.</p>
           <CodeBlock language="tsx" filename="app/billing/report/page.tsx · optional" code={recipes.findBillPage} />
           <p><code>externalId</code> does not enforce uniqueness or prevent duplicate submissions. Use a stable ID for each billable item. If multiple bills match, choose the intended one; a failed lookup must not be treated as “no bill.”</p>
-          <p>If your app already stores billing metadata, you can instead save the returned <code>billId</code> there through your authenticated backend. This is optional. The <Link href="/api-reference/list-bills">lookup API</Link> can also recover the ID if the browser closes before your callback runs.</p>
+          <p>This also works if you choose not to store <code>billId</code> locally. The <Link href="/api-reference/list-bills">lookup API</Link> finds the bill even if the browser closed before your submission callback ran.</p>
         </details>
       </section>
       <section id="dashboard"><h2>5. Add a bill dashboard</h2>
