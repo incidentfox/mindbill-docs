@@ -17,7 +17,7 @@ export function QuickstartNav({ active }: { active: "components" | "api" | "trea
 
 export function ApiKeyStep({ variable = "MINDBILL_API_KEY" }: { variable?: string }) {
   return <section id="key"><h2>1. Get an API key</h2>
-    <p>Create a sandbox organization in the <a href="https://platform.mindbill.org/onboarding">developer console</a>, then copy its key from <a href="https://platform.mindbill.org/settings/api-keys">API keys</a>.</p>
+    <p>Create a sandbox organization in the <a href="https://platform.mindbill.org/onboarding" target="_blank" rel="noopener noreferrer">developer console</a>, then copy its key from <a href="https://platform.mindbill.org/settings/api-keys" target="_blank" rel="noopener noreferrer">API keys</a>.</p>
     <CodeBlock language="bash" filename="Server environment · .env.local" code={`${variable}=your_sandbox_key`} />
     <p className="quickstart-note">Keep the key on your server. Use invented patient data in sandbox; sandbox submissions never reach payers.</p>
   </section>;
