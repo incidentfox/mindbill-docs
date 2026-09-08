@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CodeBlock } from "./code-block";
 import { QuickstartTabs } from "./quickstart-tabs";
+import { AuthFlowDiagram } from "./auth-flow-diagram";
 import { serverRecipes, hostContract } from "@/lib/integration-recipes";
 
 export function QuickstartNav({ active }: { active: "components" | "api" | "treatment" }) {
@@ -23,7 +24,8 @@ export function ApiKeyStep() {
 
 export function BackendAuthStep() {
   return <section id="auth"><h2>3. Add an auth route to your backend</h2>
-    <p>This route gives signed-in users a short-lived session for the components. Choose your backend and copy the route.</p>
+    <AuthFlowDiagram />
+    <p>Choose your backend and copy the session route.</p>
     <div className="quickstart-auth-code"><QuickstartTabs label="Backend framework" tabs={[
       { label: "Next.js", content: <CodeBlock language="javascript" filename="app/api/mindbill/session/route.js" code={serverRecipes["Next.js"]} /> },
       { label: "Express", content: <CodeBlock language="javascript" filename="Your Express server" code={serverRecipes.Express} /> },
