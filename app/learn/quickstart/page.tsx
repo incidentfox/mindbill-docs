@@ -17,7 +17,7 @@ export default function QuickstartPage() {
     <QuickstartNav active="components" />
     <p>Prefer a runnable example? <a href="https://github.com/incidentfox/mindbill-widgets/tree/main/examples/quickstart">Get the React starter app</a>: a fictional medical-review case with records, a summary, a bill tab, a billing dashboard, and settings. Run the local demo without an API key, then connect your sandbox.</p>
     <QuickstartFramework><div className="quickstart-content">
-      <ApiKeyStep />
+      <ApiKeyStep variable="MINDBILL_API_TOKEN" />
       <section id="install"><h2>2. Install the library</h2>
         <p>Choose your frontend. The examples below will follow your selection.</p>
         <QuickstartTabs shared label="Install framework" tabs={[
