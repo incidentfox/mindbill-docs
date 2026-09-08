@@ -30,11 +30,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
         assert.match(await page.locator('#bill [role=tabpanel]:visible').innerText(), /MindBillBillLifecycleComponent/);
         assert.match(await page.locator('#dashboard [role=tabpanel]:visible').innerText(), /MindBillBillingDashboardComponent/);
         await page.locator('#prefill > summary').click();
-        assert.match(await page.locator('#prefill [role=tabpanel]:visible').innerText(), /MindBillBillSubmissionComponent/);
+        assert.match(await page.locator('#prefill pre').innerText(), /Taylor/);
         await page.getByRole('button', { name: 'Copy page', exact: false }).click();
         const markdown = await page.evaluate(() => navigator.clipboard.readText());
         assert.match(markdown, /MindBillBillLifecycleComponent/);
-        assert.doesNotMatch(markdown, /<ConnectedBillLifecycle/);
+        const hiddenReact = await page.locator('#bill [role=tabpanel][hidden] pre').innerText();
+        assert.equal(markdown.includes(hiddenReact.trim()), false, 'copied inactive React snippet');
         await install.getByRole('tab', { name: 'Angular', exact: true }).focus();
         await page.keyboard.press('ArrowLeft');
         assert.equal(await install.getByRole('tab', { name: 'React', exact: true }).getAttribute('aria-selected'), 'true');

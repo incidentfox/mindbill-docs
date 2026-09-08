@@ -37,9 +37,11 @@ export function BackendAuthStep() {
   </section>;
 }
 
-export function FrontendCode({ label, react, angular }: { label: string; react: string; angular: string }) {
+export function FrontendCode({ label, react, angular, reactFilename = "React", angularFilename = "Angular · standalone component" }: {
+  label: string; react: string; angular: string; reactFilename?: string; angularFilename?: string;
+}) {
   return <QuickstartTabs shared label={label} tabs={[
-    { label: "React", content: <CodeBlock language="tsx" filename="React" code={react} /> },
-    { label: "Angular", content: <CodeBlock language="typescript" filename="Angular · standalone component" code={angular} /> },
+    { label: "React", content: <CodeBlock language="tsx" filename={reactFilename} code={react} /> },
+    { label: "Angular", content: <CodeBlock language="typescript" filename={angularFilename} code={angular} /> },
   ]} />;
 }
