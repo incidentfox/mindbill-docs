@@ -1,6 +1,8 @@
 "use client";
 
 import { AngularPlayground } from "@/components/angular-playground";
+import { singleBillAngular } from "@/lib/quickstart-recipes";
+import { angularMatrix } from "@/lib/angular-component-recipes";
 
 const DEMO_ORIGIN =
   process.env.NEXT_PUBLIC_ANGULAR_DEMO_ORIGIN ?? "https://codexangular-clinical-demo.vercel.app";
@@ -17,25 +19,7 @@ const bills = [
   { id: "b7", billNumber: 2042, patientName: "Riley Davis", claimNumber: "LH-CA-803625", payerName: "AmTrust", state: "closed", agingDays: 102, totalCharge: 2015, totalPaid: 2015, balanceDue: 0 },
 ];
 
-const matrixCode = `import { MindBillStatusAgingMatrixComponent } from "@mindbill/angular";
-
-@Component({
-  standalone: true,
-  imports: [MindBillStatusAgingMatrixComponent],
-  template: \`
-    <mindbill-status-aging-matrix
-      [bills]="bills"
-      [appearance]="{ preset: 'clinical-blue' }"
-      (cellSelected)="openDrillDown($event)"
-    />
-  \`,
-})
-export class BillingMatrixComponent {
-  bills = loadBillSummaries(); // same rows the dashboard uses
-  openDrillDown(cell: MindBillStatusAgingCell) {
-    // cell = { state, bucket, count, balance, bills }
-  }
-}`;
+const matrixCode = angularMatrix;
 
 export function MatrixAngularPlayground() {
   return (
@@ -50,22 +34,26 @@ export function MatrixAngularPlayground() {
   );
 }
 
-const dashboardCode = `import { MindBillBillingDashboardComponent } from "@mindbill/angular";
+const dashboardCode = `import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { MindBillBillingDashboardComponent, type MindBillDashboardBill } from "@mindbill/angular";
 
 @Component({
+  selector: "app-billing-dashboard",
   standalone: true,
   imports: [MindBillBillingDashboardComponent],
   template: \`
     <mindbill-billing-dashboard
       [bills]="bills"
       [appearance]="{ preset: 'clinical-blue' }"
-      (billSelected)="openBill($event)"
-      (createBill)="startNewBill()"
+      (billSelected)="billSelected.emit($event)"
+      (createBill)="createBill.emit()"
     />
   \`,
 })
 export class BillingDashboardComponent {
-  bills = loadBillSummaries();
+  @Input({ required: true }) bills: MindBillDashboardBill[] = [];
+  @Output() billSelected = new EventEmitter<MindBillDashboardBill>();
+  @Output() createBill = new EventEmitter<void>();
 }`;
 
 export function DashboardAngularPlayground() {
@@ -81,28 +69,7 @@ export function DashboardAngularPlayground() {
   );
 }
 
-const submissionCode = `import { MindBillBillSubmissionComponent } from "@mindbill/angular";
-
-@Component({
-  standalone: true,
-  imports: [MindBillBillSubmissionComponent],
-  template: \`
-    <mindbill-bill-submission
-      [initialBill]="initialBill"
-      [attachments]="attachments"
-      sessionEndpoint="/api/mindbill/session"
-      [appearance]="{ preset: 'clinical-blue' }"
-      (submitted)="billId = $event.bill.id"
-    />
-  \`,
-})
-export class CaseBillingComponent {
-  initialBill = caseToMindBillInput(this.case);
-  attachments = [
-    { filename: "report.pdf", documentType: "final_report", locked: true },
-    { filename: "practice-w9.pdf", documentType: "w9", locked: true },
-  ];
-}`;
+const submissionCode = singleBillAngular;
 
 const submissionInitialBill = {
   externalId: "docs-playground-case",
@@ -126,7 +93,7 @@ const submissionInitialBill = {
   },
   service: { date: "08/21/2026" },
   billingProvider: {
-    name: "Long Health Medical Group",
+    name: "Example Medical Group",
     taxId: "94-1234567",
     npi: "1841763902",
     phone: "(415) 555-0186",
@@ -184,7 +151,8 @@ export function SubmissionAngularPlayground() {
   );
 }
 
-const managementCode = `import { MindBillBillingManagementButtonComponent } from "@mindbill/angular";
+const managementCode = `import { Component } from "@angular/core";
+import { MindBillBillingManagementButtonComponent } from "@mindbill/angular";
 
 @Component({
   standalone: true,
