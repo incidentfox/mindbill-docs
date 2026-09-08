@@ -3,13 +3,22 @@ export async function POST(request: Request) {
   // TODO: Authenticate the user and check billing access.
   // TODO: Validate the request origin before production.
 
+  const apiKey = process.env.MINDBILL_API_KEY;
+  if (!apiKey) {
+    console.error("MINDBILL_API_KEY is not configured");
+    return Response.json(
+      { error: "Billing session unavailable" },
+      { status: 503 },
+    );
+  }
+
   try {
     const response = await fetch(
       "https://app.mindbill.org/partner/v2/browser-sessions",
       {
         method: "POST",
         headers: {
-          Authorization: \`Bearer \${process.env.MINDBILL_API_TOKEN}\`,
+          Authorization: \`Bearer \${apiKey}\`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -31,7 +40,11 @@ export async function POST(request: Request) {
       },
     );
 
-    if (!response.ok) throw new Error("Session creation failed");
+    if (!response.ok) {
+      // Log the status only, never keys, session tokens, or response bodies.
+      console.error("MindBill session creation failed", response.status);
+      throw new Error("Session creation failed");
+    }
 
     return Response.json(await response.json(), {
       headers: { "Cache-Control": "no-store" },
