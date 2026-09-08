@@ -14,6 +14,23 @@ async function handleSubmitted({ billId }: { billId: string }) {
   }
 }`;
 
+export const saveBillHandlerAngular = `// Replace handleSubmitted inside NewBillComponent.
+async handleSubmitted(billId: string) {
+  this.billId = billId; // Already submitted, even if saving the link fails.
+  try {
+    const response = await fetch(\`/api/reports/\${encodeURIComponent(this.report.id)}\`, {
+      method: "PATCH",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      // TODO: Include your app's CSRF token if required.
+      body: JSON.stringify({ mindbillBillId: billId }),
+    });
+    if (!response.ok) throw new Error("Could not save bill link");
+  } catch {
+    window.alert("Bill submitted, but saving its link failed. Recover it using externalId; do not submit again.");
+  }
+}`;
+
 export const saveBillRoute = `// Uses YOUR auth helper and database client; adapt these imports/model names.
 import { authorizeReport } from "@/lib/auth";
 import { db } from "@/lib/db";

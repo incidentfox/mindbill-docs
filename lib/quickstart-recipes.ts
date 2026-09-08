@@ -137,26 +137,107 @@ export default function BillingPage() {
   />;
 }`;
 
-export const dashboardAngular = `import { Component, Input } from "@angular/core";
+export const dashboardAngular = `import { Component, inject, signal, type OnInit } from "@angular/core";
+import { Router } from "@angular/router";
 import { MindBillBillingDashboardComponent } from "@mindbill/angular";
 import type { MindBillDashboardBill } from "@mindbill/angular";
+import { loadDashboardBills } from "./load-dashboard";
 
 @Component({
   selector: "app-billing",
   standalone: true,
   imports: [MindBillBillingDashboardComponent],
-  template: \`<mindbill-billing-dashboard
-    [bills]="bills"
-    (billSelected)="openBill($event.id)"
-    (createBill)="createBill()"
-  />\`,
+  template: \`
+    @if (loading()) {
+      <p role="status">Loading bills…</p>
+    } @else if (error()) {
+      <p role="alert">{{ error() }}</p>
+      <button type="button" (click)="load()">Try again</button>
+    } @else {
+      <mindbill-billing-dashboard [bills]="bills()"
+        (billSelected)="openBill($event.id)" (createBill)="createBill()" />
+    }
+  \`,
 })
-export class BillingComponent {
-  @Input({ required: true }) bills!: MindBillDashboardBill[];
-  openBill(id: string) {
-    window.location.href = "/billing/" + encodeURIComponent(id);
+export class BillingComponent implements OnInit {
+  private readonly router = inject(Router);
+  readonly bills = signal<MindBillDashboardBill[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal("");
+
+  ngOnInit() { void this.load(); }
+  async load() {
+    this.loading.set(true);
+    this.error.set("");
+    try { this.bills.set(await loadDashboardBills()); }
+    catch { this.error.set("Could not load bills. Check your billing session and try again."); }
+    finally { this.loading.set(false); }
   }
-  createBill() { window.location.href = "/billing/new"; }
+  openBill(id: string) {
+    void this.router.navigate(["/billing", id]);
+  }
+  createBill() { void this.router.navigate(["/billing/new"]); }
+}`;
+
+export const angularBillPage = `import { Component, Input } from "@angular/core";
+import { MindBillBillLifecycleComponent } from "@mindbill/angular";
+
+@Component({
+  selector: "app-bill",
+  standalone: true,
+  imports: [MindBillBillLifecycleComponent],
+  template: \`<mindbill-bill-lifecycle [billId]="id"
+    sessionEndpoint="/api/mindbill/session" />\`,
+})
+export class BillComponent {
+  @Input({ required: true }) id!: string;
+}`;
+
+export const angularRoutes = `import type { Routes } from "@angular/router";
+import { BillingComponent } from "./billing.component";
+import { NewBillComponent } from "./new-bill.component";
+import { BillComponent } from "./bill.component";
+
+export const routes: Routes = [
+  { path: "billing", component: BillingComponent },
+  { path: "billing/new", component: NewBillComponent },
+  // Add other named billing routes before the :id route.
+  { path: "billing/:id", component: BillComponent },
+];`;
+
+export const angularRouterConfig = `import type { ApplicationConfig } from "@angular/core";
+import { provideRouter, withComponentInputBinding } from "@angular/router";
+import { routes } from "./app.routes";
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    // Keep your existing application providers.
+    provideRouter(routes, withComponentInputBinding()),
+  ],
+};`;
+
+export const angularRouterOutlet = `import { Component } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
+
+@Component({
+  selector: "app-root",
+  standalone: true,
+  imports: [RouterOutlet],
+  template: \`<router-outlet />\`,
+})
+export class AppComponent {}`;
+
+export const angularBootstrap = `import { bootstrapApplication } from "@angular/platform-browser";
+import { AppComponent } from "./app/app.component";
+import { appConfig } from "./app/app.config";
+
+bootstrapApplication(AppComponent, appConfig).catch(console.error);`;
+
+export const angularProxy = `{
+  "/api/**": {
+    "target": "http://localhost:3000",
+    "changeOrigin": false
+  }
 }`;
 
 export const settingsReact = `"use client";
@@ -169,12 +250,12 @@ export default function BillingSettingsPage() {
 }`;
 
 export const settingsAngular = `import { Component } from "@angular/core";
-import { OrganizationOnboardingComponent } from "@mindbill/angular";
+import { MindBillOrganizationOnboardingComponent } from "@mindbill/angular";
 
 @Component({
   selector: "app-billing-settings",
   standalone: true,
-  imports: [OrganizationOnboardingComponent],
+  imports: [MindBillOrganizationOnboardingComponent],
   template: \`<mindbill-organization-onboarding
     variant="settings"
     sessionEndpoint="/api/mindbill/settings-session"

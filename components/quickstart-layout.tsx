@@ -20,14 +20,14 @@ export function ApiKeyStep() {
     <p>Create a sandbox organization in the <a href="https://platform.mindbill.org/onboarding" target="_blank" rel="noopener noreferrer">developer console</a>, then copy its key from <a href="https://platform.mindbill.org/settings/api-keys" target="_blank" rel="noopener noreferrer">API keys</a>.</p>
     <CodeBlock language="bash" filename="Server environment · .env.local" code="MINDBILL_API_KEY=your_sandbox_key" />
     <p>For Next.js, create <code>.env.local</code> in the project root, alongside <code>package.json</code>, even if you use <code>src/app</code>. Use the exact name <code>MINDBILL_API_KEY</code> in both your environment and server code. Restart your dev server after setting it.</p>
-    <p className="quickstart-note">Keep the key on your server; do not add a <code>NEXT_PUBLIC_</code> prefix. Use invented patient data in sandbox; sandbox submissions never reach payers.</p>
+    <p className="quickstart-note">Keep the key on your server; do not add a <code>NEXT_PUBLIC_</code> prefix or put it in Angular <code>environment.ts</code>. Use invented patient data in sandbox; sandbox submissions never reach payers.</p>
   </section>;
 }
 
 export function BackendAuthStep() {
   return <section id="auth"><h2>3. Add a session route</h2>
     <AuthFlowDiagram />
-    <p>Copy this function into <code>app/api/mindbill/session/route.ts</code>. It uses the <code>MINDBILL_API_KEY</code> from step 1 to create a short-lived browser session.</p>
+    <p>Choose your backend below. For Next.js, copy the function into <code>app/api/mindbill/session/route.ts</code>. Express, FastAPI, and other backends expose the same <code>POST /api/mindbill/session</code> contract. Each uses the server-held <code>MINDBILL_API_KEY</code> from step 1 to create a short-lived browser session.</p>
     <div className="quickstart-auth-code"><QuickstartTabs label="Backend framework" tabs={[
       { label: "Next.js", content: <><CodeBlock language="typescript" filename="app/api/mindbill/session/route.ts" code={quickstartSessionRoute} /><p className="quickstart-note">Use a sandbox key while the TODOs are unfinished. This example assumes your frontend and backend share an origin; for separate hosts, set <code>allowedOrigin</code> to your frontend’s exact origin.</p></> },
       { label: "Express", content: <><p>Connect your existing authentication and customer-key mapping, and set <code>APP_ORIGIN</code> to your frontend’s exact origin. See the <Link href="/guides/authentication#session">auth adapter recipe</Link>.</p><CodeBlock language="javascript" filename="Your Express server" code={serverRecipes.Express} /></> },
