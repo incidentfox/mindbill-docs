@@ -3,7 +3,15 @@ import { useState } from "react";
 import { BillSubmissionForm, ConnectedBillLifecycle } from "@mindbill/react";
 
 export default function NewBillPage() {
-  const [billId, setBillId] = useState<string | null>(null);
+  // TODO: Load the current report from your backend.
+  const report = { id: "report_demo_001", mindbillBillId: null };
+  const [billId, setBillId] = useState<string | null>(report.mindbillBillId);
+
+  function handleSubmitted({ billId }: { billId: string }) {
+    setBillId(billId);
+    // TODO: Save billId on this report through your backend.
+    // PATCH /api/reports/:id with { mindbillBillId: billId }
+  }
 
   if (billId) return <ConnectedBillLifecycle
     billId={billId} sessionEndpoint="/api/mindbill/session"
@@ -12,7 +20,7 @@ export default function NewBillPage() {
   return <BillSubmissionForm
     sessionEndpoint="/api/mindbill/session"
     initialBill={{
-      externalId: "report_demo_001", // TODO: Use your report or work-item ID.
+      externalId: report.id,
       patient: {
         firstName: "", lastName: "", dateOfBirth: "",
         address: { line1: "", city: "", state: "CA", postalCode: "" },
@@ -21,7 +29,7 @@ export default function NewBillPage() {
       service: { date: "" },
       serviceLines: [],
     }}
-    onSubmitted={({ billId }) => setBillId(billId)}
+    onSubmitted={handleSubmitted}
   />;
 }`;
 
@@ -42,14 +50,21 @@ import {
     } @else {
       <mindbill-bill-submission [initialBill]="initialBill"
         sessionEndpoint="/api/mindbill/session"
-        (submitted)="billId = $event.bill.id" />
+        (submitted)="handleSubmitted($event.bill.id)" />
     }
   \`,
 })
 export class NewBillComponent {
-  billId: string | null = null;
+  // TODO: Load the current report from your backend before mounting.
+  report = { id: "report_demo_001", mindbillBillId: null };
+  billId: string | null = this.report.mindbillBillId;
+  handleSubmitted(billId: string) {
+    this.billId = billId;
+    // TODO: Save billId on this report through your backend.
+    // PATCH /api/reports/:id with { mindbillBillId: billId }
+  }
   initialBill: BrowserBillCreateInput = {
-    externalId: "report_demo_001", // TODO: Use your report or work-item ID.
+    externalId: this.report.id,
     patient: {
       firstName: "", lastName: "", dateOfBirth: "",
       address: { line1: "", city: "", state: "CA", postalCode: "" },
