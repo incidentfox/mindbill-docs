@@ -43,7 +43,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     }));
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
-      assert.equal((await page.goto(`${base}/learn/quickstart`)).status(), 200);
+      assert.equal((await page.goto(`${base}/guides/authentication`)).status(), 200);
       const builder = page.getByRole('region', { name: 'Integration recipe builder' });
       await builder.locator('select').nth(0).selectOption('Angular');
       await builder.locator('select').nth(1).selectOption('FastAPI');

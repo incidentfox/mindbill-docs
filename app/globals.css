@@ -391,3 +391,31 @@ button { color: inherit; }
 .launch-video summary { cursor: pointer; color: var(--text); font-size: 13px; font-weight: 600; }
 .launch-video summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .launch-video details p { font-size: 14px; }
+
+/* Quickstarts: a short core path, with deeper setup opened on demand. */
+.quickstart-nav { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 24px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }
+.doc-content .quickstart-nav a { padding: 9px 14px; border-radius: 8px; text-decoration: none; color: var(--muted); font-size: 14px; font-weight: 650; }
+.doc-content .quickstart-nav a[aria-current="page"] { color: var(--accent-text); background: var(--accent-soft); }
+.quickstart-content > section { margin-top: 44px; }
+.quickstart-content > section:first-of-type { margin-top: 0; }
+.quickstart-content h2 { margin-top: 0; font-size: 26px; }
+.quickstart-content .code-block { margin: 16px 0; }
+.quickstart-content .quickstart-note { font-size: 14px; line-height: 1.65; }
+.quickstart-tabs [role="tablist"] { display: flex; gap: 4px; flex-wrap: wrap; width: fit-content; padding: 4px; border-radius: 9px; background: var(--surface); }
+.quickstart-tabs [role="tab"] { padding: 8px 16px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; }
+.quickstart-tabs [role="tab"][aria-selected="true"] { background: var(--surface-raised); color: var(--text); box-shadow: 0 1px 4px #0002; }
+.quickstart-tabs [role="tab"]:focus-visible, .quickstart-tabs [role="tabpanel"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.quickstart-tabs [role="tabpanel"][hidden] { display: none; }
+.quickstart-auth-code .shiki-wrap { max-height: 340px; overflow-y: auto; }
+.quickstart-details { margin: 18px 0; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+.quickstart-details > summary { cursor: pointer; color: var(--text); font-size: 15px; font-weight: 650; line-height: 1.5; }
+.quickstart-details > summary small { margin-left: 8px; color: var(--faint); font-size: 12px; font-weight: 500; }
+.quickstart-details[open] > summary { margin-bottom: 18px; }
+.quickstart-details h3 { font-size: 18px; }
+.quickstart-optionals { margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--line); }
+.quickstart-optionals > p { margin-bottom: 22px; }
+@media (max-width: 600px) {
+  .quickstart-content h2 { font-size: 23px; }
+  .quickstart-tabs [role="tab"] { padding: 8px 12px; }
+  .quickstart-details { padding: 14px; }
+}
