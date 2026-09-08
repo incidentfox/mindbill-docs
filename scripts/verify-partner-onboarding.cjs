@@ -99,6 +99,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     assert.match(await page.locator('body').innerText(), /pnpm add @mindbill\/react@0\.52\.0/);
     assert.match(await page.locator('body').innerText(), /NotificationRecipientsSettings/);
     await page.goto(`${base}/learn/quickstart`);
+    await page.locator('#settings > summary').click();
     await page.getByRole('link', { name: 'administrator recipient list' }).click();
     await page.locator('#recipients').waitFor();
     assert.match(page.url(), /\/guides\/notifications#recipients$/);

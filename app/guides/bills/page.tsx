@@ -117,7 +117,7 @@ export default function BillsPage() {
 
       <h2 id="availability">Billing-mode availability</h2>
       <p>Use <code>med_legal</code> for California medical-legal bills, including QME and AME workflows.</p>
-      <Callout title="Professional billing is reserved"><code>professional</code> is present in forward-compatible SDK types but is not enabled in the public Partner API yet.</Callout>
+      <Callout title="Treatment billing requires organization access"><code>professional</code> billing is available when treatment billing is enabled for your organization. Follow the <Link href="/learn/treatment-quickstart">treatment billing quickstart</Link> for setup and service-line examples.</Callout>
     </DocPage>
   );
 }

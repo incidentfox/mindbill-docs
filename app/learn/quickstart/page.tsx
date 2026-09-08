@@ -1,36 +1,60 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
-import { Callout, DocPage } from "@/components/doc-page";
-import { IntegrationBuilder } from "@/components/integration-builder";
+import { DocPage } from "@/components/doc-page";
+import { ApiKeyStep, BackendAuthStep, FrontendCode, QuickstartNav } from "@/components/quickstart-layout";
+import { QuickstartFramework, QuickstartTabs } from "@/components/quickstart-tabs";
+import { angularDashboardLoader } from "@/lib/quickstart-api-recipes";
+import * as recipes from "@/lib/quickstart-recipes";
 
-export const metadata: Metadata = { title: "Quickstart" };
-
-const request = `curl --fail-with-body \\
-  'https://app.mindbill.org/partner/v2/claims-administrators?limit=1' \\
-  --header "Authorization: Bearer $MINDBILL_API_KEY"`;
+export const metadata: Metadata = { title: "Components quickstart" };
 
 export default function QuickstartPage() {
-  return <DocPage eyebrow="Get started" title="Make your first API request"
-    description="Create a sandbox key, read the claims-administrator directory, and choose how to add billing to your product."
-    toc={[{ id: "key", label: "Get a sandbox key" }, { id: "request", label: "Make a request" }, { id: "next", label: "Add your billing workflow" }]}
-    previous={{ href: "/", label: "Overview" }} next={{ href: "/guides/bills", label: "Submit a bill" }}>
-    <h2 id="key">1. Get a sandbox key</h2>
-    <p><a href="https://platform.mindbill.org/onboarding">Create a developer account</a> and a sandbox organization. Save its API key as <code>MINDBILL_API_KEY</code> in your server environment or local terminal. The key needs <code>payers:read</code>, included with new self-serve accounts.</p>
-    <Callout title="Keep your API key on the server">Never put it in browser code or a public environment variable. Use invented patients and documents in sandbox; sandbox submissions never reach payers.</Callout>
-    <h2 id="request">2. Read the claims-administrator directory</h2>
-    <CodeBlock code={request} language="bash" filename="Terminal" />
-    <p>A successful request returns <code>200 OK</code> with a top-level <code>results</code> array and <code>total</code>. Each result includes an administrator <code>id</code>, <code>name</code>, and payer choices. You have authenticated against the same directory used by our components.</p>
-    <p>Use <code>q</code> to search by name and <code>offset</code> to page through results. See the <Link href="/api-reference/claims-administrators">directory reference</Link> for the response fields.</p>
-    <details><summary>If the request fails</summary><p><code>400 org_required</code>: an account-scoped key needs <code>X-MindBill-Org-Id</code> set to an organization ID from your console. The default sandbox organization key does not need this header.</p><p><code>401</code>: check that the key is present and valid. <code>403</code>: check for the <code>payers:read</code> scope; an older key may need replacement in <a href="https://platform.mindbill.org/settings/api-keys">API key settings</a>. See <Link href="/guides/authentication">authentication</Link> for credential and permission details.</p></details>
-    <h2 id="next">3. Add your billing workflow</h2>
-    <p>Choose your stack for a copyable implementation brief, or hand it directly to a supported desktop editor. Already integrated? Use the <Link href="/guides/upgrade">short partner upgrade guide</Link>.</p>
-    <IntegrationBuilder />
-    <div className="term-list compact">
-      <div><b>Your own UI</b><p><Link href="/guides/bills">Submit a bill from your backend</Link>. Send the reviewed bill and PDFs together, then save the returned bill ID.</p></div>
-      <div><b>React or Angular</b><p>Add <Link href="/components/react">React components</Link> or <Link href="/components/angular">Angular components</Link>. Your server issues a short-lived browser session using the <Link href="/guides/authentication#session">framework recipes</Link>.</p></div>
-    </div>
-    <p>Both paths use the same <Link href="/api-reference">API endpoints</Link>. Before going live, complete the <Link href="/guides/sandbox#verify">sandbox checks</Link>.</p>
-    <p>Add <Link href="/components/react#org-onboarding">billing settings</Link> for reusable providers, locations and W-9 documents. For alerts, React 0.52.0 includes an <Link href="/guides/notifications#recipients">administrator recipient list</Link>: enter any authorized email address, choose its bill access, alert categories and optional daily/weekly digest, and let the email owner confirm. Notifications default off; no console account is required. Your server still owns permissions and bill assignments, and sandbox never sends email.</p>
+  return <DocPage eyebrow="Components quickstart" title="Add billing to your app"
+    description="Get a key, connect your backend, and drop billing components into your frontend."
+    toc={[{ id: "key", label: "1. API key" }, { id: "install", label: "2. Install" }, { id: "auth", label: "3. Backend auth" }, { id: "bill", label: "4. Single bill" }, { id: "dashboard", label: "5. Bill dashboard" }, { id: "optional", label: "6–8. Optional components" }]}
+    previous={{ href: "/", label: "Overview" }} next={{ href: "/learn/api-quickstart", label: "API quickstart" }}>
+    <QuickstartNav active="components" />
+    <QuickstartFramework><div className="quickstart-content">
+      <ApiKeyStep />
+      <section id="install"><h2>2. Install the library</h2>
+        <p>Choose your frontend. The examples below will follow your selection.</p>
+        <QuickstartTabs shared label="Install framework" tabs={[
+          { label: "React", content: <CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@latest" /> },
+          { label: "Angular", content: <CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/angular@latest" /> },
+        ]} />
+      </section>
+      <BackendAuthStep />
+      <section id="bill"><h2>4. Add a single bill</h2>
+        <p>Pass a submitted bill’s ID to show its status, documents, payments, and available actions.</p>
+        <FrontendCode label="Single bill framework" react={recipes.singleBillReact} angular={recipes.singleBillAngular} />
+        <p className="quickstart-note">Use the ID returned when a bill is submitted. To create the first bill from your app, add the entry form in step 6, or use the <Link href="/learn/api-quickstart#create">API quickstart</Link>.</p>
+      </section>
+      <section id="dashboard"><h2>5. Add a bill dashboard</h2>
+        <p>Give your billing team a place to find bills and open their details.</p>
+        <QuickstartTabs shared label="Dashboard framework" tabs={[
+          { label: "React", content: <><CodeBlock language="tsx" filename="app/billing/page.tsx" code={recipes.dashboardReact} /><p className="quickstart-note">The workspace loads bills, filters results, and opens bill details. Point <code>/billing/new</code> to your create-bill page.</p></> },
+          { label: "Angular", content: <><CodeBlock language="typescript" filename="billing.component.ts" code={recipes.dashboardAngular} /><p className="quickstart-note">Angular’s dashboard displays the <code>bills</code> you supply. Load authorized rows from your backend using the <Link href="/learn/api-quickstart#search">dashboard API</Link>, map them to <code>MindBillDashboardBill</code>, and pass them in. Its totals cover only the supplied rows; load every relevant page for a complete summary. Add your <code>/billing/:id</code> and <code>/billing/new</code> routes.</p><details className="quickstart-details"><summary>Load and map dashboard rows</summary><p>Call <code>loadDashboardBills()</code> in your host page, handle loading and errors, and pass the result as <code>bills</code>. For large datasets, build a paginated view with the API’s totals.</p><CodeBlock language="typescript" filename="load-dashboard.ts" code={angularDashboardLoader} /></details></> },
+        ]} />
+      </section>
+      <div id="optional" className="quickstart-optionals"><h2>Add more when you need it</h2>
+        <details id="prefill" className="quickstart-details"><summary>6. Pre-fill the create-bill form <small>Optional</small></summary>
+          <p>Mount this on your new-bill page. Pass your case’s patient, claim, provider, and service fields as <code>initialBill</code>. Users can review the fields and attach PDFs before submitting.</p>
+          <FrontendCode label="Create bill framework" react={recipes.prefillReact} angular={recipes.prefillAngular} />
+          <p>Use the <Link href="/guides/bills#submit">bill snapshot example</Link> for the field structure (the inner <code>bill</code> object). Only pre-fill facts you have; leave unknown fields for the biller. See the <Link href="/components/react#form">prefill and attachment guide</Link> for loading existing documents.</p>
+        </details>
+        <details id="settings" className="quickstart-details"><summary>7. Add billing settings <small>Optional</small></summary>
+          <p>Let administrators save their practice, billing providers, locations, and W-9 for future bills.</p>
+          <FrontendCode label="Settings framework" react={recipes.settingsReact} angular={recipes.settingsAngular} />
+          <p>Implement <code>/api/mindbill/settings-session</code> using the auth route from step 3. Restrict it to your organization’s administrators and grant <code>organization:manage</code>. Keep that permission out of ordinary bill sessions.</p>
+          <p>For email alerts, add the <Link href="/guides/notifications#recipients">administrator recipient list</Link>.</p>
+        </details>
+        <details id="rfa" className="quickstart-details"><summary>8. Add RFA components <small>Optional · treatment billing</small></summary>
+          <p>For treatment workflows, add a Request for Authorization (RFA) draft form. The current draft component is available in React; Angular integrations use the RFA API.</p>
+          <p>Continue with the <Link href="/learn/treatment-quickstart">treatment billing quickstart</Link> for access requirements, the draft form, and treatment submission.</p>
+        </details>
+      </div>
+      <p className="quickstart-note">Ready for real bills? Complete the <Link href="/guides/sandbox#verify">sandbox checks</Link>. For editor setup or a full implementation brief, use the <Link href="/guides/authentication#session">integration recipes</Link>.</p>
+    </div></QuickstartFramework>
   </DocPage>;
 }
