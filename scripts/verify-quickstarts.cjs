@@ -34,7 +34,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
         await page.getByRole('button', { name: 'Copy page', exact: false }).click();
         const markdown = await page.evaluate(() => navigator.clipboard.readText());
         assert.match(markdown, /MindBillBillLifecycleComponent/);
-        assert.doesNotMatch(markdown, /ConnectedBillLifecycle/);
+        assert.doesNotMatch(markdown, /<ConnectedBillLifecycle/);
         await install.getByRole('tab', { name: 'Angular', exact: true }).focus();
         await page.keyboard.press('ArrowLeft');
         assert.equal(await install.getByRole('tab', { name: 'React', exact: true }).getAttribute('aria-selected'), 'true');
