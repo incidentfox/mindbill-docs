@@ -97,7 +97,7 @@ export default async function ReportBillingPage() {
   const response = await fetch(
     \`https://app.mindbill.org/partner/v2/bills?externalId=\${encodeURIComponent(externalId)}&limit=2\`,
     {
-      headers: { Authorization: \`Bearer \${process.env.MINDBILL_API_TOKEN}\` },
+      headers: { Authorization: \`Bearer \${process.env.MINDBILL_API_KEY}\` },
       cache: "no-store",
     },
   );

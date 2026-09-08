@@ -18,7 +18,7 @@ export default function QuickstartPage() {
     <QuickstartNav active="components" />
     <p>Starting with Next.js? Copy the React examples into the files shown below. If your app uses <code>src/app</code>, put them there instead. Or <a href="https://github.com/incidentfox/mindbill-widgets/tree/main/examples/quickstart">run the starter app</a>.</p>
     <QuickstartFramework><div className="quickstart-content">
-      <ApiKeyStep variable="MINDBILL_API_TOKEN" />
+      <ApiKeyStep />
       <section id="install"><h2>2. Install the library</h2>
         <p>Choose your frontend. The examples below will follow your selection.</p>
         <QuickstartTabs shared label="Install framework" tabs={[
