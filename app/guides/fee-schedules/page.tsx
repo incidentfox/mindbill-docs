@@ -76,7 +76,7 @@ export default function FeeSchedulesPage() {
     <p>The organization must have <code>treatmentBilling</code> enabled. Quote requests accept a server API key with <code>bills:read</code>, or an origin-bound browser session with <code>bills:read</code>. Credentials select the sandbox or live environment; the request body cannot override it.</p>
     <p>Use a quote before creating a bill. It does not submit anything to a payer. Follow the <Link href="/guides/authentication">authentication guide</Link> to keep your API key on your server.</p>
     <h2 id="component">Embed the calculator</h2>
-    <CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@^0.63.0 @mindbill/browser@^0.39.0" />
+    <CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@^0.64.0 @mindbill/browser@^0.39.0" />
     <CodeBlock language="tsx" filename="CaliforniaFees.tsx" code={calculator} />
     <p><code>FeeScheduleCalculator</code> accepts multiple service lines, units, modifiers, service dates, and location/provider information. It displays the calculation details, regulatory links, coding findings, and review reasons returned by the same claim quote API.</p>
     <p>Optional props are <code>initialLines</code> (typed as <code>CaClaimFeeQuoteInput[&quot;lines&quot;]</code>), <code>onQuote</code>, <code>appearance</code>, <code>className</code>, and <code>style</code>. The form provides professional-service and physical-therapy context fields. Supply other specialty context through <code>initialLines</code> when your workflow already collects it; the form does not provide every specialty input. Use <code>onQuote</code> to receive the complete <code>CaClaimFeeQuoteResult</code>; inspect its status before using any amount.</p>

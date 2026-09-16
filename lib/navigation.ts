@@ -25,6 +25,20 @@ export type DocLink = {
 
 export const navigation: DocLink[] = [
   {
+    href: "/guides/practice-settings",
+    label: "Practice settings",
+    description: "Save billing providers, rendering providers, locations, and W-9s for bill entry.",
+    group: "Build", icon: Layers3,
+    keywords: ["settings", "onboarding", "provider", "location", "w9", "dropdown", "permissions"],
+  },
+  {
+    href: "/guides/rfas",
+    label: "Requests for authorization",
+    description: "Create, sign, send, and track treatment authorization requests.",
+    group: "Build", icon: Workflow,
+    keywords: ["rfa", "authorization", "fax", "cover sheet", "treatment", "dashboard", "UR"],
+  },
+  {
     href: "/guides/payment-review",
     label: "Payment review",
     description: "Review confirmed cash, filter payment entries, and open the matching bill.",

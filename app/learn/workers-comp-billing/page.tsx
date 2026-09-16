@@ -34,7 +34,7 @@ export default function WorkersCompBillingPage() {
       <h2 id="modes">Billing-mode availability</h2>
       <div className="comparison-table">
         <div className="table-head"><b><code>professional</code></b><b><code>med_legal</code></b></div>
-        <div><span>Treatment billing is available to organizations with the treatmentBilling capability enabled.</span><span>Available now for California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
+        <div><span>Treatment and other professional services, available to organizations with treatment billing enabled. Uses diagnoses selected for each service line.</span><span>Available now for California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
       </div>
       <p>Choose the mode for the services being billed. Treatment uses the same bill lifecycle, with date-specific fee quotes and separate coding review. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link>.</p>
 
