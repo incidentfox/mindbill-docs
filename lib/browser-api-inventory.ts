@@ -5,7 +5,12 @@ export type BrowserApiPermission =
   | "documents:read"
   | "eors:read"
   | "payers:read"
-  | "organization:manage";
+  | "organization:manage"
+  | "rfas:read"
+  | "rfas:create"
+  | "rfas:edit"
+  | "rfas:sign"
+  | "rfas:act";
 
 export type BrowserApiInventoryEntry = {
   method: "GET" | "POST" | "PUT";
@@ -18,6 +23,16 @@ export type BrowserApiInventoryEntry = {
 
 /** Distinct MindBill routes called by @mindbill/browser and @mindbill/react. */
 export const browserApiInventory: BrowserApiInventoryEntry[] = [
+  { method: "GET", path: "/partner/v2/rfas", permission: "rfas:read", purpose: "List authorization requests with filtered status totals and cursor pagination. Requires an organization-wide session and treatment access.", sdkMethod: "createRfaClient().list" },
+  { method: "GET", path: "/partner/v2/rfas/{rfaId}", permission: "rfas:read", purpose: "Read the authorization request, item decisions, and delivery evidence.", sdkMethod: "createRfaClient().get" },
+  { method: "POST", path: "/partner/v2/rfas", permission: "rfas:create", purpose: "Save an unsigned authorization draft using a stable idempotency key. Does not sign or send a fax.", sdkMethod: "createRfaClient().createDraft" },
+  { method: "GET", path: "/partner/v2/rfas/{rfaId}/documents/{documentId}", permission: "documents:read", purpose: "Download a stored RFA document within the authorized organization.", sdkMethod: "createRfaClient().getDocument" },
+  { method: "POST", path: "/partner/v2/rfas/{rfaId}/documents", permission: "rfas:edit", purpose: "Upload a clinical or supporting PDF with content revision and a stable idempotency key.", sdkMethod: "createRfaClient().uploadDocument" },
+  { method: "POST", path: "/partner/v2/rfas/{rfaId}/signing-preview", permission: "rfas:sign", purpose: "Prepare the exact form snapshot for human review before signing.", sdkMethod: "createRfaClient().prepareSigning" },
+  { method: "POST", path: "/partner/v2/rfas/{rfaId}/sign", permission: "rfas:sign", purpose: "Apply the saved physician signature after authorized human review of the exact snapshot.", sdkMethod: "createRfaClient().sign" },
+  { method: "POST", path: "/partner/v2/rfas/{rfaId}/packet", permission: "rfas:read", purpose: "Preview the assembled stored documents and generated fax cover; sends nothing.", sdkMethod: "createRfaClient().previewPacket" },
+  { method: "POST", path: "/partner/v2/rfas/{rfaId}/fax", permission: "rfas:act", purpose: "Explicitly send the reviewed packet to a confirmed fax destination with a stable idempotency key.", sdkMethod: "createRfaClient().sendFax" },
+  { method: "POST", path: "/partner/v2/rfas/{rfaId}/fax/refresh", permission: "rfas:act", purpose: "Reconcile existing fax delivery evidence without sending another transmission.", sdkMethod: "createRfaClient().refreshFaxes" },
   {
     method: "GET",
     path: "/partner/v2/reports/payments",

@@ -43,12 +43,18 @@ export default function AuthenticationPage() {
         <div><code>bills:create</code><span>Atomically create and submit an immutable bill snapshot.</span></div>
         <div><code>bills:read</code><span>Read bill review data, status, balances, and available actions.</span></div>
         <div><code>bills:act</code><span>Post payment, close, correct, or start payer-review actions allowed by the bill state.</span></div>
-        <div><code>documents:read</code><span>List and open payer-packet documents.</span></div>
+        <div><code>documents:read</code><span>List and open bill and RFA documents.</span></div>
         <div><code>payers:read</code><span>Search claims administrators, diagnosis and postal codes, and preview delivery routes.</span></div>
         <div><code>organization:manage</code><span>Read and update organization settings, providers, locations, and W-9. Requires an organization-wide session.</span></div>
+        <div><code>rfas:read</code><span>Read authorization requests, status summaries, and delivery evidence.</span></div>
+        <div><code>rfas:create</code><span>Create unsigned authorization drafts.</span></div>
+        <div><code>rfas:edit</code><span>Edit authorized RFA details and supporting documents.</span></div>
+        <div><code>rfas:act</code><span>Perform permitted RFA workflow actions, including explicit transmission.</span></div>
+        <div><code>rfas:sign</code><span>Sign an RFA with the required signer authorization.</span></div>
         <div><code>eors:read</code><span>Read normalized EOR data and original payer documents when available.</span></div>
       </div>
 
+    <p>RFA permissions require an organization-wide session and treatment access. Grant only the operations your user may perform; document preview also needs <code>documents:read</code>. See the <Link href="/guides/rfas">RFA guide</Link>.</p>
     <details><summary>Example role mapping</summary><CodeBlock code={roles} filename="server/billing-permissions.ts" /><p>This mapping does not grant settings access. Add <code>organization:manage</code> only after checking the user’s practice-administration role.</p></details>
     <h2 id="session">Add a server route for your stack</h2>
     <p>Choose your stack below. Each browser-session recipe intentionally refuses to mint a token until you implement the host authorization adapter. It must authenticate the user, enforce your feature flag and role, and return the correct customer credential.</p>

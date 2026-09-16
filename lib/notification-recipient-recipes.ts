@@ -5,7 +5,6 @@ import {
   NotificationRecipientsSettings,
   type NotificationRecipientsAdapter,
 } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 
 export function BillingRecipients({ identityKey, csrfToken }: {
   identityKey: string; // changes for admin, practice OR sandbox/live environment

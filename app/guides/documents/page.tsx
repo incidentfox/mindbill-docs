@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 
@@ -38,6 +39,7 @@ export default function DocumentsPage() {
         { id: "review", label: "Review in the component" },
         { id: "submit", label: "Submit atomically" },
         { id: "w9-settings", label: "Practice W-9 settings" },
+        { id: "authorization", label: "Authorization and MPN" },
         { id: "limits", label: "Size limits" },
         { id: "types", label: "Document types" },
       ]}
@@ -86,6 +88,10 @@ export default function DocumentsPage() {
       <p><code>onView</code> and <code>onRetryExtraction</code> are optional. The adapter also accepts <code>maxSizeBytes</code>, <code>disabled</code>, <code>className</code>, <code>style</code>, and the shared <code>appearance</code> tokens. Ensure the upload limit matches your host server.</p>
       <Callout tone="warning" title="The server still owns authorization and sensitive data">Protect upload, retry, and download routes with practice-admin authorization and CSRF controls. Validate actual PDF bytes and size on your server, not just client MIME types or filenames. Use your existing secure tax-ID storage; never expose plaintext SSNs in widget state, logs, analytics, browser storage, or agent prompts. Do not duplicate a host-owned W-9 in MindBill settings solely to use the UI.</Callout>
 
+      <p>See <Link href="/guides/practice-settings">practice settings</Link> for the complete save-once workflow and permission split.</p>
+      <h2 id="authorization">Authorization and network support</h2>
+      <p>When the payer needs an authorization letter or Medical Provider Network (MPN) document with the bill, attach the reviewed PDF with <code>documentType: &quot;other&quot;</code> and a clear filename and description. These files are optional; neither a filename nor an attachment establishes authorization or network participation. Use <code>service.authorizationNumber</code> for a supplied authorization number and, for treatment, <code>serviceLines[].rfaItemId</code> to link an eligible saved RFA item.</p>
+      <p>An RFA has its own signed request and clinical packet, destination, and transmission history. Follow the <Link href="/guides/rfas">RFA workflow</Link>; submitting a bill does not submit an RFA.</p>
       <h2 id="limits">Size limits</h2>
       <p>Documents travel base64-encoded inside the JSON body, and base64 adds about 33% to every file. Budget against the decoded PDF bytes:</p>
       <div className="term-list compact">
