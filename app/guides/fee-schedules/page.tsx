@@ -9,7 +9,6 @@ const calculator = `"use client";
 import { useMemo } from "react";
 import { createBillReferenceClient } from "@mindbill/browser";
 import { FeeScheduleCalculator } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 
 export default function CaliforniaFees() {
   const client = useMemo(() => createBillReferenceClient({

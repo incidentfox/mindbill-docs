@@ -13,7 +13,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     const page = await context.newPage();
     const errors = [], links = new Set();
     page.on('pageerror', e => errors.push(e.message));
-    const pages = ['/guides/fee-schedules', '/api-reference/ca-claim-fee-quote', '/api-reference/treatment-fee-quote', '/learn/treatment-quickstart', '/learn/workers-comp-billing', '/guides/upgrade'];
+    const pages = ['/guides/fee-schedules', '/api-reference/ca-claim-fee-quote', '/api-reference/treatment-fee-quote', '/learn/treatment-quickstart', '/learn/workers-comp-billing', '/guides/upgrade', '/components/react'];
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 960 });
       for (const path of pages) {

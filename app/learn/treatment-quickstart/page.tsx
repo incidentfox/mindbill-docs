@@ -30,7 +30,6 @@ const treatmentFields = `const treatmentBill = {
 
 const reactSubmit = `"use client";
 import { BillSubmissionForm, type BillSubmissionInput } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 
 export default function TreatmentBill({ treatmentBill }: {
   treatmentBill: BillSubmissionInput;
@@ -86,7 +85,6 @@ console.log(bill.id);`;
 
 const rfaForm = `"use client";
 import { RfaDraftForm, type RfaDraftInput } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 
 export default function NewRfa({ initialDraft, saveDraft }: {
   initialDraft: RfaDraftInput;

@@ -326,7 +326,7 @@ export default function ReactPage() {
       next={{ href: "/components/angular", label: "Angular components" }}
     >
       <h2 id="start">Add billing to your application</h2>
-      <p>Install the package and import <code>@mindbill/react/styles.css</code> once in your application. First connect an authenticated <Link href="/guides/authentication#session">server session route</Link>; the examples below assume that route is ready.</p>
+      <p>Install the package, then connect an authenticated <Link href="/guides/authentication#session">server session route</Link>; the examples below assume that route is ready.</p>
       <CodeBlock code={install} language="bash" filename="Terminal" />
       <ul>
         <li><strong>Billing page:</strong> <code>ConnectedBillingWorkspace</code> provides task queues, All Bills, reports, and bill details.</li>
