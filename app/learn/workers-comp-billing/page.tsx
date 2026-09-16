@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { Callout, DocPage } from "@/components/doc-page";
 
@@ -35,7 +36,7 @@ export default function WorkersCompBillingPage() {
         <div className="table-head"><b><code>professional</code></b><b><code>med_legal</code></b></div>
         <div><span>Treatment and other professional services, available to organizations with treatment billing enabled. Uses diagnoses selected for each service line.</span><span>Available now for California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
       </div>
-      <p>Build current integrations with <code>med_legal</code>. SDK types reserve <code>professional</code> so treatment billing can join the same lifecycle without a later naming break.</p>
+      <p>Choose the mode for the services being billed. Treatment uses the same bill lifecycle, with date-specific fee quotes and separate coding review. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link>.</p>
 
       <h2 id="lifecycle">The lifecycle</h2>
       <ol className="plain-steps">

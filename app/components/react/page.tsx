@@ -342,6 +342,7 @@ export default function ReactPage() {
       <details><summary>All React exports and when to use them</summary>
       <div className="data-table component-catalog">
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
+        <div><code>FeeScheduleCalculator</code><span>Calculate multiple California treatment lines with modifiers, sources, and coding review. <Link href="/guides/fee-schedules">Integration guide</Link>.</span><span>Through your reference client</span></div>
         <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and atomic Submit action.</span><span>Yes</span></div>
         <div><code>BillSubmission*Section</code><span>You want the same component-owned form state with individually composable sections.</span><span>Yes, through the parent</span></div>
         <div><code>ConnectedBillingWorkspace</code><span>You want Bill Tasks, All Bills, reports, settings, and per-bill lifecycle in one integrated surface.</span><span>Yes</span></div>

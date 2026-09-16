@@ -34,6 +34,22 @@ export const browserApiInventory: BrowserApiInventoryEntry[] = [
   { method: "POST", path: "/partner/v2/rfas/{rfaId}/fax", permission: "rfas:act", purpose: "Explicitly send the reviewed packet to a confirmed fax destination with a stable idempotency key.", sdkMethod: "createRfaClient().sendFax" },
   { method: "POST", path: "/partner/v2/rfas/{rfaId}/fax/refresh", permission: "rfas:act", purpose: "Reconcile existing fax delivery evidence without sending another transmission.", sdkMethod: "createRfaClient().refreshFaxes" },
   {
+    method: "POST",
+    path: "/partner/v2/fee-quotes/ca/claim",
+    permission: "bills:read",
+    purpose: "Quote California treatment fees and implemented encounter edits by date of service; requires treatmentBilling. Unresolved cases return review findings instead of a complete allowance.",
+    sdkMethod: "quoteClaimFees",
+    referenceSlug: "ca-claim-fee-quote",
+  },
+  {
+    method: "POST",
+    path: "/partner/v2/fee-quotes",
+    permission: "bills:read",
+    purpose: "Quote one treatment line with optional authorized practice and payer context; requires treatmentBilling. Billing-provider overrides require an organization-wide session.",
+    sdkMethod: "quoteFee",
+    referenceSlug: "treatment-fee-quote",
+  },
+  {
     method: "GET",
     path: "/partner/v2/reports/payments",
     permission: "bills:read",

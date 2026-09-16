@@ -1,5 +1,6 @@
 import { sharedApiEndpoints } from "./shared-api-endpoints";
 import { referenceDataEndpoints } from "./reference-data-api";
+import { feeScheduleEndpoints } from "./fee-schedule-api";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -121,6 +122,7 @@ const createBillFields: ApiField[] = [
   { name: "serviceLines[].serviceDateEnd", type: "string", description: "Optional treatment line end date.", constraint: "YYYY-MM-DD" },
   { name: "serviceLines[].diagnosisPointers", type: "number[]", description: "Professional treatment: one-based positions in diagnoses that apply to this procedure. Medical-legal billing uses the shared diagnosis list.", constraint: "At most 4 pointers, each 1–12 and referencing a supplied diagnosis" },
   { name: "serviceLines[].rfaItemId", type: "string", description: "Optional saved RFA item for professional treatment. The server validates the authorization against this bill; linking an item does not establish approval." },
+  { name: "serviceLines[].feeContext", type: "object", description: "Clinical and billing context for server verification of a treatment fee. Code, dates, units, charge, provider/payer identity, and service location are taken from the bill. An unresolved quote returns 422 bill_fee_requires_review. See the California fee guide and OpenAPI for the applicable specialty context." },
 ];
 
 const billResponseFields: ApiField[] = [
@@ -263,6 +265,7 @@ const bill = await mindbill.createAndSubmitBill({
 export const apiEndpoints: ApiEndpoint[] = [
   ...sharedApiEndpoints,
   ...referenceDataEndpoints,
+  ...feeScheduleEndpoints,
   {
     slug: "create-bill",
     group: "Bills",

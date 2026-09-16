@@ -16,6 +16,15 @@ const treatmentFields = `const treatmentBill = {
     charge: 150, // Total line charge, not a unit rate. Synthetic example.
     serviceDate: "2026-08-25",
     diagnosisPointers: [1],
+    feeContext: {
+      physicianContext: {
+        providerKind: "physician" as const,
+        placeOfService: "11",
+        standaloneService: true,
+        globalPeriodApplies: false,
+        hpsaBonusEligible: false,
+      },
+    },
   }],
 };`;
 
@@ -104,7 +113,7 @@ export default function TreatmentQuickstartPage() {
     <QuickstartNav active="treatment" />
     <div className="quickstart-content">
       <ApiKeyStep />
-      <p><strong>Treatment billing must be enabled for your organization.</strong> Contact <a href="mailto:hello@mindbill.org">partner support</a> to enable it. An organization without access receives <code>treatment_billing_not_enabled</code>.</p>
+      <p><strong>Treatment billing must be enabled for your organization</strong> through the <code>treatmentBilling</code> capability. Contact <a href="mailto:hello@mindbill.org">partner support</a> to enable it. An organization without access receives <code>treatment_billing_not_enabled</code>.</p>
       <section id="setup"><h2>2. Choose your setup</h2>
         <p>Use the same libraries and authentication as med-legal billing. Complete the setup once, then return here.</p>
         <QuickstartTabs label="Treatment setup" tabs={[
@@ -117,7 +126,7 @@ export default function TreatmentQuickstartPage() {
         <p>Start with the patient, claim, provider, location, and diagnosis fields from the <Link href="/learn/api-quickstart#create">example bill</Link> as <code>billInput</code>. Set the billing mode and replace the med-legal lines with professional services.</p>
         <p><strong>Choose the mode explicitly:</strong> <code>med_legal</code> is the default medical-legal evaluation workflow with shared bill diagnoses. <code>professional</code> is treatment billing, where each procedure line selects its applicable diagnoses using one-based <code>diagnosisPointers</code>. Professional bills allow up to 12 diagnoses and up to four pointers per line. Review those selections instead of automatically copying every diagnosis to every procedure.</p>
         <CodeBlock code={treatmentFields} filename="Treatment bill fields" />
-        <p className="quickstart-note">Every professional line needs an explicit total charge. Use a reviewed fee quote or your practice’s configured rates; do not treat a missing or unavailable fee schedule as a zero charge or invent a rate. Server fee quotes depend on activated schedule coverage for the organization and service; not every schedule or service is available. The values above are synthetic examples. If a service relates to an RFA item, also include that item’s <code>rfaItemId</code> on its bill line.</p>
+        <p className="quickstart-note">Every professional line needs an explicit total charge, not a unit rate. Schedule coverage depends on the service and date. The example assumes a California claim and one physician office visit with no related same-day services or global surgical package. Replace these facts with the actual encounter. Quote the complete encounter using the <Link href="/guides/fee-schedules">California fee calculator</Link> before submission. Bill charges use dollars; fee quotes use cents. The server rechecks lines with <code>feeContext</code> and rejects unresolved pricing with <code>bill_fee_requires_review</code>. An explicitly entered manual charge without fee context is not a verified statutory allowance. If a service relates to an RFA item, also include that item’s <code>rfaItemId</code> on its bill line.</p>
       </section>
       <section id="submit"><h2>4. Submit and track the bill</h2>
         <p>Pass <code>treatmentBill</code> to the entry form for review and document upload, or submit it from your server. Reuse <Link href="/guides/practice-settings">saved providers, service locations, and W-9 settings</Link>; attach optional <Link href="/guides/documents#authorization">authorization or network records</Link> when appropriate.</p>
