@@ -13,7 +13,7 @@ const treatmentFields = `const treatmentBill = {
   serviceLines: [{
     code: "99213",
     units: 1,
-    charge: 150, // Synthetic example; use your practice's fee schedule.
+    charge: 150, // Total line charge, not a unit rate. Synthetic example.
     serviceDate: "2026-08-25",
     diagnosisPointers: [1],
   }],
@@ -21,7 +21,6 @@ const treatmentFields = `const treatmentBill = {
 
 const reactSubmit = `"use client";
 import { BillSubmissionForm, type BillSubmissionInput } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 
 export default function TreatmentBill({ treatmentBill }: {
   treatmentBill: BillSubmissionInput;
@@ -77,7 +76,6 @@ console.log(bill.id);`;
 
 const rfaForm = `"use client";
 import { RfaDraftForm, type RfaDraftInput } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 
 export default function NewRfa({ initialDraft, saveDraft }: {
   initialDraft: RfaDraftInput;
@@ -117,11 +115,12 @@ export default function TreatmentQuickstartPage() {
       </section>
       <section id="fields"><h2>3. Add treatment service lines</h2>
         <p>Start with the patient, claim, provider, location, and diagnosis fields from the <Link href="/learn/api-quickstart#create">example bill</Link> as <code>billInput</code>. Set the billing mode and replace the med-legal lines with professional services.</p>
+        <p><strong>Choose the mode explicitly:</strong> <code>med_legal</code> is the default medical-legal evaluation workflow with shared bill diagnoses. <code>professional</code> is treatment billing, where each procedure line selects its applicable diagnoses using one-based <code>diagnosisPointers</code>. Professional bills allow up to 12 diagnoses and up to four pointers per line. Review those selections instead of automatically copying every diagnosis to every procedure.</p>
         <CodeBlock code={treatmentFields} filename="Treatment bill fields" />
-        <p className="quickstart-note">Every professional line needs an explicit charge from your practice’s fee schedule. The values above are synthetic examples. If a service relates to an RFA item, also include that item’s <code>rfaItemId</code> on its bill line.</p>
+        <p className="quickstart-note">Every professional line needs an explicit total charge. Use a reviewed fee quote or your practice’s configured rates; do not treat a missing or unavailable fee schedule as a zero charge or invent a rate. Server fee quotes depend on activated schedule coverage for the organization and service; not every schedule or service is available. The values above are synthetic examples. If a service relates to an RFA item, also include that item’s <code>rfaItemId</code> on its bill line.</p>
       </section>
       <section id="submit"><h2>4. Submit and track the bill</h2>
-        <p>Pass <code>treatmentBill</code> to the entry form for review and document upload, or submit it from your server.</p>
+        <p>Pass <code>treatmentBill</code> to the entry form for review and document upload, or submit it from your server. Reuse <Link href="/guides/practice-settings">saved providers, service locations, and W-9 settings</Link>; attach optional <Link href="/guides/documents#authorization">authorization or network records</Link> when appropriate.</p>
         <QuickstartTabs label="Treatment submission" tabs={[
           { label: "React", content: <CodeBlock language="tsx" filename="TreatmentBill.tsx" code={reactSubmit} /> },
           { label: "Angular", content: <CodeBlock code={angularSubmit} filename="treatment-bill.component.ts" /> },
@@ -130,7 +129,7 @@ export default function TreatmentQuickstartPage() {
         <p>Use the returned bill ID with the <Link href="/learn/quickstart#bill">single-bill component</Link> or <Link href="/learn/api-quickstart#status">status API</Link>. Treatment bills use the same dashboard and lifecycle actions; show the actions available for each bill.</p>
       </section>
       <details id="rfa" className="quickstart-details"><summary>5. Add a Request for Authorization <small>Optional</small></summary>
-        <p>Request authorization for planned treatment separately from billing for services. React provides a draft form; Angular and other interfaces can use the RFA API.</p>
+        <p>Request authorization for planned treatment separately from billing for services. React provides <code>RfaDashboard</code> for tracking, draft creation, clinical PDF upload, authorized signing, packet review, and explicit fax sending, plus <code>RfaDraftForm</code> for a custom layout. Start with the <Link href="/guides/rfas">RFA dashboard and complete workflow guide</Link>. Angular and other interfaces can use the RFA API.</p>
         <CodeBlock language="tsx" filename="NewRfa.tsx · React" code={rfaForm} />
         <CodeBlock code={rfaInput} filename="Starting draft · replace IDs from your organization" />
         <p>The claim and its matching patient must already be saved under your partner organization, along with the rendering provider. Implement <code>saveDraft</code> in your host application: authorize the current user and create an unsigned draft with <code>POST /partner/v2/rfas</code>, the draft as the JSON body, and a stable <code>Idempotency-Key</code>.</p>

@@ -5,7 +5,6 @@ import { Callout, DocPage } from "@/components/doc-page";
 export const metadata: Metadata = { title: "Payment review" };
 
 const workspace = `import { ConnectedBillingWorkspace } from "@mindbill/react";
-import "@mindbill/react/styles.css";
 
 <ConnectedBillingWorkspace
   sessionEndpoint="/api/mindbill/session"

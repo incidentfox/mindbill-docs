@@ -27,7 +27,7 @@ import {
 
 export const metadata: Metadata = { title: "React components" };
 
-const install = `pnpm add @mindbill/react@0.52.0`;
+const install = `pnpm add @mindbill/react@0.62.0`;
 
 const connectedWorkspace = `import { ConnectedBillingWorkspace } from "@mindbill/react";
 
@@ -115,7 +115,7 @@ const csv = buildBillingReportCsv(bills, "payer");`;
 const orgOnboardingCode = `import { OrganizationOnboarding } from "@mindbill/react";
 
 <OrganizationOnboarding
-  sessionEndpoint="/api/mindbill/session"
+  sessionEndpoint="/api/mindbill/settings-session"
   appearance={{ preset: "clinical-blue" }}
   onCompleted={() => enableBillingFeatures()}
 />`;
@@ -313,6 +313,7 @@ export default function ReactPage() {
         { id: "org-onboarding", label: "Saved practice settings" },
         { id: "notifications", label: "Notification settings" },
         { id: "setup", label: "Post-submit setup" },
+        { id: "rfas", label: "Treatment and RFAs" },
         { id: "lifecycle", label: "Complete lifecycle" },
         { id: "custom", label: "Custom lifecycle UI" },
         { id: "status", label: "Status surfaces" },
@@ -326,7 +327,7 @@ export default function ReactPage() {
       next={{ href: "/components/angular", label: "Angular components" }}
     >
       <h2 id="start">Add billing to your application</h2>
-      <p>Install the package and import <code>@mindbill/react/styles.css</code> once in your application. First connect an authenticated <Link href="/guides/authentication#session">server session route</Link>; the examples below assume that route is ready.</p>
+      <p>Install the package; components include their own styles. First connect an authenticated <Link href="/guides/authentication#session">server session route</Link>; the examples below assume that route is ready.</p>
       <CodeBlock code={install} language="bash" filename="Terminal" />
       <ul>
         <li><strong>Billing page:</strong> <code>ConnectedBillingWorkspace</code> provides task queues, All Bills, reports, and bill details.</li>
@@ -424,15 +425,19 @@ export default function ReactPage() {
       <CodeBlock code={orgOnboardingCode} filename="BillingSetup.tsx" />
       <p>If your app already stores and extracts W-9s, React 0.50.0&apos;s <code>W9Upload</code> renders the upload, current document, extraction progress, retry, and review states using your host callbacks. It does not create another document store or parser. See <Link href="/guides/documents#w9-settings">choose one W-9 storage owner</Link>.</p>
       <details id="saved-profiles"><summary>Saved profiles, provider references, and tax ID handling</summary>
-    <p>If your app already stores billing provider, rendering provider, service locations, and W-9 documents, keep that ownership and prefill from it. Otherwise offer MindBill&apos;s settings components to avoid building and maintaining duplicate input screens. Check the <Link href="/components/react">current component reference</Link> for saved-profile controls and supported fields.</p>
+    <p>If your app already stores billing provider, rendering provider, service locations, and W-9 documents, keep that ownership and prefill from it. Otherwise offer MindBill&apos;s settings components to avoid building and maintaining duplicate input screens. See the <Link href="/guides/practice-settings">complete practice-settings guide</Link> for setup and permissions.</p>
     <p>Use a separate admin-authorized session endpoint for <code>organization:manage</code>. Do not grant it to every billing user. Avoid persisting duplicate tax identifiers; keep sensitive values out of browser storage, logs, analytics, screenshots, and coding-agent prompts.</p>
     <p>For saved choices during bill creation, <code>GET /partner/v2/organization/billing-profile</code> accepts an organization-wide browser session with <code>bills:create</code> and returns a masked organization profile. Bill-scoped sessions cannot perform this lookup. Settings writes still require <code>organization:manage</code>; reading choices does not grant permission to edit them.</p>
-    <CodeBlock code={profileRecipe} language="jsx" filename="Optional saved-profile choices — use the current React release" />
+    <p>From React 0.62.0, connected forms automatically load saved choices when <code>profileOptions</code> is omitted. Pass a separate <code>billingSettings</code> session configuration to enable the prebuilt Add/edit settings flow for administrators. Explicit <code>profileOptions</code> override the lookup; an empty object suppresses it.</p>
+    <CodeBlock code={profileRecipe} language="jsx" filename="Automatic saved choices and administrator settings — React 0.62.0" />
     <p><code>profileDisplay=&quot;compact&quot;</code> presents saved choices first; <code>&quot;expanded&quot;</code> keeps all fields visible. Host-managed options need no extra storage or organization lookup. Settings support <code>taxIdType: &quot;EIN&quot; | &quot;SSN&quot;</code>; EIN remains the default. Select SSN explicitly rather than putting it in an EIN field.</p>
     <p>Saved SSNs are encrypted and returned as an empty <code>taxId</code> with <code>taxIdLast4</code> and <code>taxIdConfigured</code>, not as plaintext. In settings, leaving a saved SSN input blank preserves it; entering a replacement changes it; the explicit clear action removes it on save. The components handle these write semantics. Custom API forms should omit <code>taxId</code> to preserve it and send <code>taxId: &quot;&quot;</code> to clear it; do not send read-only masking metadata back in a settings write.</p>
     <p><code>organizationProfileOptions(profile)</code> creates a server-resolved provider reference for an SSN-backed profile. Do not copy the last four digits into a bill&apos;s tax ID. The browser/API create contract accepts <code>billingProvider: &#123; savedProviderId &#125;</code>. Corrections and duplicates can use <code>billingProvider: &#123; sourceBillId &#125;</code> to reuse that bill&apos;s immutable provider snapshot. Both references are resolved within the authenticated organization. Existing TypeScript code should narrow reference versus inline-provider values before reading fields such as <code>name</code> or <code>taxId</code>.</p>
     <Callout title="Upgrade the complete integration">This contract requires browser 0.28.0, React 0.47.0, or Angular 0.18.0 (or a later compatible release). Update any directly installed browser client alongside the component package, commit the lockfile, rebuild, and test saved SSN create, unchanged save, replace, clear, and correction flows in sandbox. A password input hides screen entry; it does not make logging or persisting the form state safe.</Callout>
       </details>
+
+      <h2 id="rfas">Treatment and authorization requests</h2>
+      <p>Use <code>billingMode=&quot;professional&quot;</code> in the initial bill for treatment charges and per-line diagnosis selection. <code>RfaDashboard</code> provides authorization tracking, draft creation, clinical PDF upload, authorized signing, packet and cover-sheet review, directory destination selection, explicit fax sending, and delivery evidence. Configure its role-matched permissions, human signer identity, and environment; it defaults to read-only sandbox. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> and <Link href="/guides/rfas">RFA integration guide</Link>.</p>
 
       <h2 id="notifications">Notification settings</h2>
       <p><strong>Administrative recipient list (React 0.52.0):</strong> <code>NotificationRecipientsSettings</code> (alias <code>ConnectedNotificationRecipientsSettings</code>) lets an administrator invite any authorized email address, including someone without a console account. Choose practice-wide or explicitly assigned-bill access, status/payment alerts, aging reminders, quiet hours and daily/weekly billing-activity digests. Everything stays off until the email owner reviews and confirms the invitation; the list includes pending states and a disable action.</p>
@@ -454,7 +459,7 @@ export default function ReactPage() {
       <CodeBlock code={lifecycle} filename="SubmittedBill.tsx" />
       <p>The component includes lifecycle progress, the frozen bill snapshot, a consolidated EOR and payment reconciliation surface, rich claims-administrator directory details, history, packet preview, and a sticky state-aware action bar for Second Review, correction, IBR, lien, payment, or closure when eligible.</p>
       <p>From React 0.48.0, selecting an Original Bill or another submission opens that submission&apos;s <strong>Bill details</strong>, not the history tab. Historical details are read-only: current-bill actions and balances are not presented as historical facts. Older submissions without a stored snapshot show an explicit availability warning instead of substituting the current bill.</p>
-      <p>The current bill also includes workspace-only team notes and <strong>Forward copy</strong>. Forwarding previews one combined PDF, then requires confirmation before emailing it; it does not resubmit the bill or change its status. Sandbox forwarding is simulated and sends no email. See <a href="/guides/lifecycle#communications">communications and permissions</a>.</p>
+      <p>The current bill also includes built-in team notes with author and time across submission attempts and <strong>Forward copy</strong>. Forwarding previews one combined PDF, then requires confirmation before emailing it; it does not resubmit the bill or change its status. Sandbox forwarding is simulated and sends no email. See <a href="/guides/lifecycle#communications">communications and permissions</a>.</p>
       <p>Pass your own case contacts as <code>courtesyCopyRecipientOptions</code> to offer named To/CC choices alongside manual email entry. For a workspace, use <code>getCourtesyCopyRecipientOptions(billId)</code> to keep suggestions specific to the selected bill. The standalone <code>BillCourtesyCopyForm</code> accepts <code>recipientOptions</code>; each <code>CourtesyCopyRecipientOption</code> has an <code>email</code> and optional <code>name</code>.</p>
       <CodeBlock code={courtesyRecipients} filename="components/bill-email-options.tsx" />
       <Callout title="Suggestions, not permission or enrollment">Options are not selected or sent automatically. Confirm that the recipient is authorized to receive the bill packet. Changing recipients requires a fresh preview and confirmation. This contact list does not subscribe anyone to status or aging notification emails.</Callout>

@@ -71,7 +71,7 @@ const addressFields = (prefix: string, subject: string): ApiField[] => [
 
 const createBillFields: ApiField[] = [
   { name: "externalId", type: "string", description: "Stable report, case, or work-item identifier in your system. Use it to find the bill later." },
-  { name: "billingMode", type: '"med_legal"', description: "Selects California medical-legal billing. The professional value is reserved but not enabled in the public API.", constraint: 'Default: "med_legal"' },
+  { name: "billingMode", type: '"med_legal" | "professional"', description: "Select medical-legal billing or professional treatment billing. Professional billing requires treatmentBilling enabled for the organization; otherwise the API returns treatment_billing_not_enabled.", constraint: 'Default: "med_legal"' },
   { name: "patient.externalId", type: "string", description: "Your patient identifier. Do not send this together with patient.id." },
   { name: "patient.firstName", type: "string", required: true, description: "Patient given name." },
   { name: "patient.middleName", type: "string", description: "Patient middle name or initial." },
@@ -94,7 +94,7 @@ const createBillFields: ApiField[] = [
   { name: "service.date", type: "string", required: true, description: "Primary date of service for the bill.", constraint: "YYYY-MM-DD" },
   { name: "service.endDate", type: "string | null", description: "End date only for a service that spans multiple dates.", constraint: "YYYY-MM-DD" },
   { name: "service.authorizationNumber", type: "string | null", description: "Prior authorization number when the payer supplied one." },
-  { name: "billingProvider", type: "BillingProviderSnapshot", required: true, description: "Payee identity printed in CMS-1500 boxes 25 and 33." },
+  { name: "billingProvider", type: "BillingProviderSnapshot | { savedProviderId: string }", required: true, description: "Payee identity printed in CMS-1500 boxes 25 and 33. Organization-wide integrations may supply only savedProviderId to resolve a saved billing provider without returning its SSN to the browser. Customer-scoped and bill-scoped credentials cannot use shared saved providers. The fields below are required only for an inline snapshot." },
   { name: "billingProvider.name", type: "string", required: true, description: "Billing provider or practice name." },
   { name: "billingProvider.taxId", type: "string", required: true, description: "Billing provider EIN or SSN." },
   { name: "billingProvider.npi", type: "string", required: true, description: "Billing provider NPI.", constraint: "10 digits" },
@@ -111,18 +111,23 @@ const createBillFields: ApiField[] = [
   { name: "serviceLocation.name", type: "string", description: "Human-readable facility name." },
   { name: "serviceLocation.placeOfServiceCode", type: "string", required: true, description: "CMS place-of-service code.", constraint: "2 digits" },
   ...addressFields("serviceLocation.address", "Service location"),
-  { name: "diagnoses", type: "string[]", required: true, description: "At least one ICD-10 diagnosis code.", constraint: "1 or more items" },
+  { name: "diagnoses", type: "string[]", required: true, description: "At least one ICD-10 diagnosis code.", constraint: "1–50 items; professional bills support at most 12" },
   { name: "serviceLines", type: "ServiceLine[]", required: true, description: "At least one procedure line.", constraint: "1–50 items" },
   { name: "serviceLines[].code", type: "string", required: true, description: "Procedure or service code, such as ML201 or 99205." },
   { name: "serviceLines[].modifiers", type: "string[]", description: "Procedure modifiers without hyphens." },
-  { name: "serviceLines[].units", type: "number", description: "Positive unit count.", constraint: "Default: 1; > 0" },
+  { name: "serviceLines[].units", type: "number", description: "Positive integer unit count.", constraint: "Default: 1; 1–10,000" },
+  { name: "serviceLines[].charge", type: "number", description: "Reviewed total charge for this line, not a unit price. Required for professional treatment bills; do not assume a fee quote is available for every service.", constraint: "> 0" },
+  { name: "serviceLines[].serviceDate", type: "string", description: "Treatment line date of service; defaults to service.date.", constraint: "YYYY-MM-DD" },
+  { name: "serviceLines[].serviceDateEnd", type: "string", description: "Optional treatment line end date.", constraint: "YYYY-MM-DD" },
+  { name: "serviceLines[].diagnosisPointers", type: "number[]", description: "Professional treatment: one-based positions in diagnoses that apply to this procedure. Medical-legal billing uses the shared diagnosis list.", constraint: "At most 4 pointers, each 1–12 and referencing a supplied diagnosis" },
+  { name: "serviceLines[].rfaItemId", type: "string", description: "Optional saved RFA item for professional treatment. The server validates the authorization against this bill; linking an item does not establish approval." },
 ];
 
 const billResponseFields: ApiField[] = [
   { name: "id", type: "string", required: true, description: "Stable MindBill bill identifier." },
   { name: "externalId", type: "string | null", required: true, description: "Your supplied source-system identifier." },
   { name: "state", type: "string", required: true, description: "Current native lifecycle state." },
-  { name: "billingMode", type: '"med_legal"', required: true, description: "Billing rule set used by the bill." },
+  { name: "billingMode", type: '"med_legal" | "professional"', required: true, description: "Billing rule set used by the bill." },
   { name: "billNumber", type: "number | null", required: true, description: "Human-readable MindBill bill number when assigned." },
   { name: "patient", type: "PatientSnapshot", required: true, description: "Frozen patient values on this bill." },
   { name: "claim", type: "ClaimSnapshot", required: true, description: "Frozen claim and payer values, including diagnoses." },
@@ -725,7 +730,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     requestFields: [
       { name: "subject", type: "string", required: true, description: "Stable identifier for the signed-in user in your system." },
       { name: "allowedOrigin", type: "string", required: true, description: "Exact browser origin. Paths, query strings, fragments, and credentials are rejected.", constraint: "HTTPS; HTTP loopback allowed in sandbox" },
-      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, eors:read, and organization:manage." },
+      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, eors:read, organization:manage, and rfas:read/create/edit/act/sign. Grant only the actions the authenticated host user may perform; RFA access requires an organization-wide session and treatmentBilling." },
       { name: "resource.billId", type: "string", description: "Optional least-privilege restriction to one existing bill. Cannot be combined with bills:create." },
       { name: "expiresIn", type: "number", description: "Session lifetime in seconds.", constraint: "Integer 60–3600" },
     ],

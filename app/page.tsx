@@ -80,7 +80,7 @@ export default function HomePage() {
 
       <h2 id="availability">Billing modes</h2>
       <Callout title="Medical-legal billing is available now">
-        Use <code>med_legal</code> for California QME and AME workflows. The <code>professional</code> value is reserved for future treatment billing and is not enabled in the public Partner API yet.
+        Use <code>med_legal</code> for California QME and AME workflows. Use <code>professional</code> for treatment billing when your organization has treatment access enabled. Follow the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> for line-level diagnoses, fee quotes, and authorizations.
       </Callout>
       <p>Start with the <Link href="/learn/quickstart">quickstart</Link>, then add <Link href="/components/react">React</Link> or <Link href="/components/angular">Angular components</Link>, or <Link href="/guides/bills">submit bills from your own backend</Link>.</p>
     </DocPage>

@@ -33,7 +33,7 @@ export default function WorkersCompBillingPage() {
       <h2 id="modes">Billing-mode availability</h2>
       <div className="comparison-table">
         <div className="table-head"><b><code>professional</code></b><b><code>med_legal</code></b></div>
-        <div><span>Reserved for future treatment and other professional services; not enabled in the public API yet.</span><span>Available now for California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
+        <div><span>Treatment and other professional services, available to organizations with treatment billing enabled. Uses diagnoses selected for each service line.</span><span>Available now for California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
       </div>
       <p>Build current integrations with <code>med_legal</code>. SDK types reserve <code>professional</code> so treatment billing can join the same lifecycle without a later naming break.</p>
 
