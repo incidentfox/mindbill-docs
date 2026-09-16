@@ -105,6 +105,14 @@ export const navigation: DocLink[] = [
     keywords: ["create", "submit", "immutable", "cms-1500", "snapshot", "payer"],
   },
   {
+    href: "/guides/fee-schedules",
+    label: "California fee calculator",
+    description: "Quote a complete encounter with modifiers, source citations, and date-specific rules.",
+    group: "Build",
+    icon: CircleDollarSign,
+    keywords: ["OMFS", "fee schedule", "treatment", "NCCI", "MUE", "modifiers", "calculator"],
+  },
+  {
     href: "/guides/documents",
     label: "Documents",
     description: "Build an explicit payer packet and upload supporting PDFs.",

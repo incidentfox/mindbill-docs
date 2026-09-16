@@ -19,6 +19,22 @@ export type BrowserApiInventoryEntry = {
 /** Distinct MindBill routes called by @mindbill/browser and @mindbill/react. */
 export const browserApiInventory: BrowserApiInventoryEntry[] = [
   {
+    method: "POST",
+    path: "/partner/v2/fee-quotes/ca/claim",
+    permission: "bills:read",
+    purpose: "Quote California treatment fees and implemented encounter edits by date of service; requires treatmentBilling. Unresolved cases return review findings instead of a complete allowance.",
+    sdkMethod: "quoteClaimFees",
+    referenceSlug: "ca-claim-fee-quote",
+  },
+  {
+    method: "POST",
+    path: "/partner/v2/fee-quotes",
+    permission: "bills:read",
+    purpose: "Quote one treatment line with optional authorized practice and payer context; requires treatmentBilling. Billing-provider overrides require an organization-wide session.",
+    sdkMethod: "quoteFee",
+    referenceSlug: "treatment-fee-quote",
+  },
+  {
     method: "GET",
     path: "/partner/v2/reports/payments",
     permission: "bills:read",

@@ -79,8 +79,8 @@ export default function HomePage() {
       <p>The lifecycle is not always linear. A clearinghouse rejection can require a corrected replacement. An underpayment or denial can require Second Bill Review and, when eligible, Independent Bill Review. The API exposes the valid next actions without making every partner rebuild that rules engine.</p>
 
       <h2 id="availability">Billing modes</h2>
-      <Callout title="Medical-legal billing is available now">
-        Use <code>med_legal</code> for California QME and AME workflows. The <code>professional</code> value is reserved for future treatment billing and is not enabled in the public Partner API yet.
+      <Callout title="Billing modes">
+        Use <code>med_legal</code> for California QME and AME workflows. Use <code>professional</code> for treatment billing when your organization has the <code>treatmentBilling</code> capability. Start with the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> and <Link href="/guides/fee-schedules">California fee calculator</Link>.
       </Callout>
       <p>Start with the <Link href="/learn/quickstart">quickstart</Link>, then add <Link href="/components/react">React</Link> or <Link href="/components/angular">Angular components</Link>, or <Link href="/guides/bills">submit bills from your own backend</Link>.</p>
     </DocPage>

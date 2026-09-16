@@ -6,7 +6,7 @@ import { DocPage } from "@/components/doc-page";
 export const metadata: Metadata = { title: "Partner upgrade guide" };
 
 const brief = `Upgrade the existing MindBill integration; preserve host authentication and saved data.
-1. Update @mindbill/react to 0.52.0 and any directly installed @mindbill/browser to 0.30.0.
+1. Update @mindbill/react to 0.63.0 and any directly installed @mindbill/browser to 0.39.0.
    Update the lockfile and rebuild the app.
    Keep the existing CSS import and ConnectedBillLifecycle / ConnectedBillingWorkspace.
 2. Optional settings: mount BillingSettings for saved providers, locations and W-9s.
@@ -26,11 +26,12 @@ export default function UpgradePage() {
   return <DocPage eyebrow="Start here" title="Upgrade an existing integration" description="A short checklist for existing MindBill integrations."
     toc={[{ id: "packages", label: "Update packages" }, { id: "optional", label: "Optional settings" }, { id: "agent", label: "Copy for your agent" }]}>
     <h2 id="packages">Update packages, keep your integration</h2>
-    <p>Update <code>@mindbill/react</code> to <code>0.52.0</code> and any directly installed <code>@mindbill/browser</code> to <code>0.30.0</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
+    <p>Update <code>@mindbill/react</code> to <code>0.63.0</code> and any directly installed <code>@mindbill/browser</code> to <code>0.39.0</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
     <p>The existing components pick up scrolling and theme fixes, a consistent current status, historical submission details, corrected units/modifiers, and shared bill interactions. You do not need to rebuild those screens.</p>
     <h2 id="optional">New settings need a place in your app</h2>
     <p>If not already mounted, add <Link href="/components/react#saved-profiles"><code>BillingSettings</code></Link> for saved billing profiles. For email invitations, add <Link href="/guides/notifications"><code>NotificationRecipientsSettings</code> and its trusted server adapter</Link>. Existing notification adapters must forward <code>reportDigest</code> and return it in snapshots to support daily/weekly digests. These are optional additions, not automatic effects of a package bump.</p>
-    <p>Email stays off until the recipient confirms. Assigned-bill recipients also need server-managed bill assignments; entering an email address alone does not grant access. This upgrade covers med-legal billing; treatment/RFA work is separate.</p>
+    <p>Email stays off until the recipient confirms. Assigned-bill recipients also need server-managed bill assignments; entering an email address alone does not grant access. Treatment billing requires the organization’s treatmentBilling capability. Add the California calculator separately when your workflow needs treatment estimates.</p>
+    <p>For California treatment estimates, mount <Link href="/guides/fee-schedules"><code>FeeScheduleCalculator</code></Link> with an authenticated reference client. Read review outcomes before using amounts; package upgrades do not enable treatment access or guarantee coverage for every service date.</p>
     <h2 id="agent">Copy for your coding agent</h2>
     <CodeBlock code={brief} language="text" filename="Existing integration upgrade brief" />
     <p>Starting from scratch? <Link href="/learn/quickstart">Choose your stack and open the full quickstart in your editor →</Link></p>

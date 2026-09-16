@@ -1,5 +1,6 @@
 import { sharedApiEndpoints } from "./shared-api-endpoints";
 import { referenceDataEndpoints } from "./reference-data-api";
+import { feeScheduleEndpoints } from "./fee-schedule-api";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -71,7 +72,7 @@ const addressFields = (prefix: string, subject: string): ApiField[] => [
 
 const createBillFields: ApiField[] = [
   { name: "externalId", type: "string", description: "Stable report, case, or work-item identifier in your system. Use it to find the bill later." },
-  { name: "billingMode", type: '"med_legal"', description: "Selects California medical-legal billing. The professional value is reserved but not enabled in the public API.", constraint: 'Default: "med_legal"' },
+  { name: "billingMode", type: '"med_legal" | "professional"', description: "Selects medical-legal or professional treatment billing. Professional billing requires the organization treatmentBilling capability.", constraint: 'Default: "med_legal"' },
   { name: "patient.externalId", type: "string", description: "Your patient identifier. Do not send this together with patient.id." },
   { name: "patient.firstName", type: "string", required: true, description: "Patient given name." },
   { name: "patient.middleName", type: "string", description: "Patient middle name or initial." },
@@ -116,13 +117,16 @@ const createBillFields: ApiField[] = [
   { name: "serviceLines[].code", type: "string", required: true, description: "Procedure or service code, such as ML201 or 99205." },
   { name: "serviceLines[].modifiers", type: "string[]", description: "Procedure modifiers without hyphens." },
   { name: "serviceLines[].units", type: "number", description: "Positive unit count.", constraint: "Default: 1; > 0" },
+  { name: "serviceLines[].charge", type: "number", description: "Submitted line charge in dollars. This is not proof of the statutory allowance; fee quote endpoints use integer cents." },
+  { name: "serviceLines[].serviceDate", type: "string", description: "Line-specific service date; falls back to service.date.", constraint: "YYYY-MM-DD" },
+  { name: "serviceLines[].feeContext", type: "object", description: "Clinical and billing context for server verification of a treatment fee. Code, dates, units, charge, provider/payer identity, and service location are taken from the bill. An unresolved quote returns 422 bill_fee_requires_review. See the California fee guide and OpenAPI for the applicable specialty context." },
 ];
 
 const billResponseFields: ApiField[] = [
   { name: "id", type: "string", required: true, description: "Stable MindBill bill identifier." },
   { name: "externalId", type: "string | null", required: true, description: "Your supplied source-system identifier." },
   { name: "state", type: "string", required: true, description: "Current native lifecycle state." },
-  { name: "billingMode", type: '"med_legal"', required: true, description: "Billing rule set used by the bill." },
+  { name: "billingMode", type: '"med_legal" | "professional"', required: true, description: "Billing rule set used by the bill." },
   { name: "billNumber", type: "number | null", required: true, description: "Human-readable MindBill bill number when assigned." },
   { name: "patient", type: "PatientSnapshot", required: true, description: "Frozen patient values on this bill." },
   { name: "claim", type: "ClaimSnapshot", required: true, description: "Frozen claim and payer values, including diagnoses." },
@@ -258,6 +262,7 @@ const bill = await mindbill.createAndSubmitBill({
 export const apiEndpoints: ApiEndpoint[] = [
   ...sharedApiEndpoints,
   ...referenceDataEndpoints,
+  ...feeScheduleEndpoints,
   {
     slug: "create-bill",
     group: "Bills",
