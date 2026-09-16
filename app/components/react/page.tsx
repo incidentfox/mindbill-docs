@@ -27,7 +27,7 @@ import {
 
 export const metadata: Metadata = { title: "React components" };
 
-const install = `pnpm add @mindbill/react@0.64.0`;
+const install = `pnpm add @mindbill/react@0.65.0`;
 
 const connectedWorkspace = `import { ConnectedBillingWorkspace } from "@mindbill/react";
 
@@ -42,7 +42,13 @@ const connectedSearch = `import { ConnectedBillSearch } from "@mindbill/react";
 
 <ConnectedBillSearch
   sessionEndpoint="/api/mindbill/session"
-  initialQuery={{ arAge: "61-90", status: "submitted" }}
+  initialQuery={{
+    q: "Example 99213",
+    dateField: "service",
+    from: "2026-09-01",
+    to: "2026-09-30",
+    status: "submitted",
+  }}
   onSelectBill={(bill) => openBill(bill.id)}
 />`;
 
@@ -333,7 +339,7 @@ export default function ReactPage() {
       <ul>
         <li><strong>Billing page:</strong> <code>ConnectedBillingWorkspace</code> provides task queues, All Bills, reports, bill details, and a Settings tab.</li>
         <li><strong>Case billing tab:</strong> <code>BillSubmissionForm</code> before submission; <code>ConnectedBillLifecycle</code> afterward.</li>
-        <li><strong>Practice settings:</strong> use the built-in Settings tab, or mount <code>BillingSettings</code> separately. The server requires an admin-authorized session.</li>
+        <li><strong>Billing settings:</strong> use the built-in Settings tab, or mount <code>BillingSettings</code> separately. The server requires an admin-authorized session.</li>
       </ul>
       <details><summary>Example: place components in your existing routes</summary><CodeBlock code={reactRecipe} language="jsx" filename="billing.jsx" /></details>
       <p>Keep the returned <code>billId</code> in your existing case metadata. Send your case ID as <code>externalId</code> for correlation; it is not a uniqueness guarantee. Never create a bill on component mount.</p>
@@ -408,7 +414,7 @@ export default function ReactPage() {
       <p>From React 0.64.0, both <code>ConnectedBillingWorkspace</code> and <code>BillingDashboard</code> include a <strong>Settings</strong> tab by default. Set <code>{"showSettings={false}"}</code> to hide it. Set <code>{'billingSettings={{ sessionEndpoint: "/api/mindbill/settings-session" }}'}</code> for a dedicated administrator session; otherwise the workspace reuses its main connection and <code>BillingDashboard</code> uses <code>/api/mindbill/session</code>. The server requires <code>organization:manage</code> and the component does not expand permissions. Use <code>onSettingsSaved(profile)</code> to refresh host state after a save; the callback receives <code>OrganizationProfileData</code>. The workspace also accepts <code>initialView=&quot;settings&quot;</code>. See the <Link href="/guides/practice-settings">settings integration example</Link>.</p>
       <p>React 0.50.0 includes a <strong>Payment review</strong> tab for confirmed cash, with received-date filters, search, totals, bill drill-down, and page export. Set <code>initialView=&quot;payments&quot;</code> or use <code>ConnectedPaymentReview</code> independently. See <Link href="/guides/payment-review">payment-review data and access rules</Link>. The workspace manages its own bill-detail navigation.</p>
       <Callout title="Bill Tasks and All Bills are intentionally different">Bill Tasks contains only open work that requires action. All Bills is the complete registry, including sent, accepted, processed, rejected, paid, and closed bills.</Callout>
-      <p>Use <code>ConnectedBillSearch</code> independently when your product already has its own navigation. It searches patient name, bill ID, and claim number and combines that search with status, billing-provider, claims-administrator, A/R-age, and date filters.</p>
+      <p>Use <code>ConnectedBillSearch</code> independently when your product already has its own navigation. It searches bill identifiers, patient and administrator names, statuses, procedure codes, and dates, and combines that search with status, billing-provider, claims-administrator, A/R-age, and date filters.</p>
       <CodeBlock code={connectedSearch} filename="AllBills.tsx" />
       <p>The connected dashboard and reports use the same thin-client session contract. Counts and drill-downs come from MindBill&apos;s authoritative server-side queries, while CSV and PDF controls remain in the component surface.</p>
       <CodeBlock code={connectedReports} filename="BillingReports.tsx" />
@@ -422,13 +428,17 @@ export default function ReactPage() {
       <CodeBlock code={statusAgingMatrix} filename="BillStatusAgingMatrix.tsx" />
       <Callout title="Use connected data in production">The demos use synthetic rows. In your product, load bill summaries with the Partner API or your webhook-backed store and pass them directly to these presentational components.</Callout>
 
+      <h3>Search and date filters</h3>
+      <p>The connected bill registry searches patient and claims-administrator names, bill and claim identifiers, external IDs, statuses, procedure codes, and dates. Every search word must match; matching ignores case. Enter text and an optional service-date or submission-date range, then press Search or Enter. Status, age, and provider filters apply immediately. Clear resets all filters.</p>
+      <p>For host-owned <code>BillingDashboard</code> rows, filtering happens immediately in the supplied array. Include <code>dateOfService</code> and <code>procedureCodes</code> for those searches. Connected queries use <code>q</code>, <code>dateField</code> (<code>service</code> or <code>submitted</code>), and inclusive <code>from</code>/<code>to</code> dates. See the <Link href="/api-reference/bill-dashboard">dashboard query reference</Link>.</p>
       <h2 id="org-onboarding">Organization onboarding</h2>
-      <p><code>OrganizationOnboarding</code> captures the practice identity, pay-to billing provider, locations, and W-9 once — saved straight to your MindBill organization through a browser session minted with the optional <code>organization:manage</code> permission — so your users never visit the MindBill dashboard. <code>BillingSettings</code> is the compact edit-after-setup variant. The review step renders MindBill&apos;s onboarding checklist and <code>onCompleted</code> fires when billing setup is done.</p>
+      <p><code>OrganizationOnboarding</code> starts with the pay-to billing provider, then rendering providers, locations, and W-9. Organization details appear in a separate disclosure and remain required when requested by the onboarding checklist. The wizard saves through an organization-wide <code>organization:manage</code> session, and <code>onCompleted</code> fires when billing setup is complete.</p>
+      <p>React 0.65.0 adds three sections to <code>BillingSettings</code>: Billing profiles, Claims administrators, and Team. Each administrative list loads when its section is selected. Team requires the separate <code>team:manage</code> permission and manages existing MindBill login accounts only; it does not invite users or change host-app roles. Physician signatures are configured in MindBill rendering-provider settings. See the <Link href="/guides/practice-settings#team">settings permission guide</Link>.</p>
       <p>From React 0.47.0, settings accept EIN or SSN with an explicit tax ID type. Saved SSNs are encrypted and masked in responses. A blank saved SSN field preserves it, a replacement changes it, and the clear button requests removal on save. Use <code>organizationProfileOptions(profile)</code> for SSN-backed saved billing choices so submission sends a provider reference rather than a masked identifier. See the saved-profile details below.</p>
       <CodeBlock code={orgOnboardingCode} filename="BillingSetup.tsx" />
       <p>If your app already stores and extracts W-9s, React 0.50.0&apos;s <code>W9Upload</code> renders the upload, current document, extraction progress, retry, and review states using your host callbacks. It does not create another document store or parser. See <Link href="/guides/documents#w9-settings">choose one W-9 storage owner</Link>.</p>
       <details id="saved-profiles"><summary>Saved profiles, provider references, and tax ID handling</summary>
-    <p>If your app already stores billing provider, rendering provider, service locations, and W-9 documents, keep that ownership and prefill from it. Otherwise offer MindBill&apos;s settings components to avoid building and maintaining duplicate input screens. See the <Link href="/guides/practice-settings">complete practice-settings guide</Link> for setup and permissions.</p>
+    <p>If your app already stores billing provider, rendering provider, service locations, and W-9 documents, keep that ownership and prefill from it. Otherwise offer MindBill&apos;s settings components to avoid building and maintaining duplicate input screens. See the <Link href="/guides/practice-settings">complete billing-settings guide</Link> for setup and permissions.</p>
     <p>Use a separate admin-authorized session endpoint for <code>organization:manage</code>. Do not grant it to every billing user. Avoid persisting duplicate tax identifiers; keep sensitive values out of browser storage, logs, analytics, screenshots, and coding-agent prompts.</p>
     <p>For saved choices during bill creation, <code>GET /partner/v2/organization/billing-profile</code> accepts an organization-wide browser session with <code>bills:create</code> and returns a masked organization profile. Bill-scoped sessions cannot perform this lookup. Settings writes still require <code>organization:manage</code>; reading choices does not grant permission to edit them.</p>
     <p>From React 0.62.0, connected forms automatically load saved choices when <code>profileOptions</code> is omitted. Pass a separate <code>billingSettings</code> session configuration to enable the prebuilt Add/edit settings flow for administrators. Explicit <code>profileOptions</code> override the lookup; an empty object suppresses it.</p>

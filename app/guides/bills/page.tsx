@@ -114,6 +114,8 @@ export default function BillsPage() {
       <h2 id="query">Find submitted bills from your records</h2>
       <p>Store the stable MindBill bill ID after successful submission, or find submitted bills later using your external identifiers.</p>
       <CodeBlock code={list} filename="server/find-bills.ts" />
+      <p>For staff searches, use <code>q</code> to match words across patient and claims-administrator names, bill and claim IDs, external IDs, statuses, procedure codes, and dates. Every word must match somewhere in the bill; matching ignores case. Combine this with <code>dateField=service</code> or <code>dateField=submitted</code> and inclusive <code>from</code>/<code>to</code> dates in <code>YYYY-MM-DD</code> format. See <Link href="/api-reference/list-bills">all bill query parameters</Link>.</p>
+      <p><code>ConnectedBillSearch</code> and the workspace registry provide these controls out of the box. Apply text and dates with Search or Enter; status, age, and provider filters apply immediately. Clear resets the search and filters. <code>BillingDashboard</code> instead filters the array supplied by your host immediately.</p>
 
       <h2 id="availability">Billing-mode availability</h2>
       <p>Use <code>med_legal</code> for California medical-legal bills, including QME and AME workflows.</p>

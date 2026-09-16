@@ -4,7 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
 import { profileRecipe } from "@/lib/integration-recipes";
 
-export const metadata: Metadata = { title: "Practice settings and saved profiles" };
+export const metadata: Metadata = { title: "Billing settings and saved profiles" };
 
 const workspace = `"use client";
 import { ConnectedBillingWorkspace } from "@mindbill/react";
@@ -27,7 +27,7 @@ export function PracticeSettings() {
   return <BillingSettings sessionEndpoint="/api/mindbill/settings-session" />;
 }
 
-// Optional first-run wizard: practice, rendering providers, locations, W-9, review.
+// First-run wizard: billing provider, rendering providers, locations, W-9, review.
 export function FirstTimeSetup() {
   return <OrganizationOnboarding
     sessionEndpoint="/api/mindbill/settings-session"
@@ -35,8 +35,8 @@ export function FirstTimeSetup() {
 }`;
 
 export default function PracticeSettingsPage() {
-  return <DocPage eyebrow="Build" title="Practice settings and saved profiles" description="Set up billing providers, rendering providers, service locations, and a W-9 once, then reuse them when creating bills."
-    toc={[{ id: "settings", label: "Dashboard Settings tab" }, { id: "choices", label: "Saved choices" }, { id: "w9", label: "W-9 ownership" }, { id: "permissions", label: "Permissions and scope" }, { id: "verify", label: "Verify the integration" }]}
+  return <DocPage eyebrow="Build" title="Billing settings and saved profiles" description="Set up billing providers, rendering providers, service locations, and a W-9 once, then reuse them when creating bills."
+    toc={[{ id: "settings", label: "Dashboard Settings tab" }, { id: "identity", label: "Provider and organization roles" }, { id: "team", label: "Team and custom administrators" }, { id: "choices", label: "Saved choices" }, { id: "w9", label: "W-9 ownership" }, { id: "permissions", label: "Permissions and scope" }, { id: "verify", label: "Verify the integration" }]}
     previous={{ href: "/learn/quickstart", label: "Quickstart" }} next={{ href: "/guides/bills", label: "Create and submit bills" }}>
     <h2 id="settings">Use the built-in Settings tab</h2>
     <p>React 0.64.0 includes a <strong>Settings</strong> tab by default in <code>ConnectedBillingWorkspace</code> and <code>BillingDashboard</code>. It uses <code>BillingSettings</code> for practice information, billing and rendering providers, service locations, and W-9 upload. You do not need a separate settings page.</p>
@@ -47,6 +47,15 @@ export default function PracticeSettingsPage() {
     <p><code>BillingSettings</code> is the compact settings editor. <code>OrganizationOnboarding</code> provides the guided first-run version. Both save to the authenticated MindBill organization and include practice information, billing and rendering providers, service locations, and W-9 upload. Keep your existing app navigation and authentication.</p>
     <CodeBlock code={settings} filename="PracticeSettings.tsx" language="tsx" />
     <p>Your <code>/api/mindbill/settings-session</code> route is a host endpoint you implement. Authenticate the current user, verify their practice administrator role, resolve the organization credential on your server, and mint a short-lived browser session granting <code>organization:manage</code>. Apply the <Link href="/guides/authentication#session">same origin, tenant, and session protections</Link> as your billing endpoint.</p>
+    <h2 id="identity">Choose the provider that belongs on the bill</h2>
+    <p>Start with <strong>Billing providers</strong>: the person or organization requesting payment. Its tax ID appears in CMS-1500 box 25; its name, pay-to address, phone, and NPI populate boxes 33 and 33a. The selected <strong>Rendering provider</strong> identifies the clinician who performed the service, including box 24J. The <strong>Service location</strong> supplies the address where the service occurred in box 32; the place-of-service code describes the setting in box 24B.</p>
+    <p><strong>Organization details</strong> holds your organization&apos;s legal name and contact information. It is not an additional billing provider and does not replace the provider selected on a bill. These details still contribute to the onboarding checklist, so complete them when the checklist requests them. Saving a profile does not rewrite an already submitted bill.</p>
+    <p>These roles follow the <a href="https://www.nucc.org/images/stories/PDF/1500_claim_form_instruction_manual_2025_07-v13.pdf" target="_blank" rel="noreferrer">NUCC CMS-1500 instruction manual</a>; applicable payer and state instructions also govern claim completion.</p>
+    <h2 id="team">Manage team access and custom claims administrators</h2>
+    <p>React 0.65.0 organizes the settings editor into <strong>Billing profiles</strong>, <strong>Claims administrators</strong>, and <strong>Team</strong>. The administrator and team lists load only when their section is opened. For custom claims administrators, add a destination with a name and at least one fax, email, or mailing address, edit its contact details, or remove it from future choices. Removal preserves historical bill snapshots. This organization-specific contact does not create an electronic payer route in the shared directory. See the <Link href="/api-reference/list-organization-claims-administrators">custom administrator API</Link>.</p>
+    <p>Team settings manage <strong>existing MindBill login accounts</strong>, not accounts or roles in your application. Authorized administrators can change an eligible account&apos;s role or active state. This integration does not invite or create users. Protected accounts may be displayed without edit controls.</p>
+    <p>Team administration requires a separately delegated <code>team:manage</code> browser permission backed by the server key&apos;s <code>orgs:team:write</code> scope. <code>organization:manage</code> alone does not grant it. Resolve the host user&apos;s authority on your server before granting either permission. Server-only callers use <code>orgs:team:read</code> to list accounts and <code>orgs:team:write</code> to update them. Bill- and customer-scoped credentials cannot manage these shared settings. See the <Link href="/api-reference/list-organization-team">team API</Link>.</p>
+    <p>Physician signature setup remains in <a href="https://app.mindbill.org/settings/rendering-providers" target="_blank" rel="noreferrer">MindBill rendering-provider settings</a>. Email recipient invitations and digests use the separate <Link href="/guides/notifications">notification settings component and trusted server adapter</Link>.</p>
     <h2 id="choices">Use saved choices in the submission form</h2>
     <p>From React 0.62.0, the connected submission form automatically loads saved billing providers, rendering providers, and service locations when you omit <code>profileOptions</code>. Pass <code>billingSettings</code> with a separate administrator session to offer the prebuilt Add/edit settings flow. Ordinary bill creators need an organization-wide <code>bills:create</code> session to read these choices; they do not need settings write permission. Keep known case values in <code>initialBill</code> and let the user review their selection before submitting.</p>
     <CodeBlock code={profileRecipe} filename="PracticeBill.tsx" language="tsx" />

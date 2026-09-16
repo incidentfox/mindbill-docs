@@ -6,6 +6,7 @@ export type BrowserApiPermission =
   | "eors:read"
   | "payers:read"
   | "organization:manage"
+  | "team:manage"
   | "rfas:read"
   | "rfas:create"
   | "rfas:edit"
@@ -13,7 +14,7 @@ export type BrowserApiPermission =
   | "rfas:act";
 
 export type BrowserApiInventoryEntry = {
-  method: "GET" | "POST" | "PUT";
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string;
   permission: BrowserApiPermission;
   purpose: string;
@@ -23,6 +24,13 @@ export type BrowserApiInventoryEntry = {
 
 /** Distinct MindBill routes called by @mindbill/browser and @mindbill/react. */
 export const browserApiInventory: BrowserApiInventoryEntry[] = [
+  { method: "GET", path: "/partner/v2/organization/team", permission: "team:manage", purpose: "List existing MindBill accounts and permitted role choices; does not list host-app accounts.", sdkMethod: "createOrganizationClient().getTeam", referenceSlug: "list-organization-team" },
+  { method: "PATCH", path: "/partner/v2/organization/team/{id}", permission: "team:manage", purpose: "Update an eligible existing MindBill account role or active state; no account creation.", sdkMethod: "createOrganizationClient().updateTeamMember", referenceSlug: "update-organization-team-member" },
+  { method: "GET", path: "/partner/v2/organization/claims-administrators", permission: "organization:manage", purpose: "List active organization-specific claims administrators.", sdkMethod: "createOrganizationClient().getClaimsAdministrators", referenceSlug: "list-organization-claims-administrators" },
+  { method: "POST", path: "/partner/v2/organization/claims-administrators", permission: "organization:manage", purpose: "Create a custom fax, email, or mail destination.", sdkMethod: "createOrganizationClient().createClaimsAdministrator", referenceSlug: "create-organization-claims-administrator" },
+  { method: "PATCH", path: "/partner/v2/organization/claims-administrators/{id}", permission: "organization:manage", purpose: "Update a custom destination and its contact details.", sdkMethod: "createOrganizationClient().updateClaimsAdministrator", referenceSlug: "update-organization-claims-administrator" },
+  { method: "DELETE", path: "/partner/v2/organization/claims-administrators/{id}", permission: "organization:manage", purpose: "Remove a custom destination from future choices while preserving bill snapshots.", sdkMethod: "createOrganizationClient().deleteClaimsAdministrator", referenceSlug: "delete-organization-claims-administrator" },
+
   { method: "GET", path: "/partner/v2/rfas", permission: "rfas:read", purpose: "List authorization requests with filtered status totals and cursor pagination. Requires an organization-wide session and treatment access.", sdkMethod: "createRfaClient().list" },
   { method: "GET", path: "/partner/v2/rfas/{rfaId}", permission: "rfas:read", purpose: "Read the authorization request, item decisions, and delivery evidence.", sdkMethod: "createRfaClient().get" },
   { method: "POST", path: "/partner/v2/rfas", permission: "rfas:create", purpose: "Save an unsigned authorization draft using a stable idempotency key. Does not sign or send a fax.", sdkMethod: "createRfaClient().createDraft" },

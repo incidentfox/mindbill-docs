@@ -1,4 +1,5 @@
 import type { ApiEndpoint } from "./api-reference";
+import { billSearchFields } from "./organization-settings-api";
 
 // Canonical endpoints shared by server integrations and browser components.
 export const sharedApiEndpoints: ApiEndpoint[] = [
@@ -83,12 +84,7 @@ export const sharedApiEndpoints: ApiEndpoint[] = [
         "description": "Rows per page.",
         "required": false
       },
-      {
-        "name": "q",
-        "type": "string",
-        "description": "Search text, at most 160 characters.",
-        "required": false
-      },
+      ...billSearchFields,
       {
         "name": "status",
         "type": "string",
