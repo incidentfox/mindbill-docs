@@ -604,7 +604,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.62.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.64.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,

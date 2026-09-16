@@ -6,7 +6,7 @@ import { DocPage } from "@/components/doc-page";
 export const metadata: Metadata = { title: "Partner upgrade guide" };
 
 const brief = `Upgrade the existing MindBill integration; preserve host authentication and saved data.
-1. Update @mindbill/react to 0.62.0 and any directly installed @mindbill/browser to 0.38.0.
+1. Update @mindbill/react to 0.64.0 and any directly installed @mindbill/browser to 0.39.0.
    Update the lockfile and rebuild the app.
    Keep ConnectedBillLifecycle / ConnectedBillingWorkspace; remove any nonexistent styles.css import.
 2. ConnectedBillingWorkspace and BillingDashboard include Settings by default in React 0.64.0.
@@ -36,7 +36,7 @@ export default function UpgradePage() {
   return <DocPage eyebrow="Start here" title="Upgrade an existing integration" description="A short checklist for existing MindBill integrations."
     toc={[{ id: "packages", label: "Update packages" }, { id: "optional", label: "Optional settings" }, { id: "agent", label: "Copy for your agent" }]}>
     <h2 id="packages">Update packages, keep your integration</h2>
-    <p>Update <code>@mindbill/react</code> to <code>0.62.0</code> and any directly installed <code>@mindbill/browser</code> to <code>0.38.0</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
+    <p>Update <code>@mindbill/react</code> to <code>0.64.0</code> and any directly installed <code>@mindbill/browser</code> to <code>0.39.0</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
     <p>Connected submission forms now load saved billing providers, rendering providers, and service locations automatically when profileOptions is omitted. Existing case values remain unchanged until the user selects a profile. Explicit profileOptions, including an empty object, override the automatic lookup.</p>
     <h2 id="optional">Configure the built-in Settings tab</h2>
     <p>React 0.64.0 adds Settings to <code>ConnectedBillingWorkspace</code> and <code>BillingDashboard</code> by default. Set <code>{"showSettings={false}"}</code> to hide the tab. Use <code>billingSettings</code> for a separate administrator-authorized session, or reuse the workspace session when it already has <code>organization:manage</code>. Without an override, <code>BillingDashboard</code> uses <code>/api/mindbill/session</code>. No permissions are added automatically. The workspace accepts <code>initialView=&quot;settings&quot;</code>; both dashboards support <code>onSettingsSaved(profile)</code> for refreshing host state.</p>
