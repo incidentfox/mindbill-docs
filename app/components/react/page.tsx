@@ -174,6 +174,19 @@ export function SubmittedBill({ billId }: { billId: string }) {
   );
 }`;
 
+const detailSections = `import { BillDetailLayout, BillDetailSection } from "@mindbill/react";
+
+export function PatientDetails() {
+  return <BillDetailLayout header={<h2>Bill details</h2>}>
+    <BillDetailSection title="Patient" validationIssues={[
+      { severity: "error", message: "Enter the patient's date of birth." },
+      { severity: "warning", message: "Review the mailing address." },
+    ]}>
+      <p>Your patient fields or read-only details</p>
+    </BillDetailSection>
+  </BillDetailLayout>;
+}`;
+
 const courtesyRecipients = `// Suggested contacts from your own case record, not automatic recipients.
 <ConnectedBillLifecycle
   billId={billId}
@@ -450,7 +463,7 @@ export default function ReactPage() {
       </details>
 
       <h2 id="rfas">Treatment and authorization requests</h2>
-      <p>Use <code>billingMode=&quot;professional&quot;</code> in the initial bill for treatment charges and per-line diagnosis selection. <code>RfaDashboard</code> provides authorization tracking, draft creation, clinical PDF upload, authorized signing, packet and cover-sheet review, directory destination selection, explicit fax sending, and delivery evidence. Configure its role-matched permissions, human signer identity, and environment; it defaults to read-only sandbox. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> and <Link href="/guides/rfas">RFA integration guide</Link>.</p>
+      <p>Use <code>billingMode=&quot;professional&quot;</code> in the initial bill for treatment charges and per-line diagnosis selection. <code>RfaDashboard</code> provides authorization tracking, draft creation and revision-aware editing, clinical PDF upload, authorized signing, packet and cover-sheet review, directory destination selection, explicit fax sending, delivery evidence, receipt and information-request recording, item decisions, and existing follow-up tasks. Configure its role-matched permissions, human signer identity, and environment; it defaults to read-only sandbox. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> and <Link href="/guides/rfas">RFA integration guide</Link>.</p>
 
       <h2 id="notifications">Notification settings</h2>
       <p><strong>Administrative recipient list (React 0.52.0):</strong> <code>NotificationRecipientsSettings</code> (alias <code>ConnectedNotificationRecipientsSettings</code>) lets an administrator invite any authorized email address, including someone without a console account. Choose practice-wide or explicitly assigned-bill access, status/payment alerts, aging reminders, quiet hours and daily/weekly billing-activity digests. Everything stays off until the email owner reviews and confirms the invitation; the list includes pending states and a disable action.</p>
@@ -471,6 +484,11 @@ export default function ReactPage() {
       <p>Pass the returned <code>billId</code>. <code>ConnectedBillLifecycle</code> never creates or edits a pre-submission draft.</p>
       <CodeBlock code={lifecycle} filename="SubmittedBill.tsx" />
       <p>The component includes lifecycle progress, the frozen bill snapshot, a consolidated EOR and payment reconciliation surface, rich claims-administrator directory details, history, packet preview, and a sticky state-aware action bar for Second Review, correction, IBR, lien, payment, or closure when eligible.</p>
+      <h3>Shared bill detail sections and related records</h3>
+      <p>React 0.66.0 exports <code>BillDetailLayout</code> and <code>BillDetailSection</code>, also used by <code>BillReadOnlyForm</code>. A section accepts a title, description, actions, and <code>validationIssues</code> containing <code>severity: &quot;error&quot; | &quot;warning&quot;</code> and a message. Errors appear in red and warnings in amber, with accessible text lists. Supply your authoritative validation results; these visual components do not validate or submit a bill.</p>
+      <CodeBlock code={detailSections} filename="PatientDetails.tsx" />
+      <p>The layout accepts optional header, actions, and sidebar slots. Sections accept <code>headerClassName</code>, <code>bodyClassName</code>, <code>className</code>, and <code>style</code> for host styling. On <code>BillReadOnlyForm</code>, group <code>validationIssues</code> by <code>patient</code>, <code>claim</code>, <code>providers</code>, <code>services</code>, or <code>attachments</code>.</p>
+      <p>Pass <code>onPatientClick(patient)</code>, <code>onRenderingProviderClick(provider)</code>, and <code>onClaimsAdministratorClick(administrator)</code> to <code>BillReadOnlyForm</code> or <code>ConnectedBillLifecycle</code> to make those names open your own related-record view. IDs are optional on historical snapshots: check for a canonical ID before applying a filter, and do not infer identity from a name. Without callbacks, names remain plain text. These callbacks do not change the bill&apos;s saved data or grant access to another record.</p>
       <p>From React 0.48.0, selecting an Original Bill or another submission opens that submission&apos;s <strong>Bill details</strong>, not the history tab. Historical details are read-only: current-bill actions and balances are not presented as historical facts. Older submissions without a stored snapshot show an explicit availability warning instead of substituting the current bill.</p>
       <p>The current bill also includes built-in team notes with author and time across submission attempts and <strong>Forward copy</strong>. Forwarding previews one combined PDF, then requires confirmation before emailing it; it does not resubmit the bill or change its status. Sandbox forwarding is simulated and sends no email. See <a href="/guides/lifecycle#communications">communications and permissions</a>.</p>
       <p>Pass your own case contacts as <code>courtesyCopyRecipientOptions</code> to offer named To/CC choices alongside manual email entry. For a workspace, use <code>getCourtesyCopyRecipientOptions(billId)</code> to keep suggestions specific to the selected bill. The standalone <code>BillCourtesyCopyForm</code> accepts <code>recipientOptions</code>; each <code>CourtesyCopyRecipientOption</code> has an <code>email</code> and optional <code>name</code>.</p>
