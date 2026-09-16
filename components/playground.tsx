@@ -173,6 +173,7 @@ export default function App() {
   return <main className="operations-demo">
     <BillingDashboard
       bills={bills}
+      showSettings={false} // This synthetic demo has no authenticated settings session.
       heading="Billing operations"
       description="Search every bill and act on aging balances."
       appearance={{ preset: "orange-bright" }}
@@ -603,7 +604,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.62.0" } }}
+        customSetup={{ dependencies: { "@mindbill/react": "0.64.0" } }}
         options={{
           showNavigator: false,
           showTabs: true,

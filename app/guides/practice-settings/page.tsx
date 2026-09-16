@@ -6,6 +6,19 @@ import { profileRecipe } from "@/lib/integration-recipes";
 
 export const metadata: Metadata = { title: "Practice settings and saved profiles" };
 
+const workspace = `"use client";
+import { ConnectedBillingWorkspace } from "@mindbill/react";
+
+export function BillingPage({ canManageBilling }: { canManageBilling: boolean }) {
+  return <ConnectedBillingWorkspace
+    sessionEndpoint="/api/mindbill/session"
+    showSettings={canManageBilling}
+    billingSettings={{ sessionEndpoint: "/api/mindbill/settings-session" }}
+  />;
+}
+// showSettings defaults to true. Set false to hide the tab.
+// Optionally set initialView="settings" to open the workspace there.`;
+
 const settings = `"use client";
 import { BillingSettings, OrganizationOnboarding } from "@mindbill/react";
 
@@ -23,9 +36,14 @@ export function FirstTimeSetup() {
 
 export default function PracticeSettingsPage() {
   return <DocPage eyebrow="Build" title="Practice settings and saved profiles" description="Set up billing providers, rendering providers, service locations, and a W-9 once, then reuse them when creating bills."
-    toc={[{ id: "settings", label: "Prebuilt settings" }, { id: "choices", label: "Saved choices" }, { id: "w9", label: "W-9 ownership" }, { id: "permissions", label: "Permissions and scope" }, { id: "verify", label: "Verify the integration" }]}
+    toc={[{ id: "settings", label: "Dashboard Settings tab" }, { id: "choices", label: "Saved choices" }, { id: "w9", label: "W-9 ownership" }, { id: "permissions", label: "Permissions and scope" }, { id: "verify", label: "Verify the integration" }]}
     previous={{ href: "/learn/quickstart", label: "Quickstart" }} next={{ href: "/guides/bills", label: "Create and submit bills" }}>
-    <h2 id="settings">Add a settings page with one component</h2>
+    <h2 id="settings">Use the built-in Settings tab</h2>
+    <p>React 0.64.0 includes a <strong>Settings</strong> tab by default in <code>ConnectedBillingWorkspace</code> and <code>BillingDashboard</code>. It uses <code>BillingSettings</code> for practice information, billing and rendering providers, service locations, and W-9 upload. You do not need a separate settings page.</p>
+    <CodeBlock code={workspace} filename="BillingPage.tsx" language="tsx" />
+    <p><code>showSettings</code> defaults to <code>true</code>; set it to <code>false</code> to hide the tab, or match it to the user&apos;s role as above. Pass <code>billingSettings</code> for a dedicated administrator session. When omitted, the workspace reuses its main connection; <code>BillingDashboard</code> uses the default <code>/api/mindbill/session</code> endpoint. The server still requires <code>organization:manage</code>: showing a tab never grants permissions or changes the scopes minted by your host.</p>
+    <p>Use <code>initialView=&quot;settings&quot;</code> on <code>ConnectedBillingWorkspace</code> to open settings first. Both dashboards accept <code>onSettingsSaved(profile)</code>, where <code>profile</code> is the saved <code>OrganizationProfileData</code>, so your host can refresh any profile-derived state it owns. Keep sensitive profile values out of logs.</p>
+    <h3>Standalone settings and first-run setup</h3>
     <p><code>BillingSettings</code> is the compact settings editor. <code>OrganizationOnboarding</code> provides the guided first-run version. Both save to the authenticated MindBill organization and include practice information, billing and rendering providers, service locations, and W-9 upload. Keep your existing app navigation and authentication.</p>
     <CodeBlock code={settings} filename="PracticeSettings.tsx" language="tsx" />
     <p>Your <code>/api/mindbill/settings-session</code> route is a host endpoint you implement. Authenticate the current user, verify their practice administrator role, resolve the organization credential on your server, and mint a short-lived browser session granting <code>organization:manage</code>. Apply the <Link href="/guides/authentication#session">same origin, tenant, and session protections</Link> as your billing endpoint.</p>
@@ -39,7 +57,7 @@ export default function PracticeSettingsPage() {
     <p>For host-owned uploads, <code>W9Upload</code> can show upload, extraction, retry, and review states using your callbacks. See <Link href="/guides/documents#w9-settings">W-9 storage and attachment examples</Link>.</p>
     <h2 id="permissions">Keep administrative and billing permissions separate</h2>
     <ul>
-      <li><strong>Settings administrators:</strong> a separate <code>organization:manage</code> session can change shared practice settings.</li>
+      <li><strong>Settings administrators:</strong> an authorized <code>organization:manage</code> session can change shared practice settings. A dedicated settings endpoint keeps this permission separate from ordinary billing sessions.</li>
       <li><strong>Bill creators:</strong> an organization-wide <code>bills:create</code> session can read masked billing choices and submit bills.</li>
       <li><strong>Case-only users:</strong> a bill-scoped session cannot list shared practice profiles. Pass explicitly authorized host choices when appropriate; never widen the session to make a dropdown work.</li>
     </ul>
