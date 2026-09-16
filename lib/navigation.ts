@@ -26,10 +26,10 @@ export type DocLink = {
 export const navigation: DocLink[] = [
   {
     href: "/guides/practice-settings",
-    label: "Practice settings",
+    label: "Billing settings",
     description: "Save billing providers, rendering providers, locations, and W-9s for bill entry.",
     group: "Build", icon: Layers3,
-    keywords: ["settings", "onboarding", "provider", "location", "w9", "dropdown", "permissions"],
+    keywords: ["settings", "onboarding", "provider", "location", "w9", "dropdown", "permissions", "team", "claims administrator"],
   },
   {
     href: "/guides/rfas",

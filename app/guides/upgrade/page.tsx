@@ -6,12 +6,15 @@ import { DocPage } from "@/components/doc-page";
 export const metadata: Metadata = { title: "Partner upgrade guide" };
 
 const brief = `Upgrade the existing MindBill integration; preserve host authentication and saved data.
-1. Update @mindbill/react to 0.64.0 and any directly installed @mindbill/browser to 0.39.0.
+1. Update @mindbill/react to 0.65.0 and any directly installed @mindbill/browser to 0.40.0.
    Update the lockfile and rebuild the app.
    Keep ConnectedBillLifecycle / ConnectedBillingWorkspace; remove any nonexistent styles.css import.
 2. ConnectedBillingWorkspace and BillingDashboard include Settings by default in React 0.64.0.
    Set showSettings=false to hide it. Pass billingSettings for a dedicated administrator
    session, or reuse an authorized main session. The server still requires organization:manage.
+   React 0.65.0 adds Billing profiles, Claims administrators, and Team sections.
+   Team edits existing MindBill accounts only, with separately authorized team:manage
+   backed by orgs:team:write. It does not invite users or change host-app roles.
    Standalone BillingSettings remains available. Connected submission
    forms automatically read choices with organization-wide bills:create when
    profileOptions is omitted. Explicit profileOptions override/suppress that lookup.
@@ -27,7 +30,10 @@ const brief = `Upgrade the existing MindBill integration; preserve host authenti
    line's diagnosisPointers and explicit total charge. Mount RfaDashboard with a separate
    RFA session endpoint, role-matched permissions, actorReference, and environment.
    Its native flow handles signing, packet review and explicit fax sending.
-5. Verify sandbox scrolling, selecting historical bill details, one current status,
+5. Use the bill registry search for words across bill, patient, claim, administrator,
+   status, procedure, and date fields. Search/Enter applies connected text/date filters;
+   dateField=service|submitted and from/to are inclusive ISO dates.
+6. Verify sandbox scrolling, selecting historical bill details, one current status,
    saved-profile selection, authored notes, W-9 inclusion, and notification consent/unsubscribe. Do not send live bills.
 No host database migration is required just to upgrade packages. Explain any optional
 storage/auth changes before making them. Never put permanent API keys in the browser.`;
@@ -36,10 +42,11 @@ export default function UpgradePage() {
   return <DocPage eyebrow="Start here" title="Upgrade an existing integration" description="A short checklist for existing MindBill integrations."
     toc={[{ id: "packages", label: "Update packages" }, { id: "optional", label: "Optional settings" }, { id: "agent", label: "Copy for your agent" }]}>
     <h2 id="packages">Update packages, keep your integration</h2>
-    <p>Update <code>@mindbill/react</code> to <code>0.64.0</code> and any directly installed <code>@mindbill/browser</code> to <code>0.39.0</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
+    <p>Update <code>@mindbill/react</code> to <code>0.65.0</code> and any directly installed <code>@mindbill/browser</code> to <code>0.40.0</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
     <p>Connected submission forms now load saved billing providers, rendering providers, and service locations automatically when profileOptions is omitted. Existing case values remain unchanged until the user selects a profile. Explicit profileOptions, including an empty object, override the automatic lookup.</p>
     <h2 id="optional">Configure the built-in Settings tab</h2>
     <p>React 0.64.0 adds Settings to <code>ConnectedBillingWorkspace</code> and <code>BillingDashboard</code> by default. Set <code>{"showSettings={false}"}</code> to hide the tab. Use <code>billingSettings</code> for a separate administrator-authorized session, or reuse the workspace session when it already has <code>organization:manage</code>. Without an override, <code>BillingDashboard</code> uses <code>/api/mindbill/session</code>. No permissions are added automatically. The workspace accepts <code>initialView=&quot;settings&quot;</code>; both dashboards support <code>onSettingsSaved(profile)</code> for refreshing host state.</p>
+    <p>React 0.65.0 adds Billing profiles, Claims administrators, and Team inside settings. Team edits existing MindBill login accounts and needs explicitly delegated <code>team:manage</code>, backed by <code>orgs:team:write</code>; it does not provision host users. Bill search now matches every word across identifiers, people, administrators, statuses, procedure codes, and dates. Service-date and submission-date ranges are inclusive. See <Link href="/guides/practice-settings#team">settings access</Link> and <Link href="/components/react#operations">search behavior</Link>.</p>
     <p>If your app needs a separate settings page, mount <Link href="/components/react#saved-profiles"><code>BillingSettings</code></Link> for saved billing profiles, and pass a separate administrator-authorized <code>billingSettings</code> configuration to submission forms for the Add/edit flow. For email invitations, add <Link href="/guides/notifications"><code>NotificationRecipientsSettings</code> and its trusted server adapter</Link>. Existing notification adapters must forward <code>reportDigest</code> and return it in snapshots to support daily/weekly digests. Notification settings and submission-form Add/edit controls remain optional additions; the dashboard Settings tab appears automatically.</p>
     <p>Email stays off until the recipient confirms. Assigned-bill recipients also need server-managed bill assignments; entering an email address alone does not grant access. For enabled treatment organizations, use the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> and <Link href="/guides/rfas">RfaDashboard guide</Link>. The dashboard includes signing, packet review, and explicit fax sending. Configure permissions and a stable human signer identity from host authorization; sandbox disables delivery.</p>
     <p>Server-side validation, routing, and available backend data can improve without a host package change. New React controls require a package update and host rebuild. Keep the integration on the canonical API and refresh authoritative server state instead of hardcoding statuses, fees, or payer destinations.</p>

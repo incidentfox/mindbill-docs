@@ -1,6 +1,7 @@
 import { sharedApiEndpoints } from "./shared-api-endpoints";
 import { referenceDataEndpoints } from "./reference-data-api";
 import { feeScheduleEndpoints } from "./fee-schedule-api";
+import { organizationSettingsEndpoints, billSearchFields } from "./organization-settings-api";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -266,6 +267,7 @@ export const apiEndpoints: ApiEndpoint[] = [
   ...sharedApiEndpoints,
   ...referenceDataEndpoints,
   ...feeScheduleEndpoints,
+  ...organizationSettingsEndpoints,
   {
     slug: "create-bill",
     group: "Bills",
@@ -339,6 +341,7 @@ export const apiEndpoints: ApiEndpoint[] = [
       { name: "externalId", type: "string", description: "Filter by your bill/report/work-item identifier." },
       { name: "patientExternalId", type: "string", description: "Filter by your patient identifier." },
       { name: "claimExternalId", type: "string", description: "Filter by your claim or injury identifier." },
+      ...billSearchFields,
       { name: "state", type: "string", description: "Filter by native lifecycle state." },
     ],
     responseFields: [
@@ -733,7 +736,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     requestFields: [
       { name: "subject", type: "string", required: true, description: "Stable identifier for the signed-in user in your system." },
       { name: "allowedOrigin", type: "string", required: true, description: "Exact browser origin. Paths, query strings, fragments, and credentials are rejected.", constraint: "HTTPS; HTTP loopback allowed in sandbox" },
-      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, eors:read, organization:manage, and rfas:read/create/edit/act/sign. Grant only the actions the authenticated host user may perform; RFA access requires an organization-wide session and treatmentBilling." },
+      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, eors:read, organization:manage, team:manage, and rfas:read/create/edit/act/sign. team:manage must be explicitly requested and delegated from orgs:team:write; organization:manage does not grant team access. Grant only the actions the authenticated host user may perform; RFA access requires an organization-wide session and treatmentBilling." },
       { name: "resource.billId", type: "string", description: "Optional least-privilege restriction to one existing bill. Cannot be combined with bills:create." },
       { name: "expiresIn", type: "number", description: "Session lifetime in seconds.", constraint: "Integer 60–3600" },
     ],
