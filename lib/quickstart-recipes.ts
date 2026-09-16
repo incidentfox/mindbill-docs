@@ -133,6 +133,9 @@ import { ConnectedBillingWorkspace } from "@mindbill/react";
 export default function BillingPage() {
   return <ConnectedBillingWorkspace
     sessionEndpoint="/api/mindbill/session"
+    // Settings is included. For a separate administrator session (step 7):
+    // billingSettings={{ sessionEndpoint: "/api/mindbill/settings-session" }}
+    // Use showSettings={false} to hide the tab.
     onCreateBill={() => window.location.assign("/billing/new")}
   />;
 }`;

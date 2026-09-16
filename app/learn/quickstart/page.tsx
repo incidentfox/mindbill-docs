@@ -68,7 +68,7 @@ export default function QuickstartPage() {
           <p>For Angular, fill the matching fields in the existing <code>initialBill</code> object and keep its other required fields. Users can edit the values and attach PDFs before submitting. See the <Link href="/guides/bills#submit">field reference</Link> for more options.</p>
         </details>
         <details id="settings" className="quickstart-details"><summary>7. Add billing settings <small>Optional</small></summary>
-          <p>Let administrators save their practice, billing providers, rendering providers, locations, and W-9 for future bills.</p>
+          <p>React 0.64.0 includes a Settings tab in the billing workspace by default. Pass <code>billingSettings</code> with your administrator-only settings endpoint, or let it reuse an already authorized workspace session. Set <code>{"showSettings={false}"}</code> to hide the tab. A separate settings page is optional; the examples below also support standalone settings and Angular.</p>
           <FrontendCode label="Settings framework" react={recipes.settingsReact} angular={recipes.settingsAngular}
             reactFilename="app/billing/settings/page.tsx" angularFilename="billing-settings.component.ts" />
           <p>Add <code>POST /api/mindbill/settings-session</code> to the backend from step 3, using the same session creation code with permissions <code>{'["organization:manage"]'}</code>. Restrict it to administrators.</p>

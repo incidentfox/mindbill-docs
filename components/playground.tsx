@@ -173,6 +173,7 @@ export default function App() {
   return <main className="operations-demo">
     <BillingDashboard
       bills={bills}
+      showSettings={false} // This synthetic demo has no authenticated settings session.
       heading="Billing operations"
       description="Search every bill and act on aging balances."
       appearance={{ preset: "orange-bright" }}
