@@ -134,7 +134,7 @@ export default function TreatmentQuickstartPage() {
       <section id="setup"><h2>2. Choose your setup</h2>
         <p>Use the same libraries and authentication as med-legal billing. Complete the setup once, then return here.</p>
         <QuickstartTabs label="Treatment setup" tabs={[
-          { label: "React", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@0.69.4" /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
+          { label: "React", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@0.69.5" /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
           { label: "Angular", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/angular@latest" /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
           { label: "API", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/node@latest" /><p>Initialize the server client from <Link href="/learn/api-quickstart#install">API quickstart step 2</Link>.</p></> },
         ]} />
