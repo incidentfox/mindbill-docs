@@ -363,6 +363,7 @@ export default function ReactPage() {
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
         <div><code>FeeScheduleCalculator</code><span>Calculate multiple California treatment lines with modifiers, sources, and coding review. <Link href="/guides/fee-schedules">Integration guide</Link>.</span><span>Through your reference client</span></div>
         <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and atomic Submit action.</span><span>Yes</span></div>
+        <div><code>ReportAutofill</code><span>Review optional, capability-gated PDF suggestions before applying them to empty fields.</span><span>Yes, or through your adapter</span></div>
         <div><code>BillSubmission*Section</code><span>You want the same component-owned form state with individually composable sections.</span><span>Yes, through the parent</span></div>
         <div><code>ConnectedBillingWorkspace</code><span>You want Bill Tasks, All Bills, reports, settings, and per-bill lifecycle in one integrated surface.</span><span>Yes</span></div>
         <div><code>ConnectedBillSearch</code><span>You need the authoritative bill registry with patient, bill, claim, status, and A/R filters.</span><span>Yes</span></div>
@@ -398,6 +399,7 @@ export default function ReactPage() {
       <p><code>BillSubmissionForm</code> owns which fields exist and which are required. It renders red asterisks, validates the values, resolves billing reference data through a short-lived browser session, lets users review prefilled documents and add uploads, and renders the Submit button. It never creates a MindBill draft.</p>
       <details><summary>Submission session permissions</summary><p>This excerpt assumes your server has authenticated the user, checked membership, and selected the organization credential. See the <Link href="/guides/authentication#session">complete server route</Link> for origin checks and error handling.</p><CodeBlock code={submissionSession} filename="server/submission-session.ts" /></details>
       <CodeBlock code={submissionForm} filename="CaseBilling.tsx" />
+      <p>Optionally pass <code>reportAutofill</code> with a separately authorized connection, or use <code>ReportAutofill</code> in a custom form. The <Link href="/guides/report-autofill">report autofill guide</Link> covers access, explicit review, and preserving existing values.</p>
       <details><summary>Prefill case data and final-report attachments</summary>
     <p>Map data you already have: patient name, date of birth and address; claim, employer and injury date; service date; diagnosis codes; procedure codes, modifiers and units. Keep missing values editable. Confirm a canonical claims administrator in the payer picker; a text label from a report is not a verified payer ID.</p>
     <p>Use your existing structured extraction results, or opt into the <Link href="/guides/report-autofill">capability-gated report autofill component</Link> from React 0.67.0. Review suggestions before applying them to empty fields. Do not infer clinical codes or fabricate missing information.</p>
