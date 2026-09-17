@@ -11,7 +11,8 @@ export type BrowserApiPermission =
   | "rfas:create"
   | "rfas:edit"
   | "rfas:sign"
-  | "rfas:act";
+  | "rfas:act"
+  | "autofill:run";
 
 export type BrowserApiInventoryEntry = {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -24,6 +25,7 @@ export type BrowserApiInventoryEntry = {
 
 /** Distinct MindBill routes called by @mindbill/browser and @mindbill/react. */
 export const browserApiInventory: BrowserApiInventoryEntry[] = [
+  { method: "POST", path: "/partner/v2/report-autofill", permission: "autofill:run", purpose: "Extract review-only PDF suggestions for an operator-enabled organization; does not save the report or submit a bill.", sdkMethod: "createReportAutofillClient().analyze", referenceSlug: "report-autofill" },
   { method: "GET", path: "/partner/v2/organization/team", permission: "team:manage", purpose: "List existing MindBill accounts and permitted role choices; does not list host-app accounts.", sdkMethod: "createOrganizationClient().getTeam", referenceSlug: "list-organization-team" },
   { method: "PATCH", path: "/partner/v2/organization/team/{id}", permission: "team:manage", purpose: "Update an eligible existing MindBill account role or active state; no account creation.", sdkMethod: "createOrganizationClient().updateTeamMember", referenceSlug: "update-organization-team-member" },
   { method: "GET", path: "/partner/v2/organization/claims-administrators", permission: "organization:manage", purpose: "List active organization-specific claims administrators.", sdkMethod: "createOrganizationClient().getClaimsAdministrators", referenceSlug: "list-organization-claims-administrators" },

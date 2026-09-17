@@ -18,6 +18,7 @@ export const sharedApiEndpoints: ApiEndpoint[] = [
     ],
     "requestFields": [],
     "responseFields": [
+      { name: "data.filters", type: "object", required: true, description: "Authorized patients, renderingProviders, and claimsAdministrators option arrays of { id, name }. Inventories span the authorized lifecycle scope and do not depend on the current page or selected filters." },
       {
         "name": "data",
         "type": "object",
@@ -72,6 +73,7 @@ export const sharedApiEndpoints: ApiEndpoint[] = [
     "responseStatus": "200",
     "responseExample": "{\n  \"data\": {\n    \"items\": [],\n    \"total\": 0,\n    \"balanceTotal\": 0,\n    \"page\": 1,\n    \"pageSize\": 25\n  }\n}",
     "queryFields": [
+      { name: "patientId", type: "string", description: "Canonical MindBill patient ID; maximum 200 characters." },
       {
         "name": "page",
         "type": "integer",

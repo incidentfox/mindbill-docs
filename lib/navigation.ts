@@ -25,6 +25,13 @@ export type DocLink = {
 
 export const navigation: DocLink[] = [
   {
+    href: "/guides/report-autofill",
+    label: "Report autofill",
+    description: "Review optional PDF suggestions and fill empty bill fields.",
+    group: "Build", icon: FileUp,
+    keywords: ["report", "PDF", "autofill", "extraction", "review", "capability"],
+  },
+  {
     href: "/guides/practice-settings",
     label: "Billing settings",
     description: "Save billing providers, rendering providers, locations, and W-9s for bill entry.",

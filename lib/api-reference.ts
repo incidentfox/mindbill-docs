@@ -1,3 +1,4 @@
+import { reportAutofillEndpoints } from "./report-autofill-api";
 import { sharedApiEndpoints } from "./shared-api-endpoints";
 import { referenceDataEndpoints } from "./reference-data-api";
 import { feeScheduleEndpoints } from "./fee-schedule-api";
@@ -265,6 +266,7 @@ const bill = await mindbill.createAndSubmitBill({
 
 export const apiEndpoints: ApiEndpoint[] = [
   ...sharedApiEndpoints,
+  ...reportAutofillEndpoints,
   ...referenceDataEndpoints,
   ...feeScheduleEndpoints,
   ...organizationSettingsEndpoints,
@@ -340,6 +342,7 @@ export const apiEndpoints: ApiEndpoint[] = [
       { name: "limit", type: "number", description: "Maximum records to return." },
       { name: "externalId", type: "string", description: "Filter by your bill/report/work-item identifier." },
       { name: "patientExternalId", type: "string", description: "Filter by your patient identifier." },
+      { name: "patientId", type: "string", description: "Filter by the canonical MindBill patient ID, not a name or host external ID.", constraint: "Maximum 200 characters" },
       { name: "claimExternalId", type: "string", description: "Filter by your claim or injury identifier." },
       ...billSearchFields,
       { name: "state", type: "string", description: "Filter by native lifecycle state." },
@@ -736,7 +739,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     requestFields: [
       { name: "subject", type: "string", required: true, description: "Stable identifier for the signed-in user in your system." },
       { name: "allowedOrigin", type: "string", required: true, description: "Exact browser origin. Paths, query strings, fragments, and credentials are rejected.", constraint: "HTTPS; HTTP loopback allowed in sandbox" },
-      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, eors:read, organization:manage, team:manage, and rfas:read/create/edit/act/sign. team:manage must be explicitly requested and delegated from orgs:team:write; organization:manage does not grant team access. Grant only the actions the authenticated host user may perform; RFA access requires an organization-wide session and treatmentBilling." },
+      { name: "permissions", type: "MindBillBrowserPermission[]", required: true, description: "Role-derived grants: bills:create/read/act, documents:read, payers:read, eors:read, organization:manage, team:manage, rfas:read/create/edit/act/sign, and autofill:run. autofill:run requires explicit operator delegation from autofill:write, an enabled reportAutofill organization capability, and an organization-wide session. team:manage must be explicitly requested and delegated from orgs:team:write; organization:manage does not grant team access. Grant only the actions the authenticated host user may perform; RFA access requires an organization-wide session and treatmentBilling." },
       { name: "resource.billId", type: "string", description: "Optional least-privilege restriction to one existing bill. Cannot be combined with bills:create." },
       { name: "expiresIn", type: "number", description: "Session lifetime in seconds.", constraint: "Integer 60–3600" },
     ],
