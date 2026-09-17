@@ -46,6 +46,7 @@ export default function AuthenticationPage() {
         <div><code>documents:read</code><span>List and open bill and RFA documents.</span></div>
         <div><code>payers:read</code><span>Search claims administrators, diagnosis and postal codes, and preview delivery routes.</span></div>
         <div><code>organization:manage</code><span>Read and update organization settings, providers, locations, W-9, and custom claims administrators. Requires an organization-wide session.</span></div>
+        <div><code>autofill:run</code><span>Extract report suggestions for human review. Requires explicit operator delegation from autofill:write, written agreement, and the organization’s reportAutofill capability; no customer or bill scope. The developer console cannot mint this permission.</span></div>
         <div><code>team:manage</code><span>List and update existing MindBill login accounts. Requires explicit delegation from a server key with orgs:team:write; organization:manage does not include it. Does not create users or change your host application roles.</span></div>
         <div><code>rfas:read</code><span>Read authorization requests, status summaries, and delivery evidence.</span></div>
         <div><code>rfas:create</code><span>Create unsigned authorization drafts.</span></div>
