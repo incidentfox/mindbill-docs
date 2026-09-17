@@ -83,6 +83,20 @@ const bill = await mindbill.createAndSubmitBill({
 
 console.log(bill.id);`;
 
+const rfaDashboard = `"use client";
+import { RfaDashboard } from "@mindbill/react";
+
+export default function Authorizations() {
+  return <RfaDashboard
+    sessionEndpoint="/api/mindbill/rfa-session"
+    permissions={["create"]}
+    environment="sandbox"
+  />;
+}
+// Authenticate the user in your backend session endpoint.
+// Grant an organization-wide session with rfas:read and rfas:create,
+// restricted to your exact application origin, only to authorized users.`;
+
 const rfaForm = `"use client";
 import { RfaDraftForm, type RfaDraftInput } from "@mindbill/react";
 
@@ -139,10 +153,12 @@ export default function TreatmentQuickstartPage() {
       </section>
       <details id="rfa" className="quickstart-details"><summary>5. Add a Request for Authorization <small>Optional</small></summary>
         <p>Request authorization for planned treatment separately from billing for services. React provides <code>RfaDashboard</code> for tracking, draft creation, clinical PDF upload, authorized signing, packet review, and explicit fax sending, plus <code>RfaDraftForm</code> for a custom layout. Start with the <Link href="/guides/rfas">RFA dashboard and complete workflow guide</Link>. Angular and other interfaces can use the RFA API.</p>
-        <CodeBlock language="tsx" filename="NewRfa.tsx · React" code={rfaForm} />
-        <CodeBlock code={rfaInput} filename="Starting draft · replace IDs from your organization" />
-        <p>The claim and its matching patient must already be saved under your partner organization, along with the rendering provider. Implement <code>saveDraft</code> in your host application: authorize the current user and create an unsigned draft with <code>POST /partner/v2/rfas</code>, the draft as the JSON body, and a stable <code>Idempotency-Key</code>.</p>
-        <p>Server requests require <code>rfas:write</code>. A browser integration needs an organization session with <code>rfas:create</code>, the authorized origin, and treatment access. The response returns the new RFA in <code>data</code>. Persist its ID so later edits update that draft rather than create duplicates.</p>
+        <CodeBlock language="tsx" filename="Authorizations.tsx · React 0.69.0 or later" code={rfaDashboard} />
+        <p>Click “New authorization request,” search for a saved patient claim and rendering physician, then review the treatment details and save. The dashboard loads the saved choices and saves the unsigned draft; no <code>initialDraft</code> or custom save handler is required. Users can return to the patient and physician selection without losing treatment edits.</p>
+        <p>The claim and its matching patient must already be saved under your partner organization, along with the rendering provider. If there are no saved claims, create a patient claim through a bill first. Add rendering providers in <Link href="/guides/practice-settings">billing settings</Link>. This workflow needs treatment access and an organization-wide browser session with <code>rfas:read</code>, <code>rfas:create</code>, and the exact authorized origin. Match the component&apos;s <code>create</code> permission to the user&apos;s actual access.</p>
+        <p>For a custom layout, <code>RfaDraftForm</code> remains available. Supply saved, authorized record IDs in <code>initialDraft</code> and implement <code>saveDraft</code> with <code>POST /partner/v2/rfas</code>, using the draft as the JSON body and a stable <code>Idempotency-Key</code>. Server requests need <code>rfas:write</code>; browser requests need <code>rfas:create</code>. Persist the returned <code>data.id</code> for subsequent updates.</p>
+        <CodeBlock language="tsx" filename="Optional custom editor · NewRfa.tsx" code={rfaForm} />
+        <CodeBlock code={rfaInput} filename="Custom editor starting draft · replace IDs from your organization" />
         <p><strong>Saving this form does not sign or send the RFA.</strong> Keep review, signing, and transmission as separate explicit steps. See the <a href="https://app.mindbill.org/partner-openapi.yaml">RFA API contract</a> for the full workflow.</p>
       </details>
       <p className="quickstart-note">Verify the workflow with synthetic data in sandbox before requesting <Link href="/guides/sandbox">live access</Link>.</p>

@@ -10,7 +10,7 @@ const normalizePath = (path: string) => path.replace(/\{[^}]+\}/g, "{}");
 const groups = [
   { id: "lookups", title: "Directories and delivery preview", match: (path: string) => /^\/(claims-administrators|diagnosis-codes|postal-codes|delivery-preview)/.test(path) },
   { id: "organization", title: "Organization settings", match: (path: string) => path.startsWith("/organization") },
-  { id: "rfas", title: "Requests for Authorization", match: (path: string) => path.startsWith("/rfas") },
+  { id: "rfas", title: "Requests for Authorization", match: (path: string) => path.startsWith("/rfas") || path.startsWith("/browser/rfas") },
   { id: "bills", title: "Bills, documents, and reports", match: (path: string) => path.startsWith("/bill") || path.startsWith("/reports") || path.startsWith("/sandbox") },
 ];
 
@@ -23,7 +23,7 @@ export default function BrowserApiPage() {
       <p>Use this inventory to see which APIs power the components when building your own UI. The routes below use the base URL <code>https://app.mindbill.org</code>. SDK methods can unwrap or normalize responses; their return values are not always identical to raw HTTP JSON.</p>
       <h2 id="authentication">Authentication and scope</h2>
       <p>Your backend creates a <Link href="/api-reference/browser-sessions">browser session</Link> with the permissions required for the current user. Browser requests send <code>Authorization: Bearer &lt;session token&gt;</code> and the exact <code>Origin</code> authorized for that session. Keep the long-lived server API key on your backend.</p>
-      <Callout title="One API, two credentials">Every business route below accepts either a server API key or a browser session. Both use the same URL and response contract. Browser sessions also require the exact authorized Origin and remain limited by their permissions and allowed resources. Session issuance, management sessions, events, and webhook-delivery administration require server keys.</Callout>
+      <Callout title="One API, two credentials">Business routes below accept either a server API key or a browser session, except the browser-only RFA creation-context lookup. For shared routes, both credentials use the same URL and response contract. Browser sessions also require the exact authorized Origin and remain limited by their permissions and allowed resources. Session issuance, management sessions, events, and webhook-delivery administration require server keys.</Callout>
       <p>The components use <Link href="/api-reference/bill-dashboard">GET /partner/v2/bill-dashboard</Link> for page-based lists, filters, and totals. <Link href="/api-reference/list-bills">GET /partner/v2/bills</Link> retains its cursor-based synchronization contract. Both endpoints accept either credential.</p>
       <p>Use an organization-wide session for bill entry, bill lists, task dashboards, reports, organization settings, and RFAs. RFA access also requires the organization’s treatmentBilling feature and appropriate rfas permissions. For an existing-bill workflow, a bill-restricted session limits access to its allowed bill IDs. Grant only the permissions that the workflow needs; <code>organization:manage</code> allows billing-profile and custom-administrator writes. Team access separately requires <code>team:manage</code>, delegated from <code>orgs:team:write</code>; it manages existing MindBill accounts, not host-app accounts. Meanwhile, the bill-entry profile read uses <code>bills:create</code>.</p>
       {groups.map((group) => (
