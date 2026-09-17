@@ -31,11 +31,14 @@ const treatmentFields = `const treatmentBill = {
 const reactSubmit = `"use client";
 import { BillSubmissionForm, type BillSubmissionInput } from "@mindbill/react";
 
-export default function TreatmentBill({ treatmentBill }: {
+export default function TreatmentBill({ treatmentBill, treatmentBilling }: {
   treatmentBill: BillSubmissionInput;
+  // Supply the organization capability from your authenticated backend.
+  treatmentBilling: boolean;
 }) {
   return <BillSubmissionForm
     initialBill={treatmentBill}
+    treatmentBilling={treatmentBilling}
     sessionEndpoint="/api/mindbill/session"
     onSubmitted={({ billId }) => {
       window.location.href = "/billing/" + encodeURIComponent(billId);
@@ -131,7 +134,7 @@ export default function TreatmentQuickstartPage() {
       <section id="setup"><h2>2. Choose your setup</h2>
         <p>Use the same libraries and authentication as med-legal billing. Complete the setup once, then return here.</p>
         <QuickstartTabs label="Treatment setup" tabs={[
-          { label: "React", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@latest" /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
+          { label: "React", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@0.69.2" /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
           { label: "Angular", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/angular@latest" /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
           { label: "API", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/node@latest" /><p>Initialize the server client from <Link href="/learn/api-quickstart#install">API quickstart step 2</Link>.</p></> },
         ]} />
@@ -149,6 +152,7 @@ export default function TreatmentQuickstartPage() {
           { label: "Angular", content: <CodeBlock code={angularSubmit} filename="treatment-bill.component.ts" /> },
           { label: "API", content: <CodeBlock code={apiSubmit} filename="Server submission" /> },
         ]} />
+        <p>Pass the authorized organization capability as <code>treatmentBilling</code>; the prop does not grant server access. React 0.69.2 collects documented personal-performance, medical-direction, and monitored-care facts for anesthesia lines. Keep anesthesia service quantity at one and supply elapsed minutes separately. See <Link href="/guides/fee-schedules#anesthesia">anesthesia fields and server review</Link>.</p>
         <p>Use the returned bill ID with the <Link href="/learn/quickstart#bill">single-bill component</Link> or <Link href="/learn/api-quickstart#status">status API</Link>. Treatment bills use the same dashboard and lifecycle actions; show the actions available for each bill.</p>
       </section>
       <details id="rfa" className="quickstart-details"><summary>5. Add a Request for Authorization <small>Optional</small></summary>

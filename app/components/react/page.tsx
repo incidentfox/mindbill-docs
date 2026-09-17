@@ -27,7 +27,7 @@ import {
 
 export const metadata: Metadata = { title: "React components" };
 
-const install = `pnpm add @mindbill/react@0.67.0`;
+const install = `pnpm add @mindbill/react@0.69.2`;
 
 const connectedWorkspace = `import { ConnectedBillingWorkspace } from "@mindbill/react";
 
