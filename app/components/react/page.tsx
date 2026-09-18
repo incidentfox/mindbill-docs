@@ -27,7 +27,7 @@ import {
 
 export const metadata: Metadata = { title: "React components" };
 
-const install = `pnpm add @mindbill/react@0.69.6`;
+const install = `pnpm add @mindbill/react@0.73.0`;
 
 const connectedWorkspace = `import { ConnectedBillingWorkspace } from "@mindbill/react";
 
@@ -466,7 +466,7 @@ export default function ReactPage() {
       </details>
 
       <h2 id="rfas">Treatment and authorization requests</h2>
-      <p>Use <code>billingMode=&quot;professional&quot;</code> in the initial bill for treatment charges and per-line diagnosis selection. <code>RfaDashboard</code> provides authorization tracking, draft creation and revision-aware editing, clinical PDF upload, authorized signing, packet and cover-sheet review, directory destination selection, explicit fax sending, delivery evidence, receipt and information-request recording, item decisions, and existing follow-up tasks. Configure its role-matched permissions, human signer identity, and environment; it defaults to read-only sandbox. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> and <Link href="/guides/rfas">RFA integration guide</Link>.</p>
+      <p>Use <code>billingMode=&quot;professional&quot;</code> in the initial bill for treatment charges and per-line diagnosis selection. <code>RfaDashboard</code> provides authorization tracking, draft creation and revision-aware editing, clinical PDF upload, authorized signing, packet and cover-sheet review, directory destination selection, explicit fax sending, delivery evidence, receipt and information-request recording, item decisions, and a task board for no-response follow-up, matching incoming response faxes, and posting utilization review decisions. Supporting PDFs can be selected in the creation form. Use <code>RfaTaskBoard</code> to embed the work queue separately. Configure its role-matched permissions, human signer identity, and environment; it defaults to read-only sandbox. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> and <Link href="/guides/rfas">RFA integration guide</Link>.</p>
 
       <h2 id="notifications">Notification settings</h2>
       <p><strong>Administrative recipient list (React 0.52.0):</strong> <code>NotificationRecipientsSettings</code> (alias <code>ConnectedNotificationRecipientsSettings</code>) lets an administrator invite any authorized email address, including someone without a console account. Choose practice-wide or explicitly assigned-bill access, status/payment alerts, aging reminders, quiet hours and daily/weekly billing-activity digests. Everything stays off until the email owner reviews and confirms the invitation; the list includes pending states and a disable action.</p>
