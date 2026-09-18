@@ -29,6 +29,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: "/partner-guides/api-first-billing.md",
+        destination: "https://app.mindbill.org/partner-guides/api-first-billing.md",
+        permanent: false,
+      },
+      {
         source: "/demo",
         destination: "/components/react",
         permanent: true,
