@@ -37,7 +37,7 @@
     {
       "article": "/walkthroughs/rfa/response-tasks",
       "steps": 5,
-      "verificationScope": "Match UR, saving a treatment decision, and completing Post UR were exercised against local fixtures. The alternate no-new-decision completion path was not exercised. Embedded PDF rendering was blank in headless Chrome and remains unverified; Open/Download controls and a synthetic PDF resource were present. The screenshots preserve the console’s current oversized checkbox styling. Backend OCR, matching, deadline calculations, and live fax delivery were not verified by these captures."
+      "verificationScope": "Match UR, saving a treatment decision, and completing Post UR were exercised against local fixtures. The alternate no-new-decision completion path was not exercised. Embedded PDF rendering was blank in headless Chrome and remains unverified; Open/Download controls and a synthetic PDF resource were present. The screenshots preserve the console\u2019s current oversized checkbox styling. Backend OCR, matching, deadline calculations, and live fax delivery were not verified by these captures."
     }
   ],
   "exercised": [
@@ -63,10 +63,14 @@
       "src": "/walkthroughs/rfa/01-status-and-aging.png",
       "original": "/walkthroughs/rfa/originals/01-status-and-aging.png",
       "width": 1026,
-      "height": 723,
+      "height": 745,
       "key": "01-status-and-aging",
-      "sha256": "4c63b116a4c18c7ab5790dcc9c5890a39c069ad3c0775497e88a434f2797c209",
-      "originalSha256": "409e799398cee8cbfc8c037b66bbab77c8debe5730b9cf139326e9bd94d18aa5"
+      "sha256": "963db8a06f12658454fc26e6cdcbab46e88c9547c4720df2d20504db6e430a81",
+      "originalSha256": "4bea31ce46498c8b2bc871b12fefe56d57d22dd5d50fd0db2fea5da039923260",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/02-aging-drilldown.png",
@@ -74,17 +78,25 @@
       "width": 1026,
       "height": 201,
       "key": "02-aging-drilldown",
-      "sha256": "f4aafed005aab6e9fdeb47020c5796d062cdbe6157f2908def9da3997a241527",
-      "originalSha256": "48142dee670494c6d8f372ac8bf44ce9ee6cfd8d4aef34a226724658ce4e5c57"
+      "sha256": "586b22887d689bf529ad7ac365c17d3899300e1ddd653685780e8c53fc056749",
+      "originalSha256": "8bac1be98e4dd223ec19322ad11ecf47c0251c07822387a6fd59a94ad9d225af",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/03-filtered-rfas.png",
       "original": "/walkthroughs/rfa/originals/03-filtered-rfas.png",
       "width": 1026,
-      "height": 550,
+      "height": 558,
       "key": "03-filtered-rfas",
-      "sha256": "48774374067726c55b6b7a2c6b254003b8a89a741e047f3b2dd7b554dc350ee0",
-      "originalSha256": "b65b53100607f2a8c571eae0d4e8b8dae74ac30f2adbedd83460bffe3e44d3c9"
+      "sha256": "dfd57ffba8412a868d7dd99533c030195d9653d92ec3c923f04a6d1a87795304",
+      "originalSha256": "28444fc33a6bea4a66a2605b8a70de81c9cc5ca47ee09cb00e236318bbafd015",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/04-search-requests.png",
@@ -93,16 +105,24 @@
       "height": 92,
       "key": "04-search-requests",
       "sha256": "c93ba5348e92008b43ed68985dcdad2b7aa534bc151903dc76e3b9ed7f488aad",
-      "originalSha256": "3dcb0f5032bc74508de15f7579ab75ba51809b31f6278eec3c9608b54fba2b52"
+      "originalSha256": "3dcb0f5032bc74508de15f7579ab75ba51809b31f6278eec3c9608b54fba2b52",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/05-requested-treatments.png",
       "original": "/walkthroughs/rfa/originals/05-requested-treatments.png",
       "width": 1026,
-      "height": 606,
+      "height": 591,
       "key": "05-requested-treatments",
-      "sha256": "1ae55dd01525caf96f2c8b9c9c97cb210e3f5310ba7a358faf5e4f8f9633acdc",
-      "originalSha256": "198e27bc50d81c5a90d2b8240c45ae2e3ef9ba58f976ed682bb1ce1a6fe88604"
+      "sha256": "ba58b2b757fd9e6eb05be2b63b234ed3cf59a4b339facfc576809b3adf504055",
+      "originalSha256": "f4380fb2a4504fa1b970c9f331107946f24924e69c406a71f13386bb5ec0a76a",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/06-history-and-notes.png",
@@ -111,7 +131,11 @@
       "height": 743,
       "key": "06-history-and-notes",
       "sha256": "f33f108ddb992efb8136bee818e675c39465fc90e36430fb2c9929b77aaebe21",
-      "originalSha256": "bf6c15b0a6803614c0d7fec75b367f7088c5d06303328fd8fcee78ef07591906"
+      "originalSha256": "bf6c15b0a6803614c0d7fec75b367f7088c5d06303328fd8fcee78ef07591906",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/07-delivery-evidence.png",
@@ -120,7 +144,11 @@
       "height": 244,
       "key": "07-delivery-evidence",
       "sha256": "93e0317bdc6122c975afc8e516fea72270e8257366c7bfc71f286b0e3e81fd15",
-      "originalSha256": "1e704e51aec8e36c4184a809267e1864fa1e77c9ae02b06de0f3faf1138ced55"
+      "originalSha256": "1e704e51aec8e36c4184a809267e1864fa1e77c9ae02b06de0f3faf1138ced55",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/08-close-treatment.png",
@@ -129,7 +157,11 @@
       "height": 417,
       "key": "08-close-treatment",
       "sha256": "0ff0085529f976c4d62e60e9ee19b76e53490ba39ea7b2f2f011ff4028b8b721",
-      "originalSha256": "842e0406fea4f21d37aa5d3c0c064e32eedbc0405760003d7f9932444abe6028"
+      "originalSha256": "842e0406fea4f21d37aa5d3c0c064e32eedbc0405760003d7f9932444abe6028",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/09-reopen-treatment.png",
@@ -138,7 +170,11 @@
       "height": 454,
       "key": "09-reopen-treatment",
       "sha256": "c1addb91b6822221d9ca94a8a164b71737c36507fefcbe5c48749becfb3833c1",
-      "originalSha256": "048c688cfd5dcc990269ced63f73229e2cc03b03200b65f47c6768cb195e6666"
+      "originalSha256": "048c688cfd5dcc990269ced63f73229e2cc03b03200b65f47c6768cb195e6666",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/10-reopened-treatment.png",
@@ -147,7 +183,11 @@
       "height": 204,
       "key": "10-reopened-treatment",
       "sha256": "d463aaf89c837fae87b5fed0553d3bfabaf9ca85cfd8998026fde0172bc7384b",
-      "originalSha256": "978776f595ae3264454423270bb92eaeacd1dce5fa6723bf16bb2d6d805e8d9b"
+      "originalSha256": "978776f595ae3264454423270bb92eaeacd1dce5fa6723bf16bb2d6d805e8d9b",
+      "packages": {
+        "react": "0.75.1",
+        "browser": "0.49.0"
+      }
     },
     {
       "src": "/walkthroughs/rfa/submission-01-patient-physician.png",
@@ -293,5 +333,25 @@
       "sha256": "bca653faccea9da4f6284d79348cb492b7265d34365ed3e0ca1cd98c659889a9",
       "originalSha256": "357b37f20d1d49c4043e4fa3cb51d6d505c95ba9d96be2ed2d1f91c7bc1dc1e3"
     }
-  ]
+  ],
+  "refresh": {
+    "capturedAt": "2026-09-18",
+    "packages": {
+      "react": "0.75.1",
+      "browser": "0.49.0"
+    },
+    "images": [
+      "01-status-and-aging",
+      "02-aging-drilldown",
+      "03-filtered-rfas",
+      "04-search-requests",
+      "05-requested-treatments",
+      "06-history-and-notes",
+      "07-delivery-evidence",
+      "08-close-treatment",
+      "09-reopen-treatment",
+      "10-reopened-treatment"
+    ],
+    "scope": "Submission aging labels, Pacific deadline display, and explicit missing-deadline states. Synthetic deadline supplied by fixture; backend calculation not verified by these screenshots."
+  }
 }

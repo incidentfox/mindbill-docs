@@ -5,13 +5,16 @@
     "description": "Start with the overview, narrow the list, and open the treatment that needs attention.",
     "before": [
       "Open Requests for authorization in your workspace. The RFA feature must be enabled for your organization.",
-      "You need permission to read RFAs. Counts and available actions depend on your workspace."
+      "You need permission to read RFAs. Counts and available actions depend on your workspace.",
+      "Aging counts calendar days since submission. Decision due uses the review clock after receipt of the complete request; these are separate dates.",
+      "Standard prospective/concurrent review generally allows 5 business days; qualifying expedited review allows 72 elapsed hours; retrospective review allows 30 calendar days. Special review rules, incomplete requests, and documented extensions can change the deadline.",
+      "For standard electronic submissions, after-hours transmission can move effective receipt to the next business day; expedited and concurrent requests have exceptions. For ordinary mail without receipt evidence, the receipt presumption generally starts five business days after documented mailing. A certified return receipt supplies the actual receipt date. Do not substitute the submission date for receipt evidence."
     ],
     "steps": [
       {
         "title": "Start with the overview",
         "instruction": "Select Overview. The dashboard groups requests into Needs attention (1), Awaiting decision (2), and Finished (3).",
-        "expected": "Incomplete and Failed requests need attention. Sent and Received requests await decisions. Closed and Canceled requests appear under Finished. Aging shows calendar days since sent, not the utilization review deadline.",
+        "expected": "Incomplete and Failed requests need attention. Sent and Received requests await decisions. Closed and Canceled requests appear under Finished. Aging shows calendar days since submission, not the utilization review deadline.",
         "image": "01-status-and-aging",
         "alt": "The three status groups and their aging columns",
         "caption": "Each outlined group contains related statuses. The example has six fictional requests."
@@ -42,11 +45,11 @@
       },
       {
         "title": "Switch to individual treatments",
-        "instruction": "Select Requested treatments (1). Select a treatment’s request link (2) to open its RFA at that treatment.",
-        "expected": "The treatment table retains the current search and filters and shows service, diagnosis, decision, and any recorded deadline. Pagination moves between requests, which can each contain multiple treatments.",
+        "instruction": "Select Requested treatments (1). Select a treatment’s request link (2) to open its RFA at that treatment. Check Decision due (3) separately from submission age.",
+        "expected": "The treatment table retains the current search and filters and shows service, diagnosis, decision, and any recorded deadline. Pagination moves between requests, which can each contain multiple treatments. Day-based deadlines display in Pacific time; expedited deadlines include the time. Awaiting receipt means receipt evidence is missing. Not calculated means no usable deadline was returned; review the request’s timeline and deadline basis.",
         "image": "05-requested-treatments",
         "alt": "Requested treatments tab and request link",
-        "caption": "Use this view to compare requested services across RFAs."
+        "caption": "The synthetic request was received September 1, 2026; its five-business-day example is due September 9, excluding Labor Day. The screenshot verifies display, not backend calculation."
       }
     ],
     "limitations": "The status and aging drilldown, debounced search request, and treatment navigation were exercised against the synthetic fixture.",
@@ -58,6 +61,14 @@
       {
         "href": "/components/react",
         "label": "React component reference"
+      },
+      {
+        "href": "https://www.dir.ca.gov/t8/9792_9_3.html",
+        "label": "California utilization review timing rules"
+      },
+      {
+        "href": "https://www.dir.ca.gov/t8/9792_9_1.html",
+        "label": "California RFA receipt and delivery rules"
       }
     ]
   },
