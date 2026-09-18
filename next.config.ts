@@ -14,6 +14,21 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: "/mindbill-partner.postman_collection.json",
+        destination: "https://app.mindbill.org/mindbill-partner.postman_collection.json",
+        permanent: false,
+      },
+      {
+        source: "/llms.txt",
+        destination: "https://app.mindbill.org/llms.txt",
+        permanent: false,
+      },
+      {
+        source: "/llms-full.txt",
+        destination: "https://app.mindbill.org/llms-full.txt",
+        permanent: false,
+      },
+      {
         source: "/demo",
         destination: "/components/react",
         permanent: true,
