@@ -1,0 +1,149 @@
+[
+  {
+    "slug": "dashboard",
+    "title": "Find RFAs by status and age",
+    "description": "Start with the overview, narrow the list, and open the treatment that needs attention.",
+    "before": [
+      "Open Requests for authorization in your workspace. The RFA feature must be enabled for your organization.",
+      "You need permission to read RFAs. Counts and available actions depend on your workspace."
+    ],
+    "steps": [
+      {
+        "title": "Start with the overview",
+        "instruction": "Select Overview. The dashboard groups requests into Needs attention (1), Awaiting decision (2), and Finished (3).",
+        "expected": "Incomplete and Failed requests need attention. Sent and Received requests await decisions. Closed and Canceled requests appear under Finished. Aging shows calendar days since sent, not the utilization review deadline.",
+        "image": "01-status-and-aging",
+        "alt": "The three status groups and their aging columns",
+        "caption": "Each outlined group contains related statuses. The example has six fictional requests."
+      },
+      {
+        "title": "Choose a status and age range",
+        "instruction": "Select a count in an aging column. Here, select Received requests aged 15–30 days (1).",
+        "expected": "The RFAs list opens with both the selected status and age range applied.",
+        "image": "02-aging-drilldown",
+        "alt": "Received count for requests aged 15 to 30 days",
+        "caption": "The highlighted count is an interactive filter."
+      },
+      {
+        "title": "Open a matching request",
+        "instruction": "Check the Status filter (1) and age range above the table, then select Review request (2).",
+        "expected": "The detail page opens for the selected RFA. You can review its treatments, documents, history, and available actions.",
+        "image": "03-filtered-rfas",
+        "alt": "Filtered requests and Review request control",
+        "caption": "Status and aging filters narrow the list together."
+      },
+      {
+        "title": "Search as you type",
+        "instruction": "Enter a patient, physician, claim, RFA, service, or code in Search requests (1). Pause briefly to see results. Clear filters (2) removes the search, status, and aging selection.",
+        "expected": "The search updates after a short pause without a Search button. The dashboard also refreshes automatically while open and when you return to it.",
+        "image": "04-search-requests",
+        "alt": "Dynamic search and Clear filters",
+        "caption": "Search is debounced. Background updates poll every 30 seconds and on return to the page."
+      },
+      {
+        "title": "Switch to individual treatments",
+        "instruction": "Select Requested treatments (1). Select a treatment’s request link (2) to open its RFA at that treatment.",
+        "expected": "The treatment table retains the current search and filters and shows service, diagnosis, decision, and any recorded deadline. Pagination moves between requests, which can each contain multiple treatments.",
+        "image": "05-requested-treatments",
+        "alt": "Requested treatments tab and request link",
+        "caption": "Use this view to compare requested services across RFAs."
+      }
+    ],
+    "limitations": "The status and aging drilldown, debounced search request, and treatment navigation were exercised against the synthetic fixture.",
+    "related": [
+      {
+        "href": "/guides/rfas",
+        "label": "RFA integration and API guide"
+      },
+      {
+        "href": "/components/react",
+        "label": "React component reference"
+      }
+    ]
+  },
+  {
+    "slug": "history",
+    "title": "Read history and delivery evidence",
+    "description": "Review who did what, add follow-up context, and find saved transmission evidence.",
+    "before": [
+      "Open an RFA with Review request and find Treatments and history.",
+      "Reading history requires RFA read access. Adding a note requires the corresponding write permission."
+    ],
+    "steps": [
+      {
+        "title": "Review events and follow-up notes",
+        "instruction": "In History and notes, read the dated events and recorded actors. Expand Event details where available. To add context, enter a Note (1) and select Save note (2).",
+        "expected": "Events identify their associated treatment when relevant. A saved note adds context to history; it does not change a treatment decision.",
+        "image": "06-history-and-notes",
+        "alt": "History events and note controls",
+        "caption": "This capture verifies history rendering and note controls; saving a note was not exercised in this run."
+      },
+      {
+        "title": "Inspect delivery evidence",
+        "instruction": "Open Delivery evidence. Review the recorded channel, status, time, recipient, and reference. When available, select Download transmission receipt (1).",
+        "expected": "A saved transmission record and its receipt provide delivery evidence. The treatment’s decision remains a separate record: delivery alone does not establish authorization.",
+        "image": "07-delivery-evidence",
+        "alt": "Delivery evidence and transmission receipt control",
+        "caption": "The illustrated transmission and receipt are synthetic. Receipt downloading was not exercised."
+      }
+    ],
+    "limitations": "History and delivery records were rendered from fixtures. Note saving and receipt downloading are pictured controls, not verified backend operations in this capture run.",
+    "related": [
+      {
+        "href": "/guides/rfas",
+        "label": "RFA integration and API guide"
+      },
+      {
+        "href": "/components/react",
+        "label": "React component reference"
+      }
+    ]
+  },
+  {
+    "slug": "treatment-follow-up",
+    "title": "Close or reopen treatment follow-up",
+    "description": "Stop waiting for a decision that is no longer needed, with a reason recorded for the individual treatment.",
+    "before": [
+      "Open the RFA and find the pending treatment under Treatments and history.",
+      "You need permission to update the RFA. Use this action only when an outstanding treatment decision is no longer needed.",
+      "This closes internal follow-up. It does not record approval or denial and does not withdraw the request with the claims administrator."
+    ],
+    "steps": [
+      {
+        "title": "Close follow-up for one treatment",
+        "instruction": "Expand Decision no longer required. Enter a specific reason (1), then select Close treatment (2).",
+        "expected": "The treatment shows Decision no longer required, who closed it, when, and why. Other treatments remain independent. When every treatment has a decision or closed follow-up, the RFA can become Closed.",
+        "image": "08-close-treatment",
+        "alt": "Closure reason and Close treatment control",
+        "caption": "Close the treatment that no longer needs a decision, rather than changing its clinical outcome."
+      },
+      {
+        "title": "Reopen if follow-up becomes necessary",
+        "instruction": "Expand Reopen treatment follow-up. Enter the reason (1), then select Reopen treatment (2).",
+        "expected": "Follow-up resumes with the original review deadline. Reopening does not start a new review period or erase another treatment’s outcome.",
+        "image": "09-reopen-treatment",
+        "alt": "Reopening reason and Reopen treatment control",
+        "caption": "The earlier closure reason remains visible before reopening."
+      },
+      {
+        "title": "Check the reopened treatment",
+        "instruction": "Confirm the returned treatment state and reopening reason. The Decision no longer required control (1) becomes available again.",
+        "expected": "The treatment is pending again and shows who reopened it and why. Its clinical decision remains unchanged throughout closing and reopening.",
+        "image": "10-reopened-treatment",
+        "alt": "Pending treatment with reopening attribution",
+        "caption": "This is the visible result returned after the synthetic reopen request."
+      }
+    ],
+    "limitations": "Both close and reopen PATCH requests were exercised against the fixture and their returned UI states were checked. These screenshots do not independently verify persistence in a production database.",
+    "related": [
+      {
+        "href": "/guides/rfas",
+        "label": "RFA integration and API guide"
+      },
+      {
+        "href": "/components/react",
+        "label": "React component reference"
+      }
+    ]
+  }
+]

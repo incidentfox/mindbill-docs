@@ -1,0 +1,140 @@
+[
+  {
+    "slug": "create",
+    "title": "Create an RFA with supporting documents",
+    "description": "Choose a patient and injury, describe the requested treatments, and attach the supporting PDFs in one flow.",
+    "before": [
+      "Enable Requests for authorization in your workspace.",
+      "Have permission to create RFAs, a requesting physician, and the patient and injury details.",
+      "Have the supporting clinical PDFs ready. Use fictional records while testing."
+    ],
+    "steps": [
+      {
+        "title": "Select the patient, injury claim, and requesting physician",
+        "instruction": "From the RFA dashboard, choose New authorization request. Search for a patient or claim, select the Saved patient claim, then choose a Saved rendering provider as the requesting physician. Use Continue to treatment to open the draft form. An RFA can be created without an existing bill.",
+        "expected": "The selected patient, injury claim, and physician carry into the draft. No existing bill is required.",
+        "image": "submission-01-patient-physician",
+        "alt": "Select the patient, injury claim, and requesting physician in the RFA component with highlighted controls",
+        "caption": "Saved patient, injury claim, and requesting physician selection."
+      },
+      {
+        "title": "Add a patient and injury when needed",
+        "instruction": "If your integration enables patient and claim creation, the new-patient option lets you enter the patient's identifying information and injury claim in the same flow. Review the injury date, claim number, employer, and claims administrator before continuing. This capture shows the available fields; the audit canceled this branch and used a saved synthetic patient and claim for the remaining steps.",
+        "expected": "Patient and claim fields appear together. Creating new records depends on the permissions and features enabled in your integration.",
+        "image": "submission-02-new-patient-injury",
+        "alt": "Add a patient and injury when needed in the RFA component with highlighted controls",
+        "caption": "Optional new-patient branch. These fields were inspected; this branch was canceled rather than saved during capture."
+      },
+      {
+        "title": "Set the request and review options",
+        "instruction": "Choose New request or a resubmission with a material change. A resubmission needs an explanation of the change. Use the written-confirmation option when documenting a prior oral request. Choose the applicable review type and priority, then enter the clinical rationale. These are separate choices: expedited priority does not replace the request or review type.",
+        "expected": "The form keeps request type, review timing, and priority separate. The example uses a new prospective request with standard priority.",
+        "image": "submission-03-request-review-flags",
+        "alt": "Set the request and review options in the RFA component with highlighted controls",
+        "caption": "Request type, review timing, and priority are separate choices."
+      },
+      {
+        "title": "Check the practice and authorization contact",
+        "instruction": "Review the requesting practice and claims-administrator authorization contact. Saved billing providers and service locations can fill these details when supplied by the integration. The request keeps these details for its form. The delivery destination is reviewed separately before sending, using the claims administrator's routing instructions. Replies use the organization's managed fax number.",
+        "expected": "The practice and authorization contact details are available for review before the request is saved.",
+        "image": "submission-04-practice-contacts",
+        "alt": "Check the practice and authorization contact in the RFA component with highlighted controls",
+        "caption": "Review form contact details; the delivery destination is selected separately."
+      },
+      {
+        "title": "Add diagnoses and requested treatments",
+        "instruction": "Enter the diagnosis code and description, then describe the requested service. Include the procedure code when known, along with applicable quantity, units, frequency, duration, and requested dates. Add requested service adds another treatment to the same RFA. Review every treatment before saving; later decisions are recorded for individual treatments.",
+        "expected": "Each requested service has its own diagnosis and treatment details. More than one service can belong to the same RFA.",
+        "image": "submission-05-diagnosis-treatment",
+        "alt": "Add diagnoses and requested treatments in the RFA component with highlighted controls",
+        "caption": "A requested treatment with diagnosis, description, and frequency."
+      },
+      {
+        "title": "Attach supporting PDFs before saving",
+        "instruction": "Add the supporting clinical PDFs in Supporting documents. You can choose multiple files or drop them into the upload area; each file can be up to 25 MB. Choose Save RFA draft to save the request and attach the selected documents. Saving a draft does not send it.",
+        "expected": "The saved draft includes the uploaded supporting PDF. Creating the draft does not send a fax or email.",
+        "image": "submission-06-supporting-document-create",
+        "alt": "Attach supporting PDFs before saving in the RFA component with highlighted controls",
+        "caption": "Supporting documents are selected before saving the draft."
+      }
+    ],
+    "limitations": "Draft creation and document attachment were exercised against synthetic fixtures. The optional new-patient and injury branch was opened but not saved. No production records were created.",
+    "related": [
+      {
+        "href": "/walkthroughs/rfa/review-and-deliver",
+        "label": "Review, sign, and prepare delivery"
+      },
+      {
+        "href": "/guides/rfas",
+        "label": "RFA integration and API guide"
+      }
+    ]
+  },
+  {
+    "slug": "review-and-deliver",
+    "title": "Review, sign, and prepare delivery",
+    "description": "Review the signing form, confirm the administrator’s routing instructions, and inspect the packet before delivery.",
+    "before": [
+      "Start with an RFA draft and supporting documents.",
+      "The requesting physician must have a saved signature. Signing requires an authorized reviewer and the appropriate permission.",
+      "Confirm the claims administrator and the authorization destination for this specific claim."
+    ],
+    "steps": [
+      {
+        "title": "Review the exact form and sign",
+        "instruction": "Choose Prepare signing preview, then open Open DWC-RFA signing preview PDF or Download PDF. An authorized person must review that exact form before checking the authorization statement and choosing Sign reviewed request. This uses the requesting physician's saved signature; the physician must have a signature available, and the user must have the relevant permission. If the request changes, prepare and review a fresh preview as required.",
+        "expected": "The exact signing preview is visible, and the signature action requires the review statement. This demonstration PDF tests the viewer; it is not a valid DWC form.",
+        "image": "submission-07-review-sign",
+        "alt": "Review the exact form and sign in the RFA component with highlighted controls",
+        "caption": "Signing preview and required authorization statement. The PDF is a synthetic viewer fixture."
+      },
+      {
+        "title": "Confirm the claims administrator's destination",
+        "instruction": "In Review packet and send, choose a delivery method and review Authorization destination. Select the applicable Authorization contact explicitly. A central fax is appropriate only when the administrator's instructions say it applies to this claim. Some administrators route by a claim-handling office or require an adjuster's individual destination. Add an optional fax cover-sheet message if needed.",
+        "expected": "The selected authorization contact determines the destination used for the packet preview. Confirm it applies to this claim before proceeding.",
+        "image": "submission-08-directory-destination",
+        "alt": "Confirm the claims administrator's destination in the RFA component with highlighted controls",
+        "caption": "A directory destination selected for this synthetic claim."
+      },
+      {
+        "title": "Enter a named adjuster's fax when required",
+        "instruction": "When the routing instructions require an individual adjuster, obtain the destination from the handling adjuster. Choose Enter the handling adjuster's fax, then supply both Handling adjuster name (required) and Authorization fax number. A fax number alone does not satisfy this route. This screenshot is the same destination component shown independently with a synthetic administrator that requires adjuster-specific routing.",
+        "expected": "The component requires both a named handling adjuster and a fax number. Entering only a fax number is insufficient for this route.",
+        "image": "submission-09-custom-adjuster-fax",
+        "alt": "Enter a named adjuster's fax when required in the RFA component with highlighted controls",
+        "caption": "The destination component shown independently with adjuster-specific routing."
+      },
+      {
+        "title": "Review the complete packet",
+        "instruction": "Choose Prepare packet with cover sheet and open Open RFA submission packet PDF. Review the assembled form, cover sheet, and supporting documents, then check the packet-review statement. If the destination, message, or documents change, review the newly prepared packet. The captured environment shows the sandbox notice: external fax and email delivery are disabled. Live sending was deliberately not exercised in this audit.",
+        "expected": "The packet viewer and review statement appear. The example displays a sandbox notice and disables external delivery; no live send was tested.",
+        "image": "submission-10-assembled-packet-sandbox",
+        "alt": "Review the complete packet in the RFA component with highlighted controls",
+        "caption": "Complete-packet viewer in a synthetic sandbox. Production PDF assembly and sending were not exercised."
+      },
+      {
+        "title": "Download for manual submission",
+        "instruction": "Choose Download for manual submission when you will deliver the packet outside the application. Downloading preserves a packet for that workflow; it does not establish that the recipient received it or mark the request as sent. Keep evidence of any subsequent delivery.",
+        "expected": "The PDF is available to download. The request remains unsent: a download is not delivery evidence.",
+        "image": "submission-11-manual-download",
+        "alt": "Download for manual submission in the RFA component with highlighted controls",
+        "caption": "Manual download leaves the request unsent."
+      }
+    ],
+    "limitations": "Signing, explicit directory selection, named-adjuster validation, packet preview, and manual download were exercised with synthetic fixtures. The PDF is a viewer fixture, not evidence of production DWC form or cover-sheet composition. No fax or email was sent, and production signature storage was not tested. Manual download left the request unsent.",
+    "related": [
+      {
+        "href": "/walkthroughs/rfa/create",
+        "label": "Create an RFA with supporting documents"
+      },
+      {
+        "href": "/walkthroughs/rfa/history",
+        "label": "Read history and delivery evidence"
+      },
+      {
+        "href": "/guides/rfas",
+        "label": "RFA integration and API guide"
+      }
+    ]
+  }
+]

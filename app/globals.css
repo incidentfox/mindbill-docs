@@ -445,3 +445,38 @@ button { color: inherit; }
   .quickstart-tabs [role="tab"] { padding: 8px 12px; }
   .quickstart-details { padding: 14px; }
 }
+
+/* Illustrated workflow guides keep screenshots legible and inspectable. */
+.walkthrough-meta { font-size: 13px !important; color: var(--faint) !important; }
+.walkthrough-cards { display: grid; gap: 14px; margin: 24px 0; }
+.doc-content a.walkthrough-card { display: flex; gap: 20px; padding: 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-raised); text-decoration: none; }
+.walkthrough-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.walkthrough-card-number { font: 500 14px/1.8 ui-monospace, monospace; color: var(--faint); }
+.walkthrough-card strong { display: block; font-size: 20px; color: var(--text); }
+.walkthrough-card span > span { display: block; margin: 8px 0; color: var(--muted); line-height: 1.6; }
+.walkthrough-card small { font-weight: 650; }
+.walkthrough-step { margin-top: 48px; }
+.walkthrough-step h2 { display: flex; align-items: baseline; gap: 12px; }
+.walkthrough-step-number { flex: 0 0 30px; height: 30px; text-align: center; border-radius: 50%; background: var(--accent); color: var(--accent-contrast); font: 650 15px/30px system-ui, sans-serif; }
+.walkthrough-figure { margin: 24px 0; }
+.walkthrough-image-button { display: block; width: 100%; padding: 0; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 12px; background: #fff; cursor: zoom-in; text-align: right; }
+.walkthrough-image-button img { display: block; width: 100%; height: auto; }
+.walkthrough-image-button > span { display: block; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--surface); color: var(--accent-text); font-size: 13px; }
+.walkthrough-figure figcaption { margin-top: 12px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.walkthrough-figure figcaption a { white-space: normal; }
+.walkthrough-expected { padding: 16px 20px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; }
+.walkthrough-expected strong { font-size: 14px; }
+.walkthrough-expected p { margin: 7px 0 0; font-size: 15px; }
+.walkthrough-lightbox { width: min(1600px, 96vw); max-width: 96vw; max-height: 92dvh; padding: 0; border: 1px solid var(--line); border-radius: 12px; color: var(--text); background: var(--surface-raised); }
+.walkthrough-lightbox::backdrop { background: rgba(0, 0, 0, .75); }
+.walkthrough-lightbox-bar { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; background: var(--surface-raised); border-bottom: 1px solid var(--line); font-size: 14px; }
+.walkthrough-lightbox-bar button { min-height: 44px; padding: 0 18px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); cursor: pointer; }
+.walkthrough-lightbox-image { overflow: auto; max-height: calc(92dvh - 72px); }
+.walkthrough-lightbox img { display: block; width: 100%; height: auto; min-width: 900px; }
+@media (max-width: 640px) {
+  .doc-content a.walkthrough-card { gap: 12px; padding: 18px; }
+  .walkthrough-step h2 { font-size: 24px; }
+  .walkthrough-lightbox-bar span { font-size: 12px; }
+}
+
+.walkthrough-image-button:focus-visible, .walkthrough-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }

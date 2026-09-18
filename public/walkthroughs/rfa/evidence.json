@@ -1,0 +1,297 @@
+{
+  "capturedAt": "2026-09-18",
+  "packages": {
+    "react": "0.75.0",
+    "browser": "0.49.0"
+  },
+  "environment": "Local production builds in Chrome using synthetic API fixtures. No real patient data, external delivery, or production backend writes.",
+  "annotationMethod": "Temporary DOM overlays around actual control bounding boxes. Unmarked originals preserved. Some images use focused browser crops.",
+  "scope": "UI workflow evidence, not verification of production backend behavior or clinical outcomes.",
+  "browserErrors": 0,
+  "articleChecks": [
+    {
+      "article": "/walkthroughs/rfa/dashboard",
+      "steps": 5,
+      "verificationScope": "The status and aging drilldown, debounced search request, and treatment navigation were exercised against the synthetic fixture."
+    },
+    {
+      "article": "/walkthroughs/rfa/history",
+      "steps": 2,
+      "verificationScope": "History and delivery records were rendered from fixtures. Note saving and receipt downloading are pictured controls, not verified backend operations in this capture run."
+    },
+    {
+      "article": "/walkthroughs/rfa/treatment-follow-up",
+      "steps": 3,
+      "verificationScope": "Both close and reopen PATCH requests were exercised against the fixture and their returned UI states were checked. These screenshots do not independently verify persistence in a production database."
+    },
+    {
+      "article": "/walkthroughs/rfa/create",
+      "steps": 6,
+      "verificationScope": "Draft creation and document attachment were exercised against synthetic fixtures. The optional new-patient and injury branch was opened but not saved. No production records were created."
+    },
+    {
+      "article": "/walkthroughs/rfa/review-and-deliver",
+      "steps": 5,
+      "verificationScope": "Signing, explicit directory selection, named-adjuster validation, packet preview, and manual download were exercised with synthetic fixtures. The PDF is a viewer fixture, not evidence of production DWC form or cover-sheet composition. No fax or email was sent, and production signature storage was not tested. Manual download left the request unsent."
+    },
+    {
+      "article": "/walkthroughs/rfa/response-tasks",
+      "steps": 5,
+      "verificationScope": "Match UR, saving a treatment decision, and completing Post UR were exercised against local fixtures. The alternate no-new-decision completion path was not exercised. Embedded PDF rendering was blank in headless Chrome and remains unverified; Open/Download controls and a synthetic PDF resource were present. The screenshots preserve the console’s current oversized checkbox styling. Backend OCR, matching, deadline calculations, and live fax delivery were not verified by these captures."
+    }
+  ],
+  "exercised": [
+    "Status and aging drilldown; debounced search; treatment navigation",
+    "Draft creation with supporting PDF attachment",
+    "Signing review, explicit directory routing, named-adjuster validation",
+    "Packet viewer and manual download; download left request unsent",
+    "History and delivery record rendering",
+    "Close and reopen individual treatment follow-up with reasons",
+    "Match incoming response; save treatment decision; complete Post UR and verify completed task"
+  ],
+  "notVerified": [
+    "Live outbound and inbound fax roundtrip",
+    "Backend OCR, persistence, matching, deadline calculations, production PDF composition or signature storage",
+    "Saving new patient and injury records",
+    "Saving history notes or downloading transmission receipts",
+    "Embedded incoming response PDF rendering in headless Chrome",
+    "Alternate no-new-decision Post UR completion path"
+  ],
+  "knownPresentationIssue": "Match/Post checkboxes inherit oversized centered console styling. Screenshots preserve the current UI.",
+  "images": [
+    {
+      "src": "/walkthroughs/rfa/01-status-and-aging.png",
+      "original": "/walkthroughs/rfa/originals/01-status-and-aging.png",
+      "width": 1026,
+      "height": 723,
+      "key": "01-status-and-aging",
+      "sha256": "4c63b116a4c18c7ab5790dcc9c5890a39c069ad3c0775497e88a434f2797c209",
+      "originalSha256": "409e799398cee8cbfc8c037b66bbab77c8debe5730b9cf139326e9bd94d18aa5"
+    },
+    {
+      "src": "/walkthroughs/rfa/02-aging-drilldown.png",
+      "original": "/walkthroughs/rfa/originals/02-aging-drilldown.png",
+      "width": 1026,
+      "height": 201,
+      "key": "02-aging-drilldown",
+      "sha256": "f4aafed005aab6e9fdeb47020c5796d062cdbe6157f2908def9da3997a241527",
+      "originalSha256": "48142dee670494c6d8f372ac8bf44ce9ee6cfd8d4aef34a226724658ce4e5c57"
+    },
+    {
+      "src": "/walkthroughs/rfa/03-filtered-rfas.png",
+      "original": "/walkthroughs/rfa/originals/03-filtered-rfas.png",
+      "width": 1026,
+      "height": 550,
+      "key": "03-filtered-rfas",
+      "sha256": "48774374067726c55b6b7a2c6b254003b8a89a741e047f3b2dd7b554dc350ee0",
+      "originalSha256": "b65b53100607f2a8c571eae0d4e8b8dae74ac30f2adbedd83460bffe3e44d3c9"
+    },
+    {
+      "src": "/walkthroughs/rfa/04-search-requests.png",
+      "original": "/walkthroughs/rfa/originals/04-search-requests.png",
+      "width": 1026,
+      "height": 92,
+      "key": "04-search-requests",
+      "sha256": "c93ba5348e92008b43ed68985dcdad2b7aa534bc151903dc76e3b9ed7f488aad",
+      "originalSha256": "3dcb0f5032bc74508de15f7579ab75ba51809b31f6278eec3c9608b54fba2b52"
+    },
+    {
+      "src": "/walkthroughs/rfa/05-requested-treatments.png",
+      "original": "/walkthroughs/rfa/originals/05-requested-treatments.png",
+      "width": 1026,
+      "height": 606,
+      "key": "05-requested-treatments",
+      "sha256": "1ae55dd01525caf96f2c8b9c9c97cb210e3f5310ba7a358faf5e4f8f9633acdc",
+      "originalSha256": "198e27bc50d81c5a90d2b8240c45ae2e3ef9ba58f976ed682bb1ce1a6fe88604"
+    },
+    {
+      "src": "/walkthroughs/rfa/06-history-and-notes.png",
+      "original": "/walkthroughs/rfa/originals/06-history-and-notes.png",
+      "width": 1026,
+      "height": 743,
+      "key": "06-history-and-notes",
+      "sha256": "f33f108ddb992efb8136bee818e675c39465fc90e36430fb2c9929b77aaebe21",
+      "originalSha256": "bf6c15b0a6803614c0d7fec75b367f7088c5d06303328fd8fcee78ef07591906"
+    },
+    {
+      "src": "/walkthroughs/rfa/07-delivery-evidence.png",
+      "original": "/walkthroughs/rfa/originals/07-delivery-evidence.png",
+      "width": 1026,
+      "height": 244,
+      "key": "07-delivery-evidence",
+      "sha256": "93e0317bdc6122c975afc8e516fea72270e8257366c7bfc71f286b0e3e81fd15",
+      "originalSha256": "1e704e51aec8e36c4184a809267e1864fa1e77c9ae02b06de0f3faf1138ced55"
+    },
+    {
+      "src": "/walkthroughs/rfa/08-close-treatment.png",
+      "original": "/walkthroughs/rfa/originals/08-close-treatment.png",
+      "width": 1026,
+      "height": 417,
+      "key": "08-close-treatment",
+      "sha256": "0ff0085529f976c4d62e60e9ee19b76e53490ba39ea7b2f2f011ff4028b8b721",
+      "originalSha256": "842e0406fea4f21d37aa5d3c0c064e32eedbc0405760003d7f9932444abe6028"
+    },
+    {
+      "src": "/walkthroughs/rfa/09-reopen-treatment.png",
+      "original": "/walkthroughs/rfa/originals/09-reopen-treatment.png",
+      "width": 1026,
+      "height": 454,
+      "key": "09-reopen-treatment",
+      "sha256": "c1addb91b6822221d9ca94a8a164b71737c36507fefcbe5c48749becfb3833c1",
+      "originalSha256": "048c688cfd5dcc990269ced63f73229e2cc03b03200b65f47c6768cb195e6666"
+    },
+    {
+      "src": "/walkthroughs/rfa/10-reopened-treatment.png",
+      "original": "/walkthroughs/rfa/originals/10-reopened-treatment.png",
+      "width": 1026,
+      "height": 204,
+      "key": "10-reopened-treatment",
+      "sha256": "d463aaf89c837fae87b5fed0553d3bfabaf9ca85cfd8998026fde0172bc7384b",
+      "originalSha256": "978776f595ae3264454423270bb92eaeacd1dce5fa6723bf16bb2d6d805e8d9b"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-01-patient-physician.png",
+      "original": "/walkthroughs/rfa/originals/submission-01-patient-physician.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-01-patient-physician",
+      "sha256": "d14f13fe434b3a13b82912980390914b9176102610a5d78f8757b91430319519",
+      "originalSha256": "1d266de12edd3fd13a0d8cbfbbc129d1b5bbb241bbbc9a86181c1122b22a6fa2"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-02-new-patient-injury.png",
+      "original": "/walkthroughs/rfa/originals/submission-02-new-patient-injury.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-02-new-patient-injury",
+      "sha256": "53ceef47cc48a465fef0ed0f90eca2eca5f87864858fec78b3a2f1f2fcd1e5fb",
+      "originalSha256": "c20c96b02348b29cf3456906a2fd49a8cf7a03e0cec044b1561b234edcbc35da"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-03-request-review-flags.png",
+      "original": "/walkthroughs/rfa/originals/submission-03-request-review-flags.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-03-request-review-flags",
+      "sha256": "c0c0c0d3bd6dc4c495c982b3443175911e7d5f87e1fa262846ae86db7e403cdd",
+      "originalSha256": "9ade425586a2d659cca71279cc3661357d4f5743ef61ba44c62aad690c48bf90"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-04-practice-contacts.png",
+      "original": "/walkthroughs/rfa/originals/submission-04-practice-contacts.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-04-practice-contacts",
+      "sha256": "c2a426be1717626e976b7146c2dffd8ae3c2eb1df860584ead7fb35290e4eff1",
+      "originalSha256": "f0c653778fd4fd69b51b7ab8800581ffb24511e58bc9f33041c0da792fb2621a"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-05-diagnosis-treatment.png",
+      "original": "/walkthroughs/rfa/originals/submission-05-diagnosis-treatment.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-05-diagnosis-treatment",
+      "sha256": "8d5482c0aeef8e9bd87fc190cbb979836a2d5d55a91676694f0a8a79db2d9920",
+      "originalSha256": "1927198f6eb937ee9d711c2596c3bf1ce08006760b23bfff0de19bec089c6125"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-06-supporting-document-create.png",
+      "original": "/walkthroughs/rfa/originals/submission-06-supporting-document-create.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-06-supporting-document-create",
+      "sha256": "23f024e85678335388ebe20d35f2d3f39a3af777399ff63e6b4907f755495554",
+      "originalSha256": "06bab491c5d3f5fd2845c7fdb0d075c8d336108da518973a9281aa724a859c78"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-07-review-sign.png",
+      "original": "/walkthroughs/rfa/originals/submission-07-review-sign.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-07-review-sign",
+      "sha256": "5c33bcaaada113a77bcc3b6e69586c285d03161e66e8d9e7f396ec007a19f3ef",
+      "originalSha256": "a0fb93f26b356274b15cb80efcf7602a14d604cfa81f3f4a41275088aacbc1d5"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-08-directory-destination.png",
+      "original": "/walkthroughs/rfa/originals/submission-08-directory-destination.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-08-directory-destination",
+      "sha256": "6f93947f4de7ff839b52b44e61780f63bc2b69cd2fb8279bbbec4ed591caa47e",
+      "originalSha256": "811c721b68328a555e0a47ccd06c58dc9ddf9b5c70f117d1a1fd8bc4eeb5c49e"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-09-custom-adjuster-fax.png",
+      "original": "/walkthroughs/rfa/originals/submission-09-custom-adjuster-fax.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-09-custom-adjuster-fax",
+      "sha256": "3e952ae5d12d90915ddb7ff5689368a1d88caf43bebaaa793b436b6f674c82b3",
+      "originalSha256": "fc0e0cc047ea97e9801f60e9bf5d10c9c063c8528a0e21a8fa361ec668dec89e"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-10-assembled-packet-sandbox.png",
+      "original": "/walkthroughs/rfa/originals/submission-10-assembled-packet-sandbox.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-10-assembled-packet-sandbox",
+      "sha256": "ecb306dc7b6c317721331f1a0debf16439e91efbdec05099e7e64323fe1dd0ee",
+      "originalSha256": "3beb04daffcb9480c52d0a632bf892abbcdb10c788ea355eaedc10309cd2942a"
+    },
+    {
+      "src": "/walkthroughs/rfa/submission-11-manual-download.png",
+      "original": "/walkthroughs/rfa/originals/submission-11-manual-download.png",
+      "width": 1280,
+      "height": 980,
+      "key": "submission-11-manual-download",
+      "sha256": "efdd01211f0095cfabb3c8f02633fb99056e56643dad0a240cde61dd192e776b",
+      "originalSha256": "6913e17e5a79feddcac2ef46782c760c362735935d3ee2331028cb1e1db33faf"
+    },
+    {
+      "src": "/walkthroughs/rfa/tasks-01-tasks-and-response-inbox.png",
+      "original": "/walkthroughs/rfa/originals/tasks-01-tasks-and-response-inbox.png",
+      "width": 1026,
+      "height": 824,
+      "key": "tasks-01-tasks-and-response-inbox",
+      "sha256": "a88634ee33d90ee9751d2d5793de99c9d29c9b3f90c5bc55d3d8d08f3f025c48",
+      "originalSha256": "0a6c21a39ef9ebdc3280873314ad6c625d4af3418e24a3e669a15284f82c64a5"
+    },
+    {
+      "src": "/walkthroughs/rfa/tasks-02-match-response-fax.png",
+      "original": "/walkthroughs/rfa/originals/tasks-02-match-response-fax.png",
+      "width": 1026,
+      "height": 414,
+      "key": "tasks-02-match-response-fax",
+      "sha256": "9a0265d693804bc6706859c4fa017ee1ad9626db4b23a861e65ddc9b421e4e25",
+      "originalSha256": "f13271aa3690f207116695dfea53c507185a33acff3ee298941507dcbcdf2d04"
+    },
+    {
+      "src": "/walkthroughs/rfa/tasks-03-post-treatment-decision.png",
+      "original": "/walkthroughs/rfa/originals/tasks-03-post-treatment-decision.png",
+      "width": 1026,
+      "height": 664,
+      "key": "tasks-03-post-treatment-decision",
+      "sha256": "2749d76ad666d60630047ca70d275e419ae9d175d620c32e06ef542a781dd535",
+      "originalSha256": "34ec1e0821d2846368c9a686c7aeb3841bc429121d87d79ef6e5f663a9333a74"
+    },
+    {
+      "src": "/walkthroughs/rfa/tasks-04-complete-post-ur-review.png",
+      "original": "/walkthroughs/rfa/originals/tasks-04-complete-post-ur-review.png",
+      "width": 1026,
+      "height": 400,
+      "key": "tasks-04-complete-post-ur-review",
+      "sha256": "2ffe912f22346563e4466d9831e286927a612d432e68bdb1da290856ff9b070f",
+      "originalSha256": "5f419879567366a9c40818d0aaa26cf4f454b848b335ca8b9257d3fedeb3531a"
+    },
+    {
+      "src": "/walkthroughs/rfa/tasks-05-completed-response-review.png",
+      "original": "/walkthroughs/rfa/originals/tasks-05-completed-response-review.png",
+      "width": 1026,
+      "height": 906,
+      "key": "tasks-05-completed-response-review",
+      "sha256": "bca653faccea9da4f6284d79348cb492b7265d34365ed3e0ca1cd98c659889a9",
+      "originalSha256": "357b37f20d1d49c4043e4fa3cb51d6d505c95ba9d96be2ed2d1f91c7bc1dc1e3"
+    }
+  ]
+}

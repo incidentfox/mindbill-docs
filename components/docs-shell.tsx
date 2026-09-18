@@ -37,7 +37,7 @@ export function DocsShell({ children }: { children: React.ReactNode }) {
           </Link>
           <SearchDialog />
           <nav className="top-links" aria-label="Primary">
-            <Link className={pathname === "/" || pathname.startsWith("/learn") || pathname.startsWith("/guides") ? "active" : ""} href="/learn/workers-comp-billing">Learn</Link>
+            <Link className={pathname === "/" || pathname.startsWith("/learn") || pathname.startsWith("/guides") || pathname.startsWith("/walkthroughs") ? "active" : ""} href="/learn/workers-comp-billing">Learn</Link>
             <Link className={pathname.startsWith("/components") ? "active" : ""} href="/components/react">Components</Link>
             <Link className={pathname.startsWith("/api-reference") ? "active" : ""} href="/api-reference">API</Link>
           </nav>
