@@ -24,6 +24,19 @@ export type DocLink = {
 };
 
 export const navigation: DocLink[] = [
+  ...[
+    ["", "RFA walkthroughs", "Illustrated workflows with highlighted controls and verification evidence."],
+    ["dashboard", "Find RFAs by status and age", "Use overview counts, dynamic search, and treatment lists."],
+    ["create", "Create an RFA", "Add a patient, injury, treatments, and supporting PDFs."],
+    ["review-and-deliver", "Review and prepare delivery", "Sign, confirm the recipient, and preview the packet."],
+    ["response-tasks", "Match UR and Post UR", "Match incoming responses and record treatment decisions."],
+    ["history", "History and delivery evidence", "Review events, notes, and recorded transmissions."],
+    ["treatment-follow-up", "Close or reopen follow-up", "Record when an individual treatment decision is no longer needed."],
+  ].map(([slug, label, description]) => ({
+    href: `/walkthroughs/rfa${slug ? `/${slug}` : ""}`, label, description,
+    group: "Walkthroughs", icon: Workflow,
+    keywords: ["rfa", "walkthrough", "screenshots", "step by step", "status", "treatment", "history"],
+  })),
   {
     href: "/guides/report-autofill",
     label: "Report autofill",
@@ -261,4 +274,4 @@ export const navigation: DocLink[] = [
   },
 ];
 
-export const navigationGroups = ["Start here", "Understand", "Build", "Components", "Reference"];
+export const navigationGroups = ["Start here", "Understand", "Build", "Components", "Walkthroughs", "Reference"];

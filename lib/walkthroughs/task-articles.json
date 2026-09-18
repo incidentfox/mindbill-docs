@@ -1,0 +1,69 @@
+[
+  {
+    "slug": "response-tasks",
+    "title": "Match responses and post treatment decisions",
+    "description": "Review an incoming response, match it to the right RFA, record treatment decisions, and complete Post UR.",
+    "before": [
+      "You need access to the RFA task board, incoming responses, and permission to update RFAs.",
+      "Have the response document and enough patient, claim, and treatment information to confirm the match.",
+      "Use the decision documented in the response. Receiving a fax does not itself establish approval."
+    ],
+    "steps": [
+      {
+        "title": "Open the task board and response inbox",
+        "instruction": "Open Tasks & response inbox. Use Due, Scheduled, and Completed to find the work you need. Task type narrows the list, including No response tasks for unanswered requests. For an incoming response, choose Review fax. A follow-up date is separate from days-since-sent aging on the overview.",
+        "expected": "The task board and unmatched response inbox appear together. Tasks show their saved follow-up dates.",
+        "image": "tasks-01-tasks-and-response-inbox",
+        "alt": "Open the task board and response inbox with highlighted controls",
+        "caption": "Task filters and Review fax are highlighted."
+      },
+      {
+        "title": "Match the response to the correct request",
+        "instruction": "Review the document using Open Incoming utilization review response PDF or Download PDF above these controls. Search by patient, claim, or RFA if necessary. Select the exact Matching request and use Review selected request to compare its details. Confirm that the patient, claim, and requested treatment match, then choose Match response and open Post UR.",
+        "expected": "The response is associated with the selected request and Post UR opens. Matching does not record a treatment decision.",
+        "image": "tasks-02-match-response-fax",
+        "alt": "Match the response to the correct request with highlighted controls",
+        "caption": "Focused view of the matching controls. The embedded PDF viewer is outside this crop; its rendering was not verified."
+      },
+      {
+        "title": "Record each treatment decision",
+        "instruction": "Confirm the Utilization review response document and enter the decision time. If confirmed receipt evidence is missing, record it before posting decisions. For each treatment addressed by the response, select the decision and enter its supporting information. Denied or modified decisions require the additional information and independent medical review form requested by the form. Choose Save treatment decisions.",
+        "expected": "The addressed treatment shows its saved decision. Treatments not addressed remain pending. Saving decisions does not complete the response-review task.",
+        "image": "tasks-03-post-treatment-decision",
+        "alt": "Record each treatment decision with highlighted controls",
+        "caption": "The example records a synthetic approval and its authorization number and quantity."
+      },
+      {
+        "title": "Complete the Post UR response review",
+        "instruction": "After recording all decisions in this response, find its Post UR task. Set Response review to Confirm all decisions have been recorded, check the confirmation, add a follow-up note, and choose Complete response review. If the document has no new treatment decision, use Confirm no new treatment decision instead. Use the follow-up contact option when more work is needed.",
+        "expected": "The response-review task completes after the reviewer confirms the document was fully reviewed. Logging follow-up contact alone does not complete it.",
+        "image": "tasks-04-complete-post-ur-review",
+        "alt": "Complete the Post UR response review with highlighted controls",
+        "caption": "Post UR records review of this response separately from individual treatment outcomes."
+      },
+      {
+        "title": "Verify the completed task",
+        "instruction": "Return to Tasks & response inbox and choose Completed. Find the Post UR task, completion time, and response filename. Review response reopens the request and its evidence.",
+        "expected": "The completed review appears in Completed, and the matched fax is no longer in the unmatched inbox. Task completion does not imply every treatment was approved.",
+        "image": "tasks-05-completed-response-review",
+        "alt": "Verify the completed task with highlighted controls",
+        "caption": "The completed Post UR task and empty unmatched-response inbox after the synthetic workflow."
+      }
+    ],
+    "limitations": "Match UR, saving a treatment decision, and completing Post UR were exercised against local fixtures. The alternate no-new-decision completion path was not exercised. Embedded PDF rendering was blank in headless Chrome and remains unverified; Open/Download controls and a synthetic PDF resource were present. The screenshots preserve the console’s current oversized checkbox styling. Backend OCR, matching, deadline calculations, and live fax delivery were not verified by these captures.",
+    "related": [
+      {
+        "href": "/walkthroughs/rfa/history",
+        "label": "Read history and delivery evidence"
+      },
+      {
+        "href": "/walkthroughs/rfa/treatment-follow-up",
+        "label": "Close or reopen treatment follow-up"
+      },
+      {
+        "href": "/guides/rfas",
+        "label": "RFA integration and API guide"
+      }
+    ]
+  }
+]

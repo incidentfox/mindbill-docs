@@ -1,0 +1,158 @@
+{
+  "01-status-and-aging": {
+    "src": "/walkthroughs/rfa/01-status-and-aging.png",
+    "original": "/walkthroughs/rfa/originals/01-status-and-aging.png",
+    "width": 1026,
+    "height": 723
+  },
+  "02-aging-drilldown": {
+    "src": "/walkthroughs/rfa/02-aging-drilldown.png",
+    "original": "/walkthroughs/rfa/originals/02-aging-drilldown.png",
+    "width": 1026,
+    "height": 201
+  },
+  "03-filtered-rfas": {
+    "src": "/walkthroughs/rfa/03-filtered-rfas.png",
+    "original": "/walkthroughs/rfa/originals/03-filtered-rfas.png",
+    "width": 1026,
+    "height": 550
+  },
+  "04-search-requests": {
+    "src": "/walkthroughs/rfa/04-search-requests.png",
+    "original": "/walkthroughs/rfa/originals/04-search-requests.png",
+    "width": 1026,
+    "height": 92
+  },
+  "05-requested-treatments": {
+    "src": "/walkthroughs/rfa/05-requested-treatments.png",
+    "original": "/walkthroughs/rfa/originals/05-requested-treatments.png",
+    "width": 1026,
+    "height": 606
+  },
+  "06-history-and-notes": {
+    "src": "/walkthroughs/rfa/06-history-and-notes.png",
+    "original": "/walkthroughs/rfa/originals/06-history-and-notes.png",
+    "width": 1026,
+    "height": 743
+  },
+  "07-delivery-evidence": {
+    "src": "/walkthroughs/rfa/07-delivery-evidence.png",
+    "original": "/walkthroughs/rfa/originals/07-delivery-evidence.png",
+    "width": 1026,
+    "height": 244
+  },
+  "08-close-treatment": {
+    "src": "/walkthroughs/rfa/08-close-treatment.png",
+    "original": "/walkthroughs/rfa/originals/08-close-treatment.png",
+    "width": 1026,
+    "height": 417
+  },
+  "09-reopen-treatment": {
+    "src": "/walkthroughs/rfa/09-reopen-treatment.png",
+    "original": "/walkthroughs/rfa/originals/09-reopen-treatment.png",
+    "width": 1026,
+    "height": 454
+  },
+  "10-reopened-treatment": {
+    "src": "/walkthroughs/rfa/10-reopened-treatment.png",
+    "original": "/walkthroughs/rfa/originals/10-reopened-treatment.png",
+    "width": 1026,
+    "height": 204
+  },
+  "submission-01-patient-physician": {
+    "src": "/walkthroughs/rfa/submission-01-patient-physician.png",
+    "original": "/walkthroughs/rfa/originals/submission-01-patient-physician.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-02-new-patient-injury": {
+    "src": "/walkthroughs/rfa/submission-02-new-patient-injury.png",
+    "original": "/walkthroughs/rfa/originals/submission-02-new-patient-injury.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-03-request-review-flags": {
+    "src": "/walkthroughs/rfa/submission-03-request-review-flags.png",
+    "original": "/walkthroughs/rfa/originals/submission-03-request-review-flags.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-04-practice-contacts": {
+    "src": "/walkthroughs/rfa/submission-04-practice-contacts.png",
+    "original": "/walkthroughs/rfa/originals/submission-04-practice-contacts.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-05-diagnosis-treatment": {
+    "src": "/walkthroughs/rfa/submission-05-diagnosis-treatment.png",
+    "original": "/walkthroughs/rfa/originals/submission-05-diagnosis-treatment.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-06-supporting-document-create": {
+    "src": "/walkthroughs/rfa/submission-06-supporting-document-create.png",
+    "original": "/walkthroughs/rfa/originals/submission-06-supporting-document-create.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-07-review-sign": {
+    "src": "/walkthroughs/rfa/submission-07-review-sign.png",
+    "original": "/walkthroughs/rfa/originals/submission-07-review-sign.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-08-directory-destination": {
+    "src": "/walkthroughs/rfa/submission-08-directory-destination.png",
+    "original": "/walkthroughs/rfa/originals/submission-08-directory-destination.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-09-custom-adjuster-fax": {
+    "src": "/walkthroughs/rfa/submission-09-custom-adjuster-fax.png",
+    "original": "/walkthroughs/rfa/originals/submission-09-custom-adjuster-fax.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-10-assembled-packet-sandbox": {
+    "src": "/walkthroughs/rfa/submission-10-assembled-packet-sandbox.png",
+    "original": "/walkthroughs/rfa/originals/submission-10-assembled-packet-sandbox.png",
+    "width": 1280,
+    "height": 980
+  },
+  "submission-11-manual-download": {
+    "src": "/walkthroughs/rfa/submission-11-manual-download.png",
+    "original": "/walkthroughs/rfa/originals/submission-11-manual-download.png",
+    "width": 1280,
+    "height": 980
+  },
+  "tasks-01-tasks-and-response-inbox": {
+    "src": "/walkthroughs/rfa/tasks-01-tasks-and-response-inbox.png",
+    "original": "/walkthroughs/rfa/originals/tasks-01-tasks-and-response-inbox.png",
+    "width": 1026,
+    "height": 824
+  },
+  "tasks-02-match-response-fax": {
+    "src": "/walkthroughs/rfa/tasks-02-match-response-fax.png",
+    "original": "/walkthroughs/rfa/originals/tasks-02-match-response-fax.png",
+    "width": 1026,
+    "height": 414
+  },
+  "tasks-03-post-treatment-decision": {
+    "src": "/walkthroughs/rfa/tasks-03-post-treatment-decision.png",
+    "original": "/walkthroughs/rfa/originals/tasks-03-post-treatment-decision.png",
+    "width": 1026,
+    "height": 664
+  },
+  "tasks-04-complete-post-ur-review": {
+    "src": "/walkthroughs/rfa/tasks-04-complete-post-ur-review.png",
+    "original": "/walkthroughs/rfa/originals/tasks-04-complete-post-ur-review.png",
+    "width": 1026,
+    "height": 400
+  },
+  "tasks-05-completed-response-review": {
+    "src": "/walkthroughs/rfa/tasks-05-completed-response-review.png",
+    "original": "/walkthroughs/rfa/originals/tasks-05-completed-response-review.png",
+    "width": 1026,
+    "height": 906
+  }
+}
