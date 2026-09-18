@@ -3,7 +3,7 @@
     "src": "/walkthroughs/rfa/01-status-and-aging.png",
     "original": "/walkthroughs/rfa/originals/01-status-and-aging.png",
     "width": 1026,
-    "height": 723
+    "height": 745
   },
   "02-aging-drilldown": {
     "src": "/walkthroughs/rfa/02-aging-drilldown.png",
@@ -15,7 +15,7 @@
     "src": "/walkthroughs/rfa/03-filtered-rfas.png",
     "original": "/walkthroughs/rfa/originals/03-filtered-rfas.png",
     "width": 1026,
-    "height": 550
+    "height": 558
   },
   "04-search-requests": {
     "src": "/walkthroughs/rfa/04-search-requests.png",
@@ -27,7 +27,7 @@
     "src": "/walkthroughs/rfa/05-requested-treatments.png",
     "original": "/walkthroughs/rfa/originals/05-requested-treatments.png",
     "width": 1026,
-    "height": 606
+    "height": 591
   },
   "06-history-and-notes": {
     "src": "/walkthroughs/rfa/06-history-and-notes.png",

@@ -20,7 +20,7 @@ export default function RfaWalkthroughsPage() {
     </Link>)}</div>
     <h2 id="verification">A visual record you can audit</h2>
     <p>The red outlines and numbered markers were placed over actual browser controls during capture. Every image has a full-size view and an unmarked original. The instructions name the action and describe its expected result, so you can compare your own integration with each screen.</p>
-    <Callout title="What was exercised">The published React 0.75.0 components ran in local production builds against synthetic API fixtures. Browser checks exercised the interactions shown here. These are UI workflow demonstrations, not screenshots of customer data or evidence of live fax delivery.</Callout>
+    <Callout title="What was exercised">React 0.75.0 components, with the dashboard, history, and treatment follow-up captures refreshed using 0.75.1, ran in local production builds against synthetic API fixtures. Browser checks exercised the interactions shown here. These are UI workflow demonstrations, not screenshots of customer data or evidence of live fax delivery.</Callout>
     <ul>
       <li><strong>Captured:</strong> September 18, 2026. All patient, claim, provider, and recipient records are fictional.</li>
       <li><strong>Audit files:</strong> <a href="/walkthroughs/rfa/evidence.json">capture and interaction checks</a>, plus original images linked beneath each step.</li>
