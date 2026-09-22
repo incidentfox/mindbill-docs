@@ -119,12 +119,12 @@ const createBillFields: ApiField[] = [
   { name: "serviceLines[].code", type: "string", required: true, description: "Procedure or service code, such as ML201 or 99205." },
   { name: "serviceLines[].modifiers", type: "string[]", description: "Procedure modifiers without hyphens." },
   { name: "serviceLines[].units", type: "number", description: "Positive integer unit count.", constraint: "Default: 1; 1–10,000" },
-  { name: "serviceLines[].charge", type: "number", description: "Reviewed total charge for this line, not a unit price. Required for professional treatment bills; do not assume a fee quote is available for every service.", constraint: "> 0" },
+  { name: "serviceLines[].charge", type: "number", description: "Optional extended billed-charge override in dollars, not a unit price or allowance. For supported professional lines, MindBill uses a matching practice charge or the statutory maximum when omitted. Specialty claim forms can still require a charge.", constraint: "> 0" },
   { name: "serviceLines[].serviceDate", type: "string", description: "Treatment line date of service; defaults to service.date.", constraint: "YYYY-MM-DD" },
   { name: "serviceLines[].serviceDateEnd", type: "string", description: "Optional treatment line end date.", constraint: "YYYY-MM-DD" },
   { name: "serviceLines[].diagnosisPointers", type: "number[]", description: "Professional treatment: one-based positions in diagnoses that apply to this procedure. Medical-legal billing uses the shared diagnosis list.", constraint: "At most 4 pointers, each 1–12 and referencing a supplied diagnosis" },
   { name: "serviceLines[].rfaItemId", type: "string", description: "Optional saved RFA item for professional treatment. The server validates the authorization against this bill; linking an item does not establish approval." },
-  { name: "serviceLines[].feeContext", type: "object", description: "Clinical and billing context for server verification of a treatment fee. Code, dates, units, charge, provider/payer identity, and service location are taken from the bill. An unresolved quote returns 422 bill_fee_requires_review. See the California fee guide and OpenAPI for the applicable specialty context." },
+  { name: "serviceLines[].feeContext", type: "object", description: "Optional clinical and billing facts for fee verification when a service differs from the standard context inferred from the bill or requires specialty details. Explicit context wins over defaults. Unresolved pricing is returned in pricing.status and pricing.warnings rather than treating the charge as an allowance." },
 ];
 
 const billResponseFields: ApiField[] = [
@@ -136,7 +136,14 @@ const billResponseFields: ApiField[] = [
   { name: "patient", type: "PatientSnapshot", required: true, description: "Frozen patient values on this bill." },
   { name: "claim", type: "ClaimSnapshot", required: true, description: "Frozen claim and payer values, including diagnoses." },
   { name: "service", type: "object", required: true, description: "Primary service date, optional end date, and authorization number." },
-  { name: "serviceLines", type: "ServiceLine[]", required: true, description: "Procedure lines and calculated allowed amounts." },
+  { name: "serviceLines", type: "ServiceLine[]", required: true, description: "Procedure lines with billed charges and fee-calculation results kept separate." },
+  { name: "serviceLines[].charge", type: "number", required: true, description: "Extended billed charge in dollars. This is not necessarily the expected reimbursement." },
+  { name: "serviceLines[].pricing.status", type: '"calculated" | "manual_charge" | "requires_review"', required: true, description: "Whether the line has a verified saved calculation, only a manual charge, or needs review." },
+  { name: "serviceLines[].pricing.expectedAmount", type: "number | null", required: true, description: "Saved estimated reimbursement in dollars. Null when no verified calculation is available." },
+  { name: "serviceLines[].pricing.scheduleMaximumAmount", type: "number | null", required: true, description: "Applicable fee-schedule ceiling before a billed-charge cap, in dollars." },
+  { name: "serviceLines[].pricing.statutoryMaximumAmount", type: "number | null", required: true, description: "Statutory maximum retained separately when a payer contract applies." },
+  { name: "serviceLines[].pricing.reimbursementBasis", type: '"statutory_schedule" | "payer_contract" | null', required: true, description: "Source of the expected reimbursement when calculated." },
+  { name: "serviceLines[].pricing.warnings", type: "object[]", required: true, description: "Structured attention items such as charge_exceeds_schedule_maximum, fee_context_required, or saved_fee_quote_mismatch." },
   { name: "documents", type: "BillDocument[]", required: true, description: "Documents currently included in the payer packet." },
   { name: "amounts", type: "object", required: true, description: "Charged, paid, and balance amounts." },
 ];
@@ -310,7 +317,22 @@ export const apiEndpoints: ApiEndpoint[] = [
   "billingProvider": { "name": "Example Evaluations", "taxId": "123456789", "npi": "1234567890", "phone": "5595550100", "address": { "line1": "200 Market St", "city": "Fresno", "state": "CA", "postalCode": "93721" } },
   "renderingProvider": { "name": "Morgan Chen, MD", "npi": "1098765432", "taxonomy": "2084P0800X" },
   "serviceLocation": { "name": "Fresno Exam Office", "placeOfServiceCode": "11", "address": { "line1": "300 Pine Ave", "city": "Fresno", "state": "CA", "postalCode": "93721" } },
-  "serviceLines": [{ "id": "line_01", "code": "ML201", "modifiers": ["95"], "units": 1, "allowed": 2015 }],
+  "serviceLines": [{
+    "id": "line_01",
+    "code": "ML201",
+    "modifiers": ["95"],
+    "units": 1,
+    "charge": 2015,
+    "allowed": 2015,
+    "pricing": {
+      "status": "calculated",
+      "expectedAmount": 2015,
+      "scheduleMaximumAmount": 2015,
+      "statutoryMaximumAmount": 2015,
+      "reimbursementBasis": "statutory_schedule",
+      "warnings": []
+    }
+  }],
   "documents": [{
     "id": "doc_01J6Y7J2E7D3J5F9Q8K4M6N1P0",
     "externalId": "document_456",

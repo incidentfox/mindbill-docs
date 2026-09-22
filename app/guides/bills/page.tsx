@@ -84,15 +84,37 @@ const list = `const page = await mindbill.listBills({
   limit: 25,
 });`;
 
+const professionalPricing = `// Service-line fragment from a professional bill.
+// charge is optional; amounts on bill inputs and responses are dollars.
+{
+  "code": "99213",
+  "units": 1,
+  "serviceDate": "2026-09-22"
+}
+
+// After submission, read reimbursement separately from the billed charge.
+{
+  "charge": 181.68,
+  "pricing": {
+    "status": "calculated",
+    "expectedAmount": 181.68,
+    "scheduleMaximumAmount": 181.68,
+    "statutoryMaximumAmount": 181.68,
+    "reimbursementBasis": "statutory_schedule",
+    "warnings": []
+  }
+}`;
+
 export default function BillsPage() {
   return (
     <DocPage
       eyebrow="Build"
       title="The bill resource"
-      description="A bill is created and submitted atomically as an immutable snapshot of the claim, services, providers, and payer packet."
+      description="Create and submit an immutable claim snapshot, with automatic fee calculation for supported California professional services."
       toc={[
         { id: "snapshot", label: "Snapshot model" },
         { id: "submit", label: "Create and submit" },
+        { id: "pricing", label: "Professional pricing" },
         { id: "query", label: "Find bills" },
         { id: "availability", label: "Availability" },
       ]}
@@ -111,6 +133,14 @@ export default function BillsPage() {
       <CodeBlock code={submit} filename="server/submit-bill.ts" />
       <Callout title="Failure does not create a bill">Validation and other pre-submission failures create no public bill. Retry an identical request with the same idempotency key. After a confirmed validation failure, use a new key for a corrected payload. If the outcome is uncertain, retry the original request or reconcile the result before creating a new submission. Save the returned bill ID after success.</Callout>
 
+      <h2 id="pricing">Let MindBill calculate professional fees</h2>
+      <p>For a California CMS-1500 bill with <code>billingMode: &quot;professional&quot;</code>, send the procedure code, units, date of service, rendering taxonomy, service ZIP, and place of service. For supported ordinary physician and office physical-therapy lines, <code>serviceLines[].charge</code> is optional. MindBill calculates the applicable fee and uses a matching practice charge schedule when one exists; otherwise the billed charge defaults to the statutory maximum.</p>
+      <CodeBlock code={professionalPricing} language="json" filename="Professional service-line fragment and saved result" />
+      <p>If you supply <code>charge</code>, it is the extended billed-charge override in dollars, not a unit price and never a caller-selected allowance. A <code>charge</code> of <code>999</code> can remain the submitted charge while <code>pricing.expectedAmount</code> stays capped at the verified schedule maximum. Quote fields explicitly ending in <code>Cents</code> use integer cents instead.</p>
+      <p>Send <code>feeContext</code> when the actual service differs from the standard inferred facts or needs details that cannot be derived from the bill. Explicit context wins over defaults. Read <code>pricing.status</code>, <code>expectedAmount</code>, <code>scheduleMaximumAmount</code>, <code>reimbursementBasis</code>, sources, and warnings from each returned line. A review warning means no verified reimbursement was saved; it never turns the submitted charge into an allowance.</p>
+      <Callout title="Charges and reimbursement stay separate"><code>charge_exceeds_schedule_maximum</code> preserves an above-maximum billed charge while keeping reimbursement capped. <code>fee_context_required</code> and <code>saved_fee_quote_mismatch</code> identify lines that need calculation review. Use <code>pricing.expectedAmount</code> for the estimate; the legacy <code>feeSchedule</code> field can contain a historical manual charge.</Callout>
+      <p>For encounter-wide NCCI and unit-edit assessment, specialty inputs, calculation steps, and source citations, use the <Link href="/guides/fee-schedules">California fee calculator</Link>.</p>
+
       <h2 id="query">Find submitted bills from your records</h2>
       <p>Store the stable MindBill bill ID after successful submission, or find submitted bills later using your external identifiers.</p>
       <CodeBlock code={list} filename="server/find-bills.ts" />
@@ -120,7 +150,7 @@ export default function BillsPage() {
 
       <h2 id="availability">Billing-mode availability</h2>
       <p>Use <code>med_legal</code> for California medical-legal bills, including QME and AME workflows.</p>
-      <Callout title="Treatment billing requires organization access"><code>professional</code> billing is available when treatment billing is enabled for your organization. Follow the <Link href="/learn/treatment-quickstart">treatment billing quickstart</Link> for setup and service-line examples.</Callout>
+      <Callout title="Treatment billing requires organization access"><code>professional</code> billing and automatic professional fee calculation are available when treatment billing is enabled for your organization. Follow the <Link href="/learn/treatment-quickstart">treatment billing quickstart</Link> for setup and service-line examples.</Callout>
     </DocPage>
   );
 }
