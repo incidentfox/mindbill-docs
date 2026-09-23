@@ -84,16 +84,34 @@ const list = `const page = await mindbill.listBills({
   limit: 25,
 });`;
 
-const professionalPricing = `// Service-line fragment from a professional bill.
-// charge is optional; amounts on bill inputs and responses are dollars.
+const professionalPricing = `// Pricing-relevant excerpt from an otherwise complete bill request.
+// ZIP, place of service, and taxonomy live on the parent bill—not the line.
 {
-  "code": "99213",
-  "units": 1,
-  "serviceDate": "2026-09-22"
+  "billingMode": "professional",
+  "claim": {
+    "injuryState": "CA"
+  },
+  "service": {
+    "date": "2026-09-22"
+  },
+  "renderingProvider": {
+    "taxonomy": "2084P0800X"
+  },
+  "serviceLocation": {
+    "placeOfServiceCode": "11",
+    "address": {
+      "postalCode": "94403"
+    }
+  },
+  "serviceLines": [{
+    "code": "99213",
+    "units": 1
+  }]
 }
 
-// After submission, read reimbursement separately from the billed charge.
+// Returned service-line excerpt. Amounts here are dollars.
 {
+  "code": "99213",
   "charge": 181.68,
   "pricing": {
     "status": "calculated",
@@ -134,12 +152,23 @@ export default function BillsPage() {
       <Callout title="Failure does not create a bill">Validation and other pre-submission failures create no public bill. Retry an identical request with the same idempotency key. After a confirmed validation failure, use a new key for a corrected payload. If the outcome is uncertain, retry the original request or reconcile the result before creating a new submission. Save the returned bill ID after success.</Callout>
 
       <h2 id="pricing">Let MindBill calculate professional fees</h2>
-      <p>For a California CMS-1500 bill with <code>billingMode: &quot;professional&quot;</code>, send the procedure code, units, date of service, rendering taxonomy, service ZIP, and place of service. For supported ordinary physician and office physical-therapy lines, <code>serviceLines[].charge</code> is optional. MindBill calculates the applicable fee and uses a matching practice charge schedule when one exists; otherwise the billed charge defaults to the statutory maximum.</p>
-      <CodeBlock code={professionalPricing} language="json" filename="Professional service-line fragment and saved result" />
+      <p>For a California CMS-1500 bill with <code>billingMode: &quot;professional&quot;</code>, MindBill calculates supported lines from the complete bill context. ZIP and place of service are not repeated on each ordinary service line: they come from <code>bill.serviceLocation</code>. Provider type comes from <code>bill.renderingProvider.taxonomy</code>, and a line&apos;s date defaults to <code>bill.service.date</code>.</p>
+      <div className="term-list">
+        <div><b><code>bill.claim.injuryState</code></b><p>Selects the governing jurisdiction. Automatic California OMFS pricing requires <code>CA</code>.</p></div>
+        <div><b><code>bill.serviceLocation.address.postalCode</code></b><p>Maps the service to the applicable geographic locality when the schedule is locality-sensitive.</p></div>
+        <div><b><code>bill.serviceLocation.placeOfServiceCode</code></b><p>Selects the actual setting, including facility versus non-facility treatment where the schedule distinguishes them.</p></div>
+        <div><b><code>bill.renderingProvider.taxonomy</code></b><p>Identifies the rendering provider type used by provider-specific rules and percentages.</p></div>
+        <div><b><code>bill.service.date</code> or <code>serviceLines[].serviceDate</code></b><p>Selects the fee source and rules effective on the actual date of service. A line date overrides the bill-level date for that line.</p></div>
+        <div><b><code>serviceLines[].code</code>, <code>units</code>, and <code>modifiers</code></b><p>Identify the service, quantity, and applicable modifier rules. Include the actual modifiers; do not add one only to obtain a different price.</p></div>
+        <div><b><code>serviceLines[].feeContext</code></b><p>Supplies specialty or encounter facts that cannot be derived safely from the ordinary bill fields. Explicit context wins over inferred defaults.</p></div>
+      </div>
+      <p>The following is deliberately only the pricing-relevant excerpt. A real submission must also contain the patient, claim, provider, payer, diagnoses, and other required fields shown in the <Link href="/api-reference/create-bill">create-bill reference</Link>.</p>
+      <CodeBlock code={professionalPricing} language="json" filename="Professional bill pricing inputs and returned line" />
+      <p>For supported ordinary physician and office physical-therapy lines, <code>serviceLines[].charge</code> is optional. MindBill calculates the applicable fee and uses a matching practice charge schedule when one exists; otherwise the billed charge defaults to the calculated statutory maximum. The statutory maximum itself still reflects the date, ZIP/locality, place of service, provider type, code, units, modifiers, and any required context.</p>
       <p>If you supply <code>charge</code>, it is the extended billed-charge override in dollars, not a unit price and never a caller-selected allowance. A <code>charge</code> of <code>999</code> can remain the submitted charge while <code>pricing.expectedAmount</code> stays capped at the verified schedule maximum. Quote fields explicitly ending in <code>Cents</code> use integer cents instead.</p>
       <p>Send <code>feeContext</code> when the actual service differs from the standard inferred facts or needs details that cannot be derived from the bill. Explicit context wins over defaults. Read <code>pricing.status</code>, <code>expectedAmount</code>, <code>scheduleMaximumAmount</code>, <code>reimbursementBasis</code>, sources, and warnings from each returned line. A review warning means no verified reimbursement was saved; it never turns the submitted charge into an allowance.</p>
       <Callout title="Charges and reimbursement stay separate"><code>charge_exceeds_schedule_maximum</code> preserves an above-maximum billed charge while keeping reimbursement capped. <code>fee_context_required</code> and <code>saved_fee_quote_mismatch</code> identify lines that need calculation review. Use <code>pricing.expectedAmount</code> for the estimate; the legacy <code>feeSchedule</code> field can contain a historical manual charge.</Callout>
-      <p>For encounter-wide NCCI and unit-edit assessment, specialty inputs, calculation steps, and source citations, use the <Link href="/guides/fee-schedules">California fee calculator</Link>.</p>
+      <p>The standalone quote API represents some of these same facts differently: <code>POST /fee-quotes/ca/claim</code> accepts <code>lines[].serviceZip</code> and <code>lines[].physicianContext.placeOfService</code>. Do not copy those quote-only field names into <code>bill.serviceLines[]</code>. For the exact quote shape, encounter-wide NCCI and unit-edit assessment, specialty inputs, calculation steps, and source citations, use the <Link href="/guides/fee-schedules#request-shapes">California fee calculator guide</Link>.</p>
 
       <h2 id="query">Find submitted bills from your records</h2>
       <p>Store the stable MindBill bill ID after successful submission, or find submitted bills later using your external identifiers.</p>
