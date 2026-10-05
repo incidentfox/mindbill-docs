@@ -171,6 +171,14 @@ export const navigation: DocLink[] = [
     keywords: ["api key", "token", "origin", "security", "session"],
   },
   {
+    href: "/guides/organizations",
+    label: "Customer organizations",
+    description: "Isolate customer billing data and select the authorized organization.",
+    group: "Build",
+    icon: Layers3,
+    keywords: ["organization", "customer", "tenant", "scope", "access control", "header"],
+  },
+  {
     href: "/guides/notifications",
     label: "Notification emails",
     description: "Choose host-routed alerts or explicit opt-in for partner-only users.",

@@ -39,8 +39,8 @@ export default function SandboxPage() {
         <div><span>Read account, keys, and usage</span><code>account:read</code></div>
         <div><span>Accept the BAA and update security settings</span><code>account:write</code></div>
         <div><span>Create and revoke API keys</span><code>keys:write</code></div>
-        <div><span>Read organizations</span><code>orgs:read</code></div>
-        <div><span>Create organizations and manage access</span><code>orgs:write</code></div>
+        <div><span><Link href="/guides/organizations#list">Read organizations</Link></span><code>orgs:read</code></div>
+        <div><span><Link href="/guides/organizations#create">Create organizations and manage access</Link></span><code>orgs:write</code></div>
         <div><span>Update reusable source profiles</span><code>settings:write</code></div>
       </div>
       <p>Browser access uses the separate <Link href="/guides/authentication#permissions">browser permission set</Link>, assigned from your application’s roles. A submitted bill has no edit permission because its snapshot and payer packet are immutable.</p>
