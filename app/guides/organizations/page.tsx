@@ -31,6 +31,32 @@ const selectOrganization = `curl https://app.mindbill.org/partner/v2/bills \\
   --header "Authorization: Bearer $MINDBILL_API_KEY" \\
   --header "X-MindBill-Org-Id: org_01example"`;
 
+const mintBrowserSession = `// Your authenticated server route; never run this in the browser.
+import { MindBillClient } from "@mindbill/node";
+
+const mindbill = new MindBillClient({ apiKey: process.env.MINDBILL_API_KEY! });
+
+export async function POST(request: Request) {
+  if (!process.env.APP_ORIGIN || request.headers.get("origin") !== process.env.APP_ORIGIN)
+    return Response.json({ error: "Origin not allowed" }, { status: 403 });
+  const user = await requireSignedInUser(request);
+  const customer = await requireCustomerAccess(user); // Server-owned membership lookup.
+  const organizationId = customer.mindbillOrganizationId; // Saved at provisioning.
+  const permissions = permissionsForRole(user.role);
+
+  const session = await mindbill.createBrowserSession({
+    organizationId,
+    subject: user.id,
+    allowedOrigin: process.env.APP_ORIGIN!,
+    permissions,
+    expiresIn: 900,
+  });
+  return Response.json({ token: session.token, expiresAt: session.expiresAt },
+    { headers: { "Cache-Control": "no-store" } });
+}
+
+// In React: <ConnectedBillingWorkspace sessionEndpoint="/api/mindbill/session" />`;
+
 export default function OrganizationsPage() {
   return (
     <DocPage
@@ -42,6 +68,7 @@ export default function OrganizationsPage() {
         { id: "create", label: "Create an organization" },
         { id: "list", label: "List organizations" },
         { id: "select", label: "Select the customer" },
+        { id: "browser", label: "Mint a browser session" },
         { id: "fixed", label: "Restrict a key" },
       ]}
       previous={{ href: "/guides/authentication", label: "Authentication" }}
@@ -68,6 +95,12 @@ export default function OrganizationsPage() {
       <p>For an account-scoped key, send the saved MindBill organization ID in <code>X-MindBill-Org-Id</code> on bill, settings, notification, and other organization-specific requests.</p>
       <CodeBlock code={selectOrganization} language="bash" filename="Read bills for the authenticated customer" />
       <p>MindBill verifies that the organization is linked to the key. A header for an unlinked organization is rejected. Existing single-organization workspaces may retain a default; integrations with more than one possible organization must select the customer explicitly.</p>
+
+      <h2 id="browser">Mint a browser session for that organization</h2>
+      <p>For React components, authenticate the user on your server and resolve their customer&apos;s saved MindBill organization ID from your own membership data. Pass it to <code>createBrowserSession</code>. The Node SDK sends <code>X-MindBill-Org-Id</code> only when issuing this session. With plain HTTP, send the same header on <code>POST /partner/v2/browser-sessions</code>, outside the JSON body.</p>
+      <CodeBlock code={mintBrowserSession} language="typescript" filename="app/api/mindbill/session/route.ts" />
+      <p>The response&apos;s <code>organizationId</code> identifies the organization bound to the short-lived browser token. MindBill rejects a token used with a different organization header. The React component sends the token directly to MindBill; it does not choose an organization or receive the server API key. The host route must recheck customer membership and role each time it issues or refreshes a token. Permissions limit operations; an optional <code>resource</code> can narrow access to a customer or bill within the selected organization.</p>
+      <Callout title="Choose the server key boundary">An account-scoped key can mint sessions for its linked organizations after your server selects one. A key fixed to one organization can mint only for that organization. If the SDK client has a fixed <code>organizationId</code>, a different per-session ID is rejected.</Callout>
 
       <h2 id="fixed">Restrict a key to one organization</h2>
       <p>Create an organization-scoped key when a service should access only one customer. That key cannot switch to another organization, even if a different <code>X-MindBill-Org-Id</code> header is sent. Browser sessions are also fixed to the organization chosen by your server when the session is issued.</p>

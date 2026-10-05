@@ -767,7 +767,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     ],
     responseFields: [
       { name: "sessionId", type: "string", required: true, description: "Session audit identifier." },
-      { name: "organizationId", type: "string", required: true, description: "Organization fixed by the server credential." },
+      { name: "organizationId", type: "string", required: true, description: "Organization fixed to this browser token when issued; selected by the server key or X-MindBill-Org-Id header." },
       { name: "subject", type: "string", required: true, description: "Your signed-in user identifier." },
       { name: "permissions", type: "string[]", required: true, description: "Effective browser permissions." },
       { name: "resource", type: "{ billId: string } | null", required: true, description: "Optional bill restriction." },
@@ -783,9 +783,11 @@ const mindbill = new MindBillClient({
 
 export async function POST(request: Request) {
   const user = await requireSignedInUser(request);
+  const customer = await requireCustomerAccess(user);
   const permissions = permissionsForRole(user.role);
 
   const session = await mindbill.createBrowserSession({
+    organizationId: customer.mindbillOrganizationId,
     subject: user.id,
     allowedOrigin: process.env.APP_ORIGIN!,
     permissions,
@@ -797,6 +799,7 @@ export async function POST(request: Request) {
       { label: "cURL", language: "bash", filename: "Create a browser session", code: `curl https://app.mindbill.org/partner/v2/browser-sessions \\
   --request POST \\
   --header "Authorization: Bearer $MINDBILL_API_KEY" \\
+  --header "X-MindBill-Org-Id: org_01J4" \\
   --header "Content-Type: application/json" \\
   --header "Idempotency-Key: session_user_42" \\
   --data '{
@@ -816,7 +819,7 @@ export async function POST(request: Request) {
   "expiresAt": "2026-08-29T19:15:00.000Z"
 }`,
     notes: [
-      { title: "Organization and role are separate boundaries", body: "The API key fixes the organization. Your session route authenticates the user and maps their application role to permissions. A bill-restricted post-submit session cannot include bills:create." },
+      { title: "Organization and role are separate boundaries", body: "An organization-scoped key fixes the organization. An account-scoped key selects a linked organization with X-MindBill-Org-Id when issuing the session. The resulting browser token is fixed to that organization and cannot switch it. Your session route authenticates the user and maps their role to permissions. A bill-restricted post-submit session cannot include bills:create." },
       { title: "Trust events, not the browser callback", body: "Use the atomic submission response for immediate UI state. Persist durable lifecycle changes from ordered events or signed webhooks because payer responses can arrive after the browser closes." },
     ],
   },
