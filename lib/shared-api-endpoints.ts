@@ -1262,6 +1262,65 @@ export const sharedApiEndpoints: ApiEndpoint[] = [
     "idempotent": false
   },
   {
+    "slug": "list-organizations",
+    "group": "Platform",
+    "authentication": "api-key",
+    "method": "GET",
+    "path": "/organizations",
+    "title": "List organizations",
+    "summary": "List the customer organizations available to the current key and environment.",
+    "useWhen": "Reconcile the organization IDs linked to an account-scoped key. An organization-scoped key returns only its fixed organization.",
+    "permissions": [
+      "Server: orgs:read"
+    ],
+    "requestFields": [],
+    "responseFields": [
+      {
+        "name": "data",
+        "type": "object[]",
+        "required": true,
+        "description": "Organizations linked to the key in its current sandbox or live environment."
+      },
+      {
+        "name": "data[].organizationId",
+        "type": "string",
+        "required": true,
+        "description": "MindBill organization ID to send in X-MindBill-Org-Id."
+      },
+      {
+        "name": "data[].externalId",
+        "type": "string | null",
+        "required": true,
+        "description": "Stable customer ID supplied when the organization was provisioned."
+      },
+      {
+        "name": "data[].name",
+        "type": "string",
+        "required": true,
+        "description": "Organization display name."
+      },
+      {
+        "name": "data[].status",
+        "type": "string",
+        "required": true,
+        "description": "Current onboarding or activation status."
+      }
+    ],
+    "examples": [
+      {
+        "label": "Server",
+        "language": "bash",
+        "filename": "Request",
+        "code": "curl 'https://app.mindbill.org/partner/v2/organizations' \\\n+  --request GET \\\n+  --header \"Authorization: Bearer $MINDBILL_API_KEY\""
+      }
+    ],
+    "responseStatus": "200",
+    "responseExample": "{\n  \"data\": [\n    {\n      \"organizationId\": \"org_01example\",\n      \"externalId\": \"practice_42\",\n      \"name\": \"Example Medical Group\",\n      \"status\": \"active\"\n    }\n  ]\n}",
+    "queryFields": [],
+    "pathFields": [],
+    "idempotent": false
+  },
+  {
     "slug": "provision-organization",
     "group": "Platform",
     "authentication": "api-key",

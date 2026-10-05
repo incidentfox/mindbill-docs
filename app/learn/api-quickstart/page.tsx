@@ -24,7 +24,7 @@ export default function ApiQuickstartPage() {
           <p>Save this beside your client. The directory, search, and some action examples use <code>api()</code> for endpoints the SDK does not yet wrap.</p>
           <CodeBlock code={recipes.apiHelper} filename="mindbill-api.ts" />
         </details>
-        <p className="quickstart-note">These examples use a key for one organization. Multi-organization partners also set the SDK’s <code>organizationId</code> and the API’s <code>x-mindbill-org-id</code> header.</p>
+        <p className="quickstart-note">These examples use a key for one organization. Multi-organization partners should follow the <Link href="/guides/organizations">customer organization guide</Link>, set the SDK&apos;s <code>organizationId</code>, and send <code>X-MindBill-Org-Id</code> with direct API requests.</p>
       </section>
       <section id="create"><h2>3. Create a bill</h2>
         <p>Download the <a href="/examples/bill.json" download="bill.json">example bill.json</a>, replace its administrator placeholders with a directory entry for your test claim, and put a synthetic PDF beside it as <code>synthetic-final-report.pdf</code>.</p>
