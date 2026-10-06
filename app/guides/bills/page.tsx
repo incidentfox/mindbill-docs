@@ -178,7 +178,7 @@ export default function BillsPage() {
       <p><code>ConnectedBillSearch</code> and the workspace registry provide these controls out of the box. Apply text and dates with Search or Enter; status, age, patient, rendering-provider, and claims-administrator filters apply immediately. Clear resets the search and filters. <code>BillingDashboard</code> instead filters the array supplied by your host immediately.</p>
 
       <h2 id="availability">Billing-mode availability</h2>
-      <p>Use <code>med_legal</code> for California medical-legal bills, including QME and AME workflows.</p>
+      <p>Use <code>med_legal</code> for workers&apos; compensation medical-legal bills, including California QME and AME workflows. Set <code>claim.injuryState</code> to the actual claim state; CMS-1500 bills can be created for claims in all 50 states. Other supported form formats are currently limited to California. Available payer and delivery routes still depend on the selected claims administrator. See the <Link href="/guides/partner-integration#bills">partner coverage guide</Link>.</p>
       <Callout title="Treatment billing requires organization access"><code>professional</code> billing and automatic professional fee calculation are available when treatment billing is enabled for your organization. Follow the <Link href="/learn/treatment-quickstart">treatment billing quickstart</Link> for setup and service-line examples.</Callout>
     </DocPage>
   );

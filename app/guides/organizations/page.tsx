@@ -19,7 +19,7 @@ const createResponse = `{
   "organizationId": "org_01example",
   "externalId": "practice_42",
   "name": "Example Medical Group",
-  "status": "active",
+  "status": "configuring",
   "accessMode": "managed",
   "created": true
 }`;
@@ -82,7 +82,7 @@ export default function OrganizationsPage() {
       <p>Use an account-scoped key with <code>orgs:write</code>. Send your stable, non-sensitive customer ID as <code>externalId</code>; the same value lets you safely retry provisioning and recover the existing organization.</p>
       <CodeBlock code={createOrganization} language="bash" filename="Create or find a customer organization" />
       <CodeBlock code={createResponse} language="json" filename="201 Created" />
-      <p>A repeated request for the same customer can return <code>200</code> with <code>created: false</code>. Keep the returned <code>organizationId</code>; use your own <code>externalId</code> only to reconcile the mapping.</p>
+      <p>Provisioning is automatic and returns the organization immediately with <code>status: &quot;configuring&quot;</code>. A repeated request for the same customer can return <code>200</code> with <code>created: false</code>. Keep the returned <code>organizationId</code>; use your own <code>externalId</code> only to reconcile the mapping. Check the organization&apos;s status and live readiness before sending live bills.</p>
       <p>See the <Link href="/api-reference/provision-organization">organization provisioning reference</Link> for optional practice settings and response fields.</p>
 
       <h2 id="list">List organizations available to the key</h2>
@@ -106,6 +106,7 @@ export default function OrganizationsPage() {
       <p>Create an organization-scoped key when a service should access only one customer. That key cannot switch to another organization, even if a different <code>X-MindBill-Org-Id</code> header is sent. Browser sessions are also fixed to the organization chosen by your server when the session is issued.</p>
       <Callout title="Recommended boundary">Use one account-scoped key in a trusted central service when it must manage several customers. Use an organization-scoped key for a dedicated customer service or a narrower operational boundary.</Callout>
       <p>Continue with <Link href="/guides/authentication">authentication and browser-session access</Link>, or verify the complete flow in the <Link href="/guides/sandbox">sandbox checklist</Link>.</p>
+      <p>For a customer-by-customer implementation brief, see the <Link href="/guides/partner-integration">partner integration guide</Link>.</p>
     </DocPage>
   );
 }

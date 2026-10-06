@@ -46,7 +46,7 @@ export default function SandboxPage() {
       <p>Browser access uses the separate <Link href="/guides/authentication#permissions">browser permission set</Link>, assigned from your application’s roles. A submitted bill has no edit permission because its snapshot and payer packet are immutable.</p>
 
       <h2 id="live">Go live</h2>
-      <p>Live routing requires an approved organization, a current BAA, payment setup, and a verified webhook endpoint. The API and components do not change when live access is enabled; rotate to the live key and keep your origin and role policy unchanged.</p>
+      <p>Live routing requires an approved partner account, a current account-level BAA, payment setup, and an organization ready for the selected submission route. A webhook endpoint is optional for event delivery. The API and components do not change when live access is enabled; use a live key and keep your origin and role policy unchanged. See the <Link href="/guides/partner-integration#commercial">partner go-live guide</Link>.</p>
       <p><Link href="/api-reference/browser-sessions">Configure browser-session permissions →</Link></p>
     </DocPage>
   );

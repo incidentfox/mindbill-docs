@@ -75,6 +75,7 @@ const addressFields = (prefix: string, subject: string): ApiField[] => [
 const createBillFields: ApiField[] = [
   { name: "externalId", type: "string", description: "Stable report, case, or work-item identifier in your system. Use it to find the bill later." },
   { name: "billingMode", type: '"med_legal" | "professional"', description: "Select medical-legal billing or professional treatment billing. Professional billing requires treatmentBilling enabled for the organization; otherwise the API returns treatment_billing_not_enabled.", constraint: 'Default: "med_legal"' },
+  { name: "pricingMode", type: '"automatic" | "manual"', description: "Professional bills may use manual pricing with an explicit charge on every line and no feeContext. This skips ordinary fee-schedule quotes. Anesthesia and drug lines require the verified pricing workflow and cannot use manual mode. Medical-legal bills use automatic pricing.", constraint: 'Default: "automatic"' },
   { name: "patient.externalId", type: "string", description: "Your patient identifier. Do not send this together with patient.id." },
   { name: "patient.firstName", type: "string", required: true, description: "Patient given name." },
   { name: "patient.middleName", type: "string", description: "Patient middle name or initial." },
@@ -446,14 +447,19 @@ export const apiEndpoints: ApiEndpoint[] = [
     permissions: ["Server: bills:read", "Browser: eors:read"],
     pathFields: [billId],
     responseFields: [
-      { name: "data.reportedPaid", type: "number | null", required: true, description: "Amount reported by the EOR." },
+      { name: "data.reportedPaid", type: "number | null", required: true, description: "Payment amount reported by payer advice; separate from posted cash." },
       { name: "data.totalPaid", type: "number", required: true, description: "Payments currently posted to the bill." },
       { name: "data.balanceDue", type: "number", required: true, description: "Current unpaid balance." },
+      { name: "data.payerClaimControlNumber", type: "string | null", required: true, description: "Payer claim-control number when available." },
+      { name: "data.claimAdjustments", type: "{ group: string; reason: string; amount: number }[]", required: true, description: "Available 835 claim and line CAS adjustments, flattened into one list." },
+      { name: "data.remarkCodes", type: "string[]", required: true, description: "Available 835 RARC remark codes." },
       { name: "data.lineItems[].code", type: "string", required: true, description: "Procedure code adjudicated by the payer." },
-      { name: "data.lineItems[].paid", type: "number", required: true, description: "Amount paid for the line." },
+      { name: "data.lineItems[].billedAmount", type: "number", required: true, description: "Submitted charge for the line." },
+      { name: "data.lineItems[].reportedPaid", type: "number | null", required: true, description: "Line payment reported by 835 advice, when available; not confirmed posted cash." },
+      { name: "data.lineItems[].paid", type: "number", required: true, description: "Payment posted to the bill ledger for the line." },
       { name: "data.lineItems[].allowedAmount", type: "number | null", required: true, description: "Payer allowed amount." },
       { name: "data.lineItems[].adjustmentAmount", type: "number | null", required: true, description: "Adjustment amount." },
-      { name: "data.lineItems[].reasonCodes", type: "string[]", required: true, description: "CARC/RARC or payer reason codes." },
+      { name: "data.lineItems[].reasonCodes", type: "string[]", required: true, description: "Available payer reason codes for the line." },
       { name: "data.documents[].contentUrl", type: "string", required: true, description: "Authorized URL for the original EOR document." },
     ],
     examples: [{ label: "cURL", language: "bash", filename: "Get EOR", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/eor \\
@@ -464,7 +470,10 @@ export const apiEndpoints: ApiEndpoint[] = [
     "reportedPaid": 1600,
     "totalPaid": 0,
     "balanceDue": 2015,
-    "lineItems": [{ "id": "eor_line_1", "code": "ML201", "paid": 1600, "allowedAmount": 1600, "adjustmentAmount": 415, "patientResponsibility": 0, "reasonCodes": ["CO-45"] }],
+    "payerClaimControlNumber": "payer_claim_123",
+    "claimAdjustments": [{ "group": "CO", "reason": "45", "amount": 415 }],
+    "remarkCodes": ["N123"],
+    "lineItems": [{ "id": "eor_line_1", "code": "ML201", "billedAmount": 2015, "reportedPaid": 1600, "paid": 0, "allowedAmount": 1600, "adjustmentAmount": 415, "patientResponsibility": 0, "reasonCodes": ["CO45"] }],
     "documents": [{ "id": "doc_eor_1", "filename": "eor.pdf", "contentType": "application/pdf", "addedAt": "2026-08-29T18:42:11.000Z", "contentUrl": "https://app.mindbill.org/..." }]
   }
 }`,
