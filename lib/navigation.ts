@@ -24,6 +24,13 @@ export type DocLink = {
 };
 
 export const navigation: DocLink[] = [
+  {
+    href: "/guides/partner-integration",
+    label: "Partner integration",
+    description: "Provision customer organizations, submit bills, synchronize events, and review usage.",
+    group: "Start here", icon: Network,
+    keywords: ["partner", "customer", "organization", "state", "webhook", "usage", "billing"],
+  },
   ...[
     ["", "RFA walkthroughs", "Illustrated workflows with highlighted controls and verification evidence."],
     ["dashboard", "Find RFAs by status and age", "Use overview counts, dynamic search, and treatment lists."],

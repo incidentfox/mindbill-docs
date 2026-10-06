@@ -34,9 +34,9 @@ export default function WorkersCompBillingPage() {
       <h2 id="modes">Billing-mode availability</h2>
       <div className="comparison-table">
         <div className="table-head"><b><code>professional</code></b><b><code>med_legal</code></b></div>
-        <div><span>Treatment and other professional services, available to organizations with treatment billing enabled. Uses diagnoses selected for each service line.</span><span>Available now for California QME and AME evaluations, reports, record review, and related fee-schedule services.</span></div>
+        <div><span>CMS-1500 treatment and other professional services for claims in all 50 states, available to organizations with treatment billing enabled. New partner-provisioned organizations receive this capability. Uses diagnoses selected for each service line.</span><span>CMS-1500 medical-legal evaluations, reports, record review, and related services for claims in all 50 states where the submitted code and payer delivery route are supported. California fee-schedule calculations apply only to eligible California services.</span></div>
       </div>
-      <p>Choose the mode for the services being billed. Treatment uses the same bill lifecycle, with date-specific fee quotes and separate coding review. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link>.</p>
+      <p>Choose the mode for the services being billed and set the claim&apos;s actual <code>injuryState</code>. Treatment uses the same bill lifecycle. For CMS-1500 professional bills, select automatic schedule checks or manual pricing with explicit line charges. UB-04, ADA, and NCPDP formats are currently limited to California. Confirm the payer and delivery route before submission; availability of a state code does not guarantee electronic routing to every payer. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link>.</p>
 
       <h2 id="lifecycle">The lifecycle</h2>
       <ol className="plain-steps">
