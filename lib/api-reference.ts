@@ -461,6 +461,7 @@ export const apiEndpoints: ApiEndpoint[] = [
       { name: "data.lineItems[].adjustmentAmount", type: "number | null", required: true, description: "Adjustment amount." },
       { name: "data.lineItems[].reasonCodes", type: "string[]", required: true, description: "Available payer reason codes for the line." },
       { name: "data.documents[].contentUrl", type: "string", required: true, description: "Authorized URL for the original EOR document." },
+      { name: "data.raw835Files[].contentUrl", type: "string", required: true, description: "Authorized download URL for a newly processed X12 835 whose claims all match this organization. Historical, mixed-organization, and unmatched transmissions have no download." },
     ],
     examples: [{ label: "cURL", language: "bash", filename: "Get EOR", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/eor \\
   --header "Authorization: Bearer $MINDBILL_API_KEY"` }],
@@ -474,9 +475,29 @@ export const apiEndpoints: ApiEndpoint[] = [
     "claimAdjustments": [{ "group": "CO", "reason": "45", "amount": 415 }],
     "remarkCodes": ["N123"],
     "lineItems": [{ "id": "eor_line_1", "code": "ML201", "billedAmount": 2015, "reportedPaid": 1600, "paid": 0, "allowedAmount": 1600, "adjustmentAmount": 415, "patientResponsibility": 0, "reasonCodes": ["CO45"] }],
-    "documents": [{ "id": "doc_eor_1", "filename": "eor.pdf", "contentType": "application/pdf", "addedAt": "2026-08-29T18:42:11.000Z", "contentUrl": "https://app.mindbill.org/..." }]
+    "documents": [{ "id": "doc_eor_1", "filename": "eor.pdf", "contentType": "application/pdf", "addedAt": "2026-08-29T18:42:11.000Z", "contentUrl": "https://app.mindbill.org/..." }],
+    "raw835Files": [{ "id": "0", "contentUrl": "/partner/v2/bills/bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D/eor/raw/0" }]
   }
 }`,
+  },
+  {
+    slug: "raw-835",
+    group: "Lifecycle",
+    authentication: "api-key-or-browser-session",
+    method: "GET",
+    path: "/bills/{billId}/eor/raw/{index}",
+    title: "Download a raw 835",
+    summary: "Download an authorized original X12 835 remittance file.",
+    useWhen: "Follow a raw835Files[].contentUrl returned by the EOR endpoint.",
+    permissions: ["Server: bills:read", "Browser: eors:read"],
+    pathFields: [billId, { name: "index", type: "number", required: true, description: "Zero-based file index returned with the EOR." }],
+    responseFields: [{ name: "body", type: "application/edi-x12", required: true, description: "Original X12 835 bytes for a newly processed transmission fully matched to one organization." }],
+    examples: [{ label: "cURL", language: "bash", filename: "Download 835", code: `curl https://app.mindbill.org/partner/v2/bills/$BILL_ID/eor/raw/$INDEX \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
+  --output remittance.835` }],
+    responseExample: "X12 835 file bytes",
+    responseLanguage: "text",
+    notes: [{ title: "Availability", body: "Historical files and transmissions with unmatched claims or claims from multiple organizations are not downloadable. Use the EOR endpoint to find available raw835Files links." }],
   },
   {
     slug: "bill-actions",
@@ -689,6 +710,37 @@ export const apiEndpoints: ApiEndpoint[] = [
   --header "Idempotency-Key: submit_sbr_case_17"` }],
     responseStatus: "201 Created",
     responseExample: `{ "data": { "id": "review_01J6Z4", "state": "submitted", "submittedAt": "2026-08-29T19:04:00.000Z" } }`,
+  },
+  {
+    slug: "account-usage",
+    group: "Platform",
+    authentication: "api-key",
+    method: "GET",
+    path: "/developer/account/usage",
+    title: "Account usage and invoices",
+    summary: "Query organization usage, time series, metering status, and final account invoices.",
+    useWhen: "Reconcile bill activity by customer and compare it with the partner account invoice.",
+    permissions: ["Account-scoped key: account:read"],
+    queryFields: [
+      { name: "from", type: "string", description: "First date in UTC, inclusive (YYYY-MM-DD). Defaults to the first day of this month." },
+      { name: "to", type: "string", description: "Last date in UTC, inclusive (YYYY-MM-DD). Maximum range: 366 days." },
+      { name: "interval", type: '"day" | "week" | "month"', description: "Time series bucket size." },
+      { name: "organizationId", type: "string", description: "Filter gross usage to one customer organization. Invoice amounts remain account-wide." },
+    ],
+    responseFields: [
+      { name: "periodStart", type: "string", required: true, description: "Inclusive UTC report start." },
+      { name: "periodEnd", type: "string", required: true, description: "Exclusive UTC report end." },
+      { name: "organizationBreakdown[]", type: "object[]", required: true, description: "Submitted bill counts and gross usage cents by organization." },
+      { name: "series[]", type: "object[]", required: true, description: "Submitted bill counts and gross usage cents by selected interval." },
+      { name: "metering", type: "object", required: true, description: "Pending, delivering, delivered, retry, dead, and skipped usage event counts." },
+      { name: "billing.status", type: '"available" | "no_billing_account" | "not_configured" | "unavailable"', required: true, description: "Whether Stripe invoice details are available." },
+      { name: "billing.invoices[]", type: "object[]", required: true, description: "Finalized account invoices overlapping the report period, with subtotal, total, credit, due, paid, and remaining amounts in cents." },
+      { name: "billing.totals", type: "object | null", required: true, description: "Account invoice amount totals in cents, including credits and payments when available." },
+    ],
+    examples: [{ label: "cURL", language: "bash", filename: "Read usage", code: `curl 'https://app.mindbill.org/partner/v2/developer/account/usage?from=2026-10-01&to=2026-10-31&interval=day' \\
+  --header "Authorization: Bearer $MINDBILL_ACCOUNT_KEY"` }],
+    responseExample: `{ "periodStart": "2026-10-01", "periodEnd": "2026-11-01", "interval": "day", "organizationId": null, "currency": "usd", "submittedBills": 3, "usageAmountCents": 300, "organizationBreakdown": [{ "organizationId": "org_example", "organizationName": "Example Practice", "submittedBills": 3, "usageAmountCents": 300 }], "series": [], "metering": { "pending": 0, "delivering": 0, "delivered": 3, "retry": 0, "dead": 0, "skipped": 0 }, "billing": { "status": "available", "scope": "account", "invoices": [], "totals": { "subtotalCents": 0, "totalCents": 0, "creditAppliedCents": 0, "amountDueCents": 0, "amountPaidCents": 0, "amountRemainingCents": 0 } } }`,
+    notes: [{ title: "Invoice allocation", body: "Usage by organization is gross. Stripe discounts, credits, and tax belong to the account invoice and are not allocated to organizations." }],
   },
   {
     slug: "events",
