@@ -38,7 +38,7 @@ export default function HomePage() {
         <details>
           <summary>Read the video transcript</summary>
             <p>Bring workers&apos; comp billing into your product. MindBill connects the workflow, from the first submission to the final payment.</p>
-            <p>Start with a sandbox and a server-side API key. Bring the case data and documents you already have. Workers&apos; compensation medical-legal and treatment CMS-1500 bills can be created for claims in all 50 states; check payer and delivery routes for each claim. Other supported form formats are currently limited to California.</p>
+            <p>Start with a sandbox and a server-side API key. Bring the case data and documents you already have. Workers&apos; compensation medical-legal and treatment bills can be created for claims in all 50 states on supported CMS-1500, UB-04, ADA, and NCPDP formats; check payer and delivery routes for each claim.</p>
             <p>Send one reviewed bill and its supporting documents. MindBill validates the packet, routes the submission, and returns one bill ID to track.</p>
             <p>Build your own interface, or embed a connected billing workspace. Give users bill tasks, reports, and the full lifecycle, right inside your application.</p>
             <p>Keep your product in sync with signed webhooks and lifecycle events. Follow acknowledgements, review payment details, and respond when a bill needs attention.</p>
