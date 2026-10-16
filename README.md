@@ -27,5 +27,6 @@ Deploy the backend support for both credentials before publishing these docs or 
 ## Versions, screenshots, and videos
 
 - Install snippets read package versions from `lib/sdk-versions.ts`; update it once per widgets release.
+- Live React demos (`components/playground.tsx`, Sandpack) load `@mindbill/react` and `@mindbill/browser` at the same `lib/sdk-versions.ts` versions. Connected demos pass a synthetic `getSession` and an in-page `fetch` mock, so they never call the API. After a version bump, run `node scripts/verify-live-demos.cjs` against a running build (`VERIFY_BASE_URL`); it renders every demo at 1440 and 390 px and checks the loaded package versions.
 - Component screenshots must use synthetic data. Register them in `lib/walkthroughs/screenshots.json` (widget images use a `widget-` key under `public/screenshots/widgets/`) and render them with `components/widget-screenshot.tsx` or `components/walkthroughs/screenshot.tsx`.
 - Feature videos are configured only in `lib/videos.ts`. `<DemoVideo id="…" />` renders nothing until its entry has a `src`, and `/guides/videos` shows "Videos coming soon" until at least one video is configured. Add only approved final cuts with captions and a transcript.
