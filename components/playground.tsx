@@ -610,22 +610,43 @@ function quote(body) {
     claimEdits: [], limitations: [], medicalLegalLineIds: [], visitNotes: ["Therapy visit 3 of 24 (LC 4604.5)"],
   };
 }
+// Mock of POST/PATCH /partner/v2/bill-drafts: keeps one draft in memory and bumps its revision per save.
+let savedDraft = null;
+function saveDraft(method, body) {
+  const now = new Date().toISOString();
+  savedDraft = {
+    id: "billdraft_demo", externalId: body.externalId ?? savedDraft?.externalId ?? null, status: "draft",
+    revision: method === "POST" ? 1 : savedDraft.revision + 1, claimId: null, patientId: null,
+    bill: body.bill, encounter: body.encounter ?? savedDraft?.encounter ?? null,
+    serviceLineCount: (body.bill.serviceLines || []).length, submittedBillId: null,
+    createdAt: savedDraft?.createdAt ?? now, updatedAt: now, submittedAt: null,
+  };
+  return savedDraft;
+}
 async function mockApi(input, init = {}) {
   const url = new URL(String(input), location.href);
   if (url.pathname.endsWith("/partner/v2/fee-quotes/encounter")) return Response.json({ data: quote(JSON.parse(init.body)) });
+  if (url.pathname.includes("/partner/v2/bill-drafts") && (init.method === "POST" || init.method === "PATCH")) {
+    return Response.json({ data: saveDraft(init.method, JSON.parse(init.body)) }, { status: init.method === "POST" ? 201 : 200 });
+  }
   return Response.json({ data: [] });
 }
 
 export default function App() {
   const [total, setTotal] = useState(null);
+  const [draft, setDraft] = useState(null);
   return <main className="review-demo">
     <p className="notice">Expected payment for this visit: {total == null ? "needs review" : "$" + (total / 100).toFixed(2)}</p>
+    {draft ? <p className="notice">Draft {draft.id} saved, revision {draft.revision}. Nothing was sent.</p> : null}
     <ConnectedTreatmentBillForm
       getSession={async () => ({ token: "demo_session" })}
       fetch={mockApi}
       initialBill={initialBill}
       encounter={{ renderingProviderId: "rp_demo", placeOfServiceId: "loc_demo", claimId: "claim_demo" }}
       onEncounterQuote={(estimate) => setTotal(estimate?.totals.estimatedPayableCents ?? null)}
+      drafts
+      draftExternalId="visit_demo_1"
+      onDraftSaved={setDraft}
       deliveryRoutePicker="off"
       appearance={{ preset: "mindbill" }}
       onSubmit={async () => alert("The demo submits nothing.")}
@@ -886,7 +907,7 @@ export function FullLifecyclePlayground() {
 }
 
 export function TreatmentBillPlayground() {
-  return <ComponentPlayground name="ConnectedTreatmentBillForm" code={treatmentBillCode} height={760} label="Mocked encounter quote · edit lines and charges" />;
+  return <ComponentPlayground name="ConnectedTreatmentBillForm" code={treatmentBillCode} height={760} label="Mocked encounter quote and drafts · edit lines, save a draft" />;
 }
 
 export function RfaClaimIndexPlayground() {

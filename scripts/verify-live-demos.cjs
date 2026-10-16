@@ -28,7 +28,13 @@ const pages = {
   '/components/react/lifecycle-demo': [['Complete bill journey', 'text=Electronically sent to Republic Indemnity'], ['Lifecycle status gallery', 'text=$2,015.00']],
   '/guides/lifecycle': [['ConnectedBillLifecycle', 'text=Medical necessity or frequency'], ['BillLifecycleActions', 'text=Submit second review'], ['BillActivityTimeline', 'text=EOR-1038.pdf received']],
   '/guides/treatment-billing': [
-    ['ConnectedTreatmentBillForm', '.mbsf-expected:has-text("$90.00")'], ['RfaClaimIndex', 'text=Requested treatments'],
+    ['ConnectedTreatmentBillForm', '.mbsf-expected:has-text("$90.00")', async frame => {
+      // Save draft goes to the demo's mocked /partner/v2/bill-drafts; a second save PATCHes the next revision.
+      await frame.getByRole('button', { name: 'Save draft' }).click();
+      await frame.getByText('Draft billdraft_demo saved, revision 1.').waitFor({ timeout: 30000 });
+      await frame.getByRole('button', { name: 'Save draft' }).click();
+      await frame.getByText('Draft billdraft_demo saved, revision 2.').waitFor({ timeout: 30000 });
+    }], ['RfaClaimIndex', 'text=Requested treatments'],
     ['RelatedAuthorizationRecords', 'text=Bill #1042'], ['BillUrDecisions', 'text=DEMO-AUTH-x'],
   ],
   '/components/angular': 'angular',
@@ -73,7 +79,7 @@ const ignoredConsole = [/\[BABEL\] Note: The code generator has deoptimised/, /d
           const expected = pages[route];
           assert.equal(await shells.count(), expected.length, `${route}: playground count`);
           for (let i = 0; i < expected.length; i++) {
-            const [name, proof] = expected[i];
+            const [name, proof, interact] = expected[i];
             const shell = shells.nth(i);
             assert.equal((await shell.locator('.playground-title > span').innerText()).trim(), name, `${route} #${i}`);
             await shell.scrollIntoViewIfNeeded();
@@ -86,6 +92,7 @@ const ignoredConsole = [/\[BABEL\] Note: The code generator has deoptimised/, /d
               const overlay = await shell.locator('.sp-error-message').allInnerTexts().catch(() => []);
               throw new Error(`${route} ${name} at ${width}: component did not render. ${overlay.join(' ')} ${error.message}`);
             }
+            if (interact) await interact(frame);
             await page.waitForTimeout(800);
             assert.equal(await shell.locator('.sp-error-message').count(), 0, `${route} ${name}: Sandpack error ${await shell.locator('.sp-error-message').allInnerTexts().catch(() => '')}`);
             const file = path.join(output, `${slug}-${String(i + 1).padStart(2, '0')}-${name.replace(/[^A-Za-z0-9]+/g, '-')}-${width}.png`);

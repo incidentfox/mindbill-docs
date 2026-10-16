@@ -141,7 +141,7 @@ export default function BillsPage() {
     >
       <h2 id="snapshot">Collect locally, then submit one exact snapshot</h2>
       <p>Workers&apos; compensation bills carry more claim context than an ordinary patient invoice. Collect and edit the patient, injury, claims administrator, employer, providers, place of service, diagnoses, service lines, and attachments in your application before calling MindBill.</p>
-      <p>MindBill has no public draft bill. A successful request creates the bill with <code>submitted</code> as its first status and freezes the submitted values so later profile changes cannot rewrite billing history.</p>
+      <p>A bill exists only once it is submitted. A successful request creates the bill with <code>submitted</code> as its first status and freezes the submitted values so later profile changes cannot rewrite billing history. For treatment bills, a biller can save unfinished work as a <Link href="/guides/treatment-billing#drafts">bill draft</Link>; a draft is not a bill, is never sent, and becomes one only through this same atomic submission.</p>
       <Callout title="Use the ready-to-use form">The React <code>BillSubmissionForm</code> owns the field layout, required-field asterisks, validation, attachment selection and uploads, wire serialization, and atomic Submit action. Your server only mints its short-lived browser session.</Callout>
 
       <h2 id="submit">Create and submit atomically</h2>

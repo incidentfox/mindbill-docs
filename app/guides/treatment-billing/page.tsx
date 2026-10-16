@@ -41,6 +41,48 @@ export function NewTreatmentBill({ bill, ids }: { bill: TreatmentBillInput; ids:
   />;
 }`;
 
+const draftForm = `"use client";
+import { ConnectedTreatmentBillForm } from "@mindbill/react";
+
+export function TreatmentVisitBill({ visit, ids }: { visit: Visit; ids: SavedIds }) {
+  return <ConnectedTreatmentBillForm
+    sessionEndpoint="/api/mindbill/treatment-session" // bills:read + bills:create
+    initialBill={visit.bill}
+    encounter={{ renderingProviderId: ids.renderingProviderId, placeOfServiceId: ids.locationId, claimId: ids.claimId }}
+    drafts                                  // shows "Save draft"
+    draftId={visit.mindbillDraftId}         // omit for a new bill; set to resume a saved one
+    draftExternalId={\`visit_\${visit.id}\`}  // optional: your reference for a new draft
+    onDraftSaved={(draft) => saveVisitDraftId(visit.id, draft.id)}
+    onDraftError={() => clearVisitDraftId(visit.id)} // the saved draft could not be opened
+    onSubmitted={(result) => openBill(result.billId)}
+  />;
+}`;
+
+const draftsClient = `import { createBillDraftsClient } from "@mindbill/browser";
+
+const drafts = createBillDraftsClient({ sessionEndpoint: "/api/mindbill/treatment-session" });
+
+const { data } = await drafts.list({ claimId: "clm_example" });      // unsent drafts for a claim
+const saved = await drafts.create({ bill, encounter, externalId: "visit_example" });
+const updated = await drafts.update(saved.id, saved.revision, { bill: editedBill });
+await drafts.remove(updated.id, updated.revision);                   // unsent drafts only`;
+
+const draftApi = `# Save (201) — later saves PATCH with the current revision
+curl https://app.mindbill.org/partner/v2/bill-drafts \\
+  --request POST \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
+  --header "Idempotency-Key: visit_example-draft" \\
+  --header "Content-Type: application/json" \\
+  --data '{"externalId":"visit_example","bill":{"billingMode":"professional","claim":{"id":"clm_example"},"serviceLines":[{"code":"99213","units":1,"charge":150}]},"encounter":{"renderingProviderId":"rp_example","placeOfServiceId":"loc_example"}}'
+
+# Submit the completed bill through the normal create-bill request
+curl https://app.mindbill.org/partner/v2/bills \\
+  --request POST \\
+  --header "Authorization: Bearer $MINDBILL_API_KEY" \\
+  --header "Idempotency-Key: visit_example-submit" \\
+  --header "Content-Type: application/json" \\
+  --data '{"bill": { …the complete bill… }, "draft": {"id":"billdraft_example","revision":2}}'`;
+
 const encounterApi = `const response = await fetch("https://app.mindbill.org/partner/v2/fee-quotes/encounter", {
   method: "POST",
   headers: { Authorization: \`Bearer \${process.env.MINDBILL_API_KEY}\`, "Content-Type": "application/json" },
@@ -119,6 +161,7 @@ export default function TreatmentBillingPage() {
       { id: "enablement", label: "Enable the organization" },
       { id: "session", label: "Session permissions" },
       { id: "bill", label: "Treatment bill with OMFS pricing" },
+      { id: "drafts", label: "Save and resume drafts" },
       { id: "encounter-api", label: "Encounter quote API" },
       { id: "rfa", label: "RFA workflow" },
       { id: "records", label: "Claim, RFA, and bill pages" },
@@ -139,6 +182,7 @@ export default function TreatmentBillingPage() {
     <table><thead><tr><th>Capability</th><th>Browser permission</th><th>Server scope</th></tr></thead><tbody>
       <tr><td>Expected OMFS payment, related records, UR decisions on a bill</td><td><code>bills:read</code> (+ <code>rfas:read</code> for related records)</td><td><code>bills:read</code> (+ <code>rfas:read</code>)</td></tr>
       <tr><td>Submit the treatment bill</td><td><code>bills:create</code></td><td><code>bills:write</code></td></tr>
+      <tr><td>List and resume bill drafts / save, replace, and delete them</td><td><code>bills:read</code> / <code>bills:create</code></td><td><code>bills:read</code> / <code>bills:write</code></td></tr>
       <tr><td>Attach UR decisions to an unsent bill</td><td><code>bills:act</code></td><td><code>bills:write</code></td></tr>
       <tr><td>List, view, export RFAs; form and packet previews</td><td><code>rfas:read</code> (+ <code>documents:read</code> for stored PDFs)</td><td><code>rfas:read</code></td></tr>
       <tr><td>Creation choices, new drafts, draft preview</td><td><code>rfas:create</code></td><td><code>rfas:write</code></td></tr>
@@ -164,6 +208,23 @@ export default function TreatmentBillingPage() {
     <p>Submission is unchanged: the form submits a <code>professional</code> bill through <Link href="/api-reference/create-bill">POST /bills</Link>. Link a line to an approved treatment with <code>serviceLines[].rfaItemId</code>; the server validates the relationship, and the ID alone is not evidence of approval.</p>
     <DemoVideo id="treatment-bill-omfs" />
 
+    <h3 id="drafts">Save and resume drafts</h3>
+    <p>A biller often starts a treatment bill before every detail is known. From React 0.79.0, pass <code>drafts</code> to show a <strong>Save draft</strong> button next to Submit. It saves the bill exactly as entered, even if incomplete, plus the <code>encounter</code> pricing IDs, to <Link href="/api-reference/create-bill-draft"><code>POST /bill-drafts</code></Link>; later saves replace the same draft at its current revision. Saving validates nothing for submission, prices nothing as final, and sends nothing. A draft is not a bill: it does not appear in bill lists, events, or usage.</p>
+    <p>Pass <code>draftId</code> to resume. The form loads the draft, its saved bill replaces <code>initialBill</code>, and any <code>encounter</code> IDs you leave out come from the draft. When the biller presses Submit, the form sends the bill through <Link href="/api-reference/create-bill"><code>POST /bills</code></Link> with <code>draft: &#123; id, revision &#125;</code>. MindBill reserves the draft, creates the bill, and marks the draft <code>submitted</code> with <code>submittedBillId</code>. If no bill is created, the draft is released so the biller can fix it and try again. A submitted draft cannot be edited, and opening one shows that it was already submitted.</p>
+    <CodeBlock code={draftForm} language="tsx" filename="TreatmentVisitBill.tsx" />
+    <table><thead><tr><th>Prop</th><th>Purpose</th></tr></thead><tbody>
+      <tr><td><code>drafts</code></td><td>Show Save draft. The session needs <code>bills:create</code>.</td></tr>
+      <tr><td><code>draftId</code></td><td>Resume this saved draft; submitting it marks the draft submitted.</td></tr>
+      <tr><td><code>draftExternalId</code></td><td>Your reference for a new draft, unique per organization. Reusing one returns <code>external_id_owned</code>.</td></tr>
+      <tr><td><code>onDraftSaved(draft)</code></td><td>Called after each save. Store <code>draft.id</code> with your visit to resume later.</td></tr>
+      <tr><td><code>onDraftError(error)</code></td><td>Called when <code>draftId</code> cannot be loaded, for example after it was deleted.</td></tr>
+    </tbody></table>
+    <p>Using your own <code>BillSubmissionForm</code>? It accepts <code>onSaveDraft(bill)</code> (a secondary button that skips validation), <code>saveDraftLabel</code>, and <code>draft: &#123; id, revision &#125;</code>, which it forwards on submission. Call the drafts client yourself:</p>
+    <CodeBlock code={draftsClient} language="ts" filename="bill-drafts.ts" />
+    <p>Server integrations use the same routes: <Link href="/api-reference/list-bill-drafts">list</Link>, <Link href="/api-reference/create-bill-draft">save</Link>, <Link href="/api-reference/get-bill-draft">read</Link>, <Link href="/api-reference/update-bill-draft">replace</Link>, and <Link href="/api-reference/delete-bill-draft">delete</Link>. Writes need an <code>Idempotency-Key</code>; reads need <code>bills:read</code> and writes <code>bills:write</code> (browser <code>bills:create</code>).</p>
+    <CodeBlock code={draftApi} language="bash" filename="Save, then submit a draft" />
+    <Callout title="Revisions prevent lost edits">Every save increments <code>revision</code>. Updates, deletes, and submissions must send the current revision; a stale one returns 409 <code>bill_draft_revision_conflict</code> without changes, so reload the draft and reapply the edit. A draft that is being submitted or was submitted returns 409 <code>bill_draft_not_editable</code>.</Callout>
+
     <h3 id="encounter-api">Price a visit from your own UI</h3>
     <p>Call <Link href="/api-reference/encounter-fee-quote">POST /fee-quotes/encounter</Link> from your server or with a browser session. Amounts are integer cents. A quote creates and changes nothing.</p>
     <CodeBlock code={encounterApi} language="ts" filename="server/quote-visit.ts" />
@@ -177,7 +238,7 @@ export default function TreatmentBillingPage() {
     <ul>
       <li><code>officialForm</code> lays out creation in DWC Form RFA order (request type, Employee, Requesting Physician, Claims Administrator, Requested Treatment) with the official labels. Values that come from saved records are read-only.</li>
       <li><code>layout=&quot;simple&quot;</code> opens on the searchable All RFAs list and shows each request like a bill detail page: a milestone status card, RFA details, documents, review and send (or utilization review after delivery), history, and a sticky next-action bar.</li>
-      <li>Built-in defaults in React {sdkVersions.react}: when you do not supply your own handlers, form and draft previews open in the built-in PDF viewer (<code>previewForm</code>, <code>previewDraft</code>), UR responses are read with <code>readResponse</code> to prefill decisions for the user to confirm, and treatment templates load and save through the API (<code>listTemplates</code>, <code>saveTemplate</code>). Host props such as <code>formPreviewUrl</code> and <code>onPreviewRequest</code> still take precedence.</li>
+      <li>Built-in defaults from React 0.78.0: when you do not supply your own handlers, form and draft previews open in the built-in PDF viewer (<code>previewForm</code>, <code>previewDraft</code>), UR responses are read with <code>readResponse</code> to prefill decisions for the user to confirm, and treatment templates load and save through the API (<code>listTemplates</code>, <code>saveTemplate</code>). Host props such as <code>formPreviewUrl</code> and <code>onPreviewRequest</code> still take precedence.</li>
       <li>Nothing is signed or sent on render. Signing and delivery each need explicit confirmation by an authorized user, and <code>permissions</code> only controls which buttons appear; the server enforces access.</li>
     </ul>
     <DemoVideo id="rfa-create-sign-send" />
@@ -216,6 +277,7 @@ export default function TreatmentBillingPage() {
     <table><thead><tr><th>Step</th><th>Routes</th></tr></thead><tbody>
       <tr><td>Saved choices</td><td><Link href="/api-reference/rfa-creation-context"><code>GET /rfas/creation-context</code></Link>, <code>GET /organization/billing-profile</code></td></tr>
       <tr><td>Expected payment</td><td><Link href="/api-reference/encounter-fee-quote"><code>POST /fee-quotes/encounter</code></Link></td></tr>
+      <tr><td>Bill drafts</td><td><Link href="/api-reference/list-bill-drafts"><code>GET|POST /bill-drafts</code></Link>, <Link href="/api-reference/get-bill-draft"><code>GET|PATCH|DELETE /bill-drafts/&#123;draftId&#125;</code></Link></td></tr>
       <tr><td>Treatment bill</td><td><Link href="/api-reference/create-bill"><code>POST /bills</code></Link>, <Link href="/api-reference/bill-ur-decisions"><code>GET|POST /bills/&#123;billId&#125;/ur-decisions</code></Link></td></tr>
       <tr><td>Form previews</td><td><Link href="/api-reference/rfa-draft-preview"><code>POST /rfas/draft-preview</code></Link>, <Link href="/api-reference/rfa-form-preview"><code>GET /rfas/&#123;rfaId&#125;/form-preview</code></Link></td></tr>
       <tr><td>Signature</td><td><Link href="/api-reference/rfa-provider-signature"><code>POST /rfas/providers/&#123;providerId&#125;/signature</code></Link></td></tr>

@@ -7,9 +7,12 @@ import { sdkVersions } from "@/lib/sdk-versions";
 export const metadata: Metadata = { title: "Partner upgrade guide" };
 
 const brief = `Upgrade the existing MindBill integration; preserve host authentication and saved data.
-1. Update @mindbill/react to 0.78.0, any directly installed @mindbill/browser to 0.51.0,
+1. Update @mindbill/react to 0.79.0, any directly installed @mindbill/browser to 0.52.0,
    and @mindbill/angular to 0.20.0. Update the lockfile and rebuild the app.
-   0.78.0 removes BillReviewForm, buildBillReviewSaveInput, RfaTrackingPanel, and
+   0.79.0 is additive: ConnectedTreatmentBillForm gains optional drafts / draftId
+   (Save draft to /partner/v2/bill-drafts; never sent), and browser adds
+   createBillDraftsClient. See https://docs.mindbill.org/guides/upgrade#v079
+   Coming from 0.77 or earlier: 0.78.0 removes BillReviewForm, buildBillReviewSaveInput, RfaTrackingPanel, and
    browser sanitizeBillReviewSaveInput: replace them with BillSubmissionForm (new bills),
    ConnectedBillLifecycle (corrections/review), and RfaDashboard (RFA tracking).
    Import bill-tasks, second-review, and status-contact helpers from @mindbill/browser.
@@ -61,10 +64,14 @@ storage/auth changes before making them. Never put permanent API keys in the bro
 
 export default function UpgradePage() {
   return <DocPage eyebrow="Start here" title="Upgrade an existing integration" description="A short checklist for existing MindBill integrations."
-    toc={[{ id: "packages", label: "Update packages" }, { id: "v078", label: "0.78.0 changes" }, { id: "optional", label: "Optional settings" }, { id: "agent", label: "Copy for your agent" }]}>
+    toc={[{ id: "packages", label: "Update packages" }, { id: "v079", label: "0.79.0 changes" }, { id: "v078", label: "0.78.0 changes" }, { id: "optional", label: "Optional settings" }, { id: "agent", label: "Copy for your agent" }]}>
     <h2 id="packages">Update packages, keep your integration</h2>
     <p>Update <code>@mindbill/react</code> to <code>{sdkVersions.react}</code>, any directly installed <code>@mindbill/browser</code> to <code>{sdkVersions.browser}</code>, and <code>@mindbill/angular</code> to <code>{sdkVersions.angular}</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
     <p>Connected submission forms now load saved billing providers, rendering providers, and service locations automatically when profileOptions is omitted. Existing case values remain unchanged until the user selects a profile. Explicit profileOptions, including an empty object, override the automatic lookup.</p>
+    <h2 id="v079">React 0.79.0, browser 0.52.0</h2>
+    <p>This release is additive; Angular stays at 0.20.0. Under 0.x versioning, a <code>^0.78</code> range does not install 0.79.0, so update the version explicitly. Nothing changes until you opt in.</p>
+    <p><strong>New:</strong> <code>ConnectedTreatmentBillForm</code> props <code>drafts</code> (shows <strong>Save draft</strong>, which saves the unsent bill to <code>POST /partner/v2/bill-drafts</code>), <code>draftId</code> (resume a saved draft; submitting it marks the draft submitted), <code>draftExternalId</code>, <code>onDraftSaved</code>, and <code>onDraftError</code>. When resuming, <code>encounter</code> IDs may be partial; missing IDs come from the draft. <code>BillSubmissionForm</code> adds optional <code>onSaveDraft</code>, <code>saveDraftLabel</code>, and <code>draft: &#123; id, revision &#125;</code>. Browser adds <code>createBillDraftsClient</code> (<code>list</code>, <code>get</code>, <code>create</code>, <code>update</code>, <code>remove</code>), the <code>BillDraft</code>, <code>BillDraftReference</code>, and <code>BillDraftSaveInput</code> types, and <code>draft</code> on submission input.</p>
+    <p>Drafts require the organization&apos;s <code>treatmentBilling</code> capability and a session with <code>bills:create</code> to save (<code>bills:read</code> to list or resume). See <Link href="/guides/treatment-billing#drafts">save and resume drafts</Link> and the <Link href="/api-reference/create-bill-draft">bill draft API</Link>.</p>
     <h2 id="v078">React 0.78.0, browser 0.51.0, Angular 0.20.0</h2>
     <p>This release adds treatment and authorization components and removes exports that had no supported use. Under 0.x versioning, a <code>^0.77</code> range does not install 0.78.0, so existing installs are unaffected until you upgrade. Component behavior is otherwise unchanged.</p>
     <p><strong>New:</strong> <code>ConnectedTreatmentBillForm</code> (expected OMFS payment per line), <code>RfaClaimIndex</code>, <code>RelatedAuthorizationRecords</code>, and <code>BillUrDecisions</code>; browser <code>createRfaRecordsClient</code>, <code>quoteEncounter</code>, <code>createEncounterQuoter</code>, and RFA client <code>previewForm</code>, <code>previewDraft</code>, <code>readResponse</code>, <code>listTemplates</code>, <code>saveTemplate</code>, and <code>exportCsv</code>. <code>RfaDashboard</code> with <code>officialForm</code> now uses built-in previews, UR response reading, and saved templates when the host supplies no handler. <code>getCreationContext</code> and <code>saveProviderSignature</code> call the canonical <code>/partner/v2/rfas/creation-context</code> and <code>/partner/v2/rfas/providers/&#123;id&#125;/signature</code> routes. See <Link href="/guides/treatment-billing">treatment billing and RFAs</Link>.</p>
