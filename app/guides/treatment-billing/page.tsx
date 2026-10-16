@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { DemoVideo } from "@/components/demo-video";
+import { BillUrDecisionsPlayground, RelatedRecordsPlayground, RfaClaimIndexPlayground, TreatmentBillPlayground } from "@/components/playground";
 import { Callout, DocPage } from "@/components/doc-page";
 import { WidgetScreenshot } from "@/components/widget-screenshot";
 import { installReact, sdkVersions } from "@/lib/sdk-versions";
@@ -151,6 +152,8 @@ export default function TreatmentBillingPage() {
     <h2 id="bill">Create a treatment bill with expected OMFS payment</h2>
     <p><code>ConnectedTreatmentBillForm</code> is the treatment bill form with three columns per service line: an editable <strong>Charge</strong>, the <strong>Expected (OMFS)</strong> payment, and the <strong>Difference</strong>. Every line of the visit is priced together, exactly as MindBill prices the saved bill, so multiple-procedure, bundling, add-on, NCCI, and same-day rules apply across lines. A line can instead show <em>Bundled</em>, <em>Not payable</em>, or <em>Needs review</em> with a short note. Totals never present a final amount while a line needs review. Visit-wide notes, such as a per-visit cap or the LC 4604.5 therapy visit count, appear once under the heading.</p>
     <WidgetScreenshot id="treatment-bill-encounter-fees" alt="Treatment bill service lines with Charge, Expected (OMFS), and Difference columns and a totals row" caption="ConnectedTreatmentBillForm with synthetic lines: a modifier note on 99213, 97014 not payable, and visit totals." />
+    <p>Try it live: the preview below runs the published component against a mocked encounter quote. Change a code, units, modifier, or charge to reprice the visit.</p>
+    <TreatmentBillPlayground />
     <CodeBlock code={billForm} language="tsx" filename="NewTreatmentBill.tsx" />
     <p>The <code>encounter</code> IDs are saved MindBill records, not free text:</p>
     <ul>
@@ -186,12 +189,15 @@ export default function TreatmentBillingPage() {
     <p>Treatment counts (Incomplete, No response, Approved, Modified, Denied), an RFAs tab and a Requested treatments tab, sortable columns, and an Add RFA action. Unsent requests count once as Incomplete; a treatment closed as no longer needed shows &quot;Not required&quot;.</p>
     <WidgetScreenshot id="rfa-claim-index" alt="RfaClaimIndex showing status counts and three requests on one claim" caption="RfaClaimIndex, RFAs tab (synthetic claim)." />
     <WidgetScreenshot id="rfa-claim-treatments" alt="RfaClaimIndex Requested treatments tab listing each treatment with its decision" caption="Requested treatments tab: one row per treatment with code, decision, and authorization number." />
+    <RfaClaimIndexPlayground />
     <h3>RelatedAuthorizationRecords: bills and RFAs on the same claim</h3>
     <p>On an RFA page (<code>rfaId</code>) it lists bills; on a bill page (<code>billId</code>) it lists RFAs. Records where a bill line uses one of the request&apos;s approved treatments (&quot;Linked authorization&quot;) come first; other records for the injury are folded below.</p>
     <WidgetScreenshot id="related-authorization-records" alt="RelatedAuthorizationRecords listing a linked bill and another bill for the same injury" caption="RelatedAuthorizationRecords on an RFA page." />
+    <RelatedRecordsPlayground />
     <h3>BillUrDecisions: authorizations for a bill</h3>
     <p>Shows the signed RFA and UR decision for each authorization linked to a service line, then every other UR decision on the bill&apos;s patient and claim. While the bill is unsent and <code>canEdit</code> is set, a biller can attach selected decision letters or retry the linked attachments. Attaching copies documents onto the bill; nothing is sent.</p>
     <WidgetScreenshot id="bill-ur-decisions" alt="BillUrDecisions with linked authorizations and a table of UR decisions" caption="BillUrDecisions on an unsent treatment bill." />
+    <BillUrDecisionsPlayground />
     <CodeBlock code={claimPage} language="tsx" filename="Claim, RFA, and bill pages" />
     <CodeBlock code={recordsClient} language="ts" filename="records-client.ts" />
     <DemoVideo id="rfa-claim-records" />

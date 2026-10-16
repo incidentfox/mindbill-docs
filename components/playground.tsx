@@ -1,6 +1,7 @@
 "use client";
 
 import { Sandpack } from "@codesandbox/sandpack-react";
+import { sdkVersions } from "@/lib/sdk-versions";
 
 type PlaygroundProps = {
   name: string;
@@ -564,6 +565,181 @@ export default function App() {
   </main>;
 }`;
 
+// Treatment billing demos. Each one passes a synthetic `getSession` and an in-page `fetch`, so the real
+// connected components run against a mock of the partner API: nothing leaves the preview.
+const treatmentBillCode = `import { useState } from "react";
+import { ConnectedTreatmentBillForm } from "@mindbill/react";
+
+const address = { line1: "100 Example Way", city: "Oakland", state: "CA", postalCode: "94612" };
+const initialBill = {
+  externalId: "visit_demo_1", billingMode: "professional",
+  patient: { firstName: "Alex", lastName: "Morgan", dateOfBirth: "1988-03-05", address },
+  claim: {
+    claimNumber: "WC-44871", employer: "Northstar Foods", dateOfInjury: "2026-05-30",
+    claimsAdministrator: { id: "payer_demo", name: "Example Claims Administrator" },
+  },
+  service: { date: "2026-10-08" },
+  billingProvider: { name: "Example Spine Group", taxId: "123456789", npi: "1234567890", phone: "5105550100", address },
+  renderingProvider: { name: "Sam Example, D.C.", npi: "1098765432", taxonomy: "111N00000X" },
+  serviceLocation: { name: "Example Office", placeOfServiceCode: "11", address },
+  diagnoses: ["M54.50"],
+  serviceLines: [
+    { code: "99213", modifiers: ["25"], units: 1, charge: 180, serviceDate: "2026-10-08", diagnosisPointers: [1] },
+    { code: "97110", units: 2, charge: 120, serviceDate: "2026-10-08", diagnosisPointers: [1] },
+    { code: "97014", units: 1, charge: 40, serviceDate: "2026-10-08", diagnosisPointers: [1] },
+  ],
+};
+
+// Mock of POST /partner/v2/fee-quotes/encounter with a tiny synthetic fee table (cents per unit).
+const fees = { "99213": 9000, "97110": 4650, "97140": 4200, "98941": 5400 };
+function quote(body) {
+  const lines = body.lines.map((line) => {
+    if (line.code === "97014") return { id: line.id, assessment: "not_separately_payable", findings: [], displayNotes: ["97014 is not payable under the California schedule; bill G0283 or omit."], quote: { status: "not_separately_payable", reason: "code_not_payable", provenance: [] } };
+    const unit = fees[line.code];
+    if (!unit) return { id: line.id, assessment: "requires_review", findings: [], displayNotes: ["Not in this demo's fee table."], quote: { status: "requires_review", reason: "fee_schedule_code_not_found", provenance: [] } };
+    const amountCents = unit * (line.units || 1);
+    const notes = line.code === "99213" && line.modifiers?.includes("25") ? ["Modifier 25: document a separately identifiable visit."] : [];
+    return { id: line.id, assessment: "priced", findings: [], displayNotes: notes, quote: { status: "priced", amountCents, scheduleMaximumCents: amountCents, basis: "ca_physician_rbrvs", notes: [], provenance: [], ...(line.chargeCents ? { chargeAmountCents: line.chargeCents } : {}) } };
+  });
+  const priced = lines.filter((line) => line.assessment === "priced");
+  const review = lines.filter((line) => line.assessment === "requires_review").length;
+  const subtotal = priced.reduce((sum, line) => sum + line.quote.amountCents, 0);
+  return {
+    status: review ? "requires_review" : "priced", lines,
+    totals: { submittedChargeCents: body.lines.reduce((sum, line) => sum + (line.chargeCents || 0), 0), pricedSubtotalCents: subtotal, estimatedPayableCents: review ? null : subtotal, scheduleMaximumCents: review ? null : subtotal, reviewLineCount: review },
+    claimEdits: [], limitations: [], medicalLegalLineIds: [], visitNotes: ["Therapy visit 3 of 24 (LC 4604.5)"],
+  };
+}
+async function mockApi(input, init = {}) {
+  const url = new URL(String(input), location.href);
+  if (url.pathname.endsWith("/partner/v2/fee-quotes/encounter")) return Response.json({ data: quote(JSON.parse(init.body)) });
+  return Response.json({ data: [] });
+}
+
+export default function App() {
+  const [total, setTotal] = useState(null);
+  return <main className="review-demo">
+    <p className="notice">Expected payment for this visit: {total == null ? "needs review" : "$" + (total / 100).toFixed(2)}</p>
+    <ConnectedTreatmentBillForm
+      getSession={async () => ({ token: "demo_session" })}
+      fetch={mockApi}
+      initialBill={initialBill}
+      encounter={{ renderingProviderId: "rp_demo", placeOfServiceId: "loc_demo", claimId: "claim_demo" }}
+      onEncounterQuote={(estimate) => setTotal(estimate?.totals.estimatedPayableCents ?? null)}
+      deliveryRoutePicker="off"
+      appearance={{ preset: "mindbill" }}
+      onSubmit={async () => alert("The demo submits nothing.")}
+    />
+  </main>;
+}`;
+
+const rfaRecordsFixture = `const item = (id, service, code, outcome, extra = {}) => ({
+  id, diagnosisCode: "M54.50", serviceDescription: service, procedureCode: code,
+  frequency: "2x/week", duration: "4 weeks", outcome, quantity: 8, units: null,
+  authorizationNumber: outcome === "approved" || outcome === "modified" ? "DEMO-AUTH-" + id : null,
+  decisionReason: null, decidedAt: outcome === "pending" ? null : "2026-09-10T17:00:00Z", ...extra,
+});
+const rfa = (id, status, lifecycleStatus, provider, created, submitted, items, extra = {}) => ({
+  id, status, lifecycleStatus, renderingProviderId: "rp_" + provider.length, providerName: provider,
+  expedited: false, requestType: "initial", contentRevision: 1, claimId: "claim_demo", patientId: "patient_demo",
+  claimsAdminId: null, employeeName: "Alex Morgan", claimNumber: "WC-44871", reviewType: "prospective",
+  createdAt: created, updatedAt: created, signedAt: submitted, submittedAt: submitted, receivedAt: null,
+  decisionDueAt: submitted ? "2026-09-20T00:00:00Z" : null, decisionDeadlineBasis: null,
+  incompleteReason: null, deferredReason: null, closedReason: null,
+  readiness: { ready: true, missing: [] }, items, documents: [], ...extra,
+});
+const rfas = [
+  rfa("rfa_5f2c91aa01", "approved", "closed", "Morgan Chen, MD", "2026-08-20T10:00:00Z", "2026-08-21T10:00:00Z", [
+    item("a1", "Physical therapy, lumbar spine", "97110", "approved"),
+    item("a2", "Lumbar MRI without contrast", "72148", "denied"),
+  ]),
+  rfa("rfa_7b13e0cc02", "submitted", "sent", "Riley Park, DO", "2026-09-12T10:00:00Z", "2026-09-13T10:00:00Z", [
+    item("b1", "Chiropractic manipulative treatment, spinal, 3-4 regions", "98941", "pending"),
+  ], { expedited: true }),
+  rfa("rfa_9d44a1ee03", "draft", "incomplete", "Morgan Chen, MD", "2026-09-15T10:00:00Z", null, [
+    item("c1", "Acupuncture, 1 or more needles", "97810", "pending"),
+  ]),
+];
+const related = { claimId: "claim_demo", hasMore: false, data: [
+  { id: "bill_1042", label: "Bill #1042", treatments: ["Physical therapy, lumbar spine"], relationship: "Linked authorization", status: "submitted", serviceDate: "2026-09-12" },
+  { id: "bill_1031", label: "Bill #1031", treatments: ["Office visit, established patient"], relationship: "Same injury", status: "paid", serviceDate: "2026-08-30" },
+] };
+const decisions = { editable: true,
+  linked: [
+    { rfaId: "rfa_5f2c91aa01", rfaItemId: "a1", service: "Physical therapy, lumbar spine", form: { state: "attached" }, decision: { state: "attached", authorizationNumber: "DEMO-AUTH-a1" } },
+  ],
+  decisions: [
+    { documentId: "doc_1", rfaId: "rfa_5f2c91aa01", filename: "ur-decision.pdf", decidedAt: "2026-09-10T17:00:00Z", attached: false, matchesBill: true, treatments: [
+      { service: "Physical therapy, lumbar spine", code: "97110", outcome: "approved", authorizationNumber: "DEMO-AUTH-a1", effectiveFrom: "2026-09-10", effectiveTo: "2026-10-10" },
+      { service: "Lumbar MRI without contrast", code: "72148", outcome: "denied", authorizationNumber: null, effectiveFrom: null, effectiveTo: null },
+    ] },
+    { documentId: "doc_2", rfaId: "rfa_7b13e0cc02", filename: "ur-decision-2.pdf", decidedAt: null, attached: true, matchesBill: false, treatments: [
+      { service: "Office visit", code: "99213", outcome: "modified", authorizationNumber: "DEMO-AUTH-x", effectiveFrom: "2026-09-01", effectiveTo: "2026-09-30" },
+    ] },
+  ] };
+
+// Mock of the partner API routes these components call through a browser session.
+async function mockApi(input, init = {}) {
+  const path = new URL(String(input), location.href).pathname;
+  if ((init.method || "GET") !== "GET") return Response.json({ data: { attached: 1 } });
+  if (path.endsWith("/rfas/related")) return Response.json(related);
+  if (path.endsWith("/ur-decisions")) return Response.json({ data: decisions });
+  if (path.endsWith("/rfas")) return Response.json({ data: rfas, nextCursor: null, summary: { total: rfas.length, byStatus: {} } });
+  return Response.json({ error: { message: "Not in this demo: " + path } }, { status: 404 });
+}
+const session = { getSession: async () => ({ token: "demo_session" }), fetch: mockApi, appearance: { preset: "mindbill" } };`;
+
+const rfaClaimIndexCode = `import { RfaClaimIndex } from "@mindbill/react";
+
+${rfaRecordsFixture}
+
+export default function App() {
+  return <main className="review-demo">
+    <RfaClaimIndex
+      {...session}
+      claimId="claim_demo"
+      canCreate
+      onCreateRfa={() => alert("Open your RFA creation page")}
+      onSelectRfa={(rfaId) => alert("Open " + rfaId)}
+    />
+  </main>;
+}`;
+
+const relatedRecordsCode = `import { RelatedAuthorizationRecords } from "@mindbill/react";
+
+${rfaRecordsFixture}
+
+export default function App() {
+  return <main className="review-demo">
+    <RelatedAuthorizationRecords
+      {...session}
+      rfaId="rfa_5f2c91aa01"
+      onSelectBill={(billId) => alert("Open " + billId)}
+      getClaimHref={(claimId) => "#" + claimId}
+    />
+  </main>;
+}`;
+
+const billUrDecisionsCode = `import { useState } from "react";
+import { BillUrDecisions } from "@mindbill/react";
+
+${rfaRecordsFixture}
+
+export default function App() {
+  const [message, setMessage] = useState("Select a decision letter to attach to this unsent bill.");
+  return <main className="review-demo">
+    <p className="notice">{message}</p>
+    <BillUrDecisions
+      {...session}
+      billId="bill_1042"
+      canEdit
+      openDocument={(decision) => setMessage("Preview " + decision.filename)}
+      onSelectRfa={(rfaId) => setMessage("Open " + rfaId)}
+      onAttached={(result) => setMessage("Attached " + result.attached + " document. Nothing was sent.")}
+    />
+  </main>;
+}`;
+
 const demoCss = `body { margin: 0; background: #f5f8f9; }
 .demo { padding: 24px; max-width: 760px; margin: 0 auto; font-family: Inter, system-ui, sans-serif; color: #203743; }
 .demo > p, .notice { color: #657982; }
@@ -604,7 +780,7 @@ function ComponentPlayground({
         template="react"
         theme="auto"
         files={{ "/App.js": code, "/styles.css": demoCss }}
-        customSetup={{ dependencies: { "@mindbill/react": "0.69.4" } }}
+        customSetup={{ dependencies: { "@mindbill/react": sdkVersions.react, "@mindbill/browser": sdkVersions.browser } }}
         options={{
           showNavigator: false,
           showTabs: true,
@@ -707,4 +883,20 @@ export function StatusGalleryPlayground() {
 
 export function FullLifecyclePlayground() {
   return <ComponentPlayground name="Complete bill journey" code={fullLifecycleCode} height={820} label="Mocked sandbox API · click each lifecycle state" />;
+}
+
+export function TreatmentBillPlayground() {
+  return <ComponentPlayground name="ConnectedTreatmentBillForm" code={treatmentBillCode} height={760} label="Mocked encounter quote · edit lines and charges" />;
+}
+
+export function RfaClaimIndexPlayground() {
+  return <ComponentPlayground name="RfaClaimIndex" code={rfaClaimIndexCode} height={640} label="Mocked RFA list · synthetic claim" />;
+}
+
+export function RelatedRecordsPlayground() {
+  return <ComponentPlayground name="RelatedAuthorizationRecords" code={relatedRecordsCode} height={560} label="Mocked related records · synthetic claim" />;
+}
+
+export function BillUrDecisionsPlayground() {
+  return <ComponentPlayground name="BillUrDecisions" code={billUrDecisionsCode} height={640} label="Mocked UR decisions · nothing is sent" />;
 }
