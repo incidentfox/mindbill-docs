@@ -122,6 +122,7 @@ button { color: inherit; }
 .doc-content td[rowspan] { color: var(--text); font-weight: 600; border-right: 1px solid var(--line); }
 .callout > div { min-width: 0; overflow-wrap: anywhere; }
 .doc-content td code { overflow-wrap: normal; white-space: nowrap; }
+.doc-content thead th code { text-transform: none; letter-spacing: 0; }
 @media (max-width: 760px) { .doc-content table { display: block; overflow-x: auto; } .doc-content th, .doc-content td { padding: 9px 10px; } }
 .action-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 34px; }
 .button-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 19px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--text) !important; background: var(--surface-raised); font-weight: 750; text-decoration: none !important; }
