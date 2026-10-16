@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { installAngular, sdkVersions } from "@/lib/sdk-versions";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
@@ -13,7 +14,7 @@ import {
 
 export const metadata: Metadata = { title: "Angular components" };
 
-const install = `npm install @mindbill/angular@0.19.0`;
+const install = installAngular;
 
 const submission = singleBillAngular;
 
@@ -173,7 +174,7 @@ export default function AngularPage() {
       ]} />
 
       <h2 id="notifications">Notification settings</h2>
-      <p>Angular 0.19.0 has no <code>NotificationSettings</code> or <code>NotificationRecipientsSettings</code> component. Build an Angular preferences or recipient-list view against your authenticated host-server adapter using the same <Link href="/guides/notifications#host">notification API contract</Link>. Your server owns identity, verified email, practice and bill access, consent records, and the API key.</p>
+      <p>Angular {sdkVersions.angular} has no <code>NotificationSettings</code> or <code>NotificationRecipientsSettings</code> component. Build an Angular preferences or recipient-list view against your authenticated host-server adapter using the same <Link href="/guides/notifications#host">notification API contract</Link>. Your server owns identity, verified email, practice and bill access, consent records, and the API key.</p>
       <p>Support <code>reportDigest</code> (off, daily, or weekly) alongside status alerts and aging reminders. An administrator’s invitation does not enroll a recipient: the email owner must review and confirm it. Personal preference changes need explicit consent; reload the authoritative preferences after saving. Sandbox sends no email.</p>
 
       <h2 id="custom">Custom lifecycle UI</h2>

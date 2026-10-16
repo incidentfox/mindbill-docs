@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
+import { installReactWithBrowser } from "@/lib/sdk-versions";
 
 export const metadata: Metadata = { title: "California fee calculator" };
 
@@ -70,11 +71,22 @@ if (quote.status === "requires_review") {
 export default function FeeSchedulesPage() {
   return <DocPage eyebrow="Treatment billing" title="California fee calculator"
     description="Calculate an encounter using its service dates, location, provider, codes, modifiers, and applicable fee rules."
-    toc={[{ id: "access", label: "Access" }, { id: "request-shapes", label: "Where inputs go" }, { id: "component", label: "Embed the calculator" }, { id: "imaging", label: "Imaging sessions" }, { id: "therapy", label: "Therapy bill fields" }, { id: "anesthesia", label: "Anesthesia bill fields" }, { id: "api", label: "Quote through the API" }, { id: "results", label: "Read the result" }, { id: "dates", label: "Dates and sources" }, { id: "submission", label: "Submit a treatment bill" }]}
+    toc={[{ id: "access", label: "Access" }, { id: "encounter", label: "Encounter vs claim quote" }, { id: "request-shapes", label: "Where inputs go" }, { id: "component", label: "Embed the calculator" }, { id: "imaging", label: "Imaging sessions" }, { id: "therapy", label: "Therapy bill fields" }, { id: "anesthesia", label: "Anesthesia bill fields" }, { id: "api", label: "Quote through the API" }, { id: "results", label: "Read the result" }, { id: "dates", label: "Dates and sources" }, { id: "submission", label: "Submit a treatment bill" }]}
     previous={{ href: "/learn/treatment-quickstart", label: "Treatment quickstart" }} next={{ href: "/api-reference/ca-claim-fee-quote", label: "Claim quote reference" }}>
     <h2 id="access">Access</h2>
     <p>The organization must have <code>treatmentBilling</code> enabled. Quote requests accept a server API key with <code>bills:read</code>, or an origin-bound browser session with <code>bills:read</code>. Credentials select the sandbox or live environment; the request body cannot override it.</p>
     <p>Use a quote before creating a bill. It does not submit anything to a payer. Follow the <Link href="/guides/authentication">authentication guide</Link> to keep your API key on your server.</p>
+    <h2 id="encounter">Encounter quote or claim quote</h2>
+    <p>MindBill has two ways to price a whole visit. Both apply multiple-procedure, bundling, add-on, NCCI, and same-day rules across the lines and return integer cents with review states instead of guessed amounts.</p>
+    <table><thead><tr><th></th><th><Link href="/api-reference/encounter-fee-quote"><code>POST /fee-quotes/encounter</code></Link></th><th><Link href="/api-reference/ca-claim-fee-quote"><code>POST /fee-quotes/ca/claim</code></Link></th></tr></thead><tbody>
+      <tr><td>Use it for</td><td>Expected payment while entering a treatment bill</td><td>A stand-alone calculator or pricing before saved records exist</td></tr>
+      <tr><td>You send</td><td>Saved <code>renderingProviderId</code>, <code>placeOfServiceId</code>, optional <code>claimId</code> and <code>billingProviderId</code>, plus codes, units, modifiers, and charges</td><td>Clinical and setting context on every line: <code>serviceZip</code>, <code>physicianContext</code>, specialty context, and <code>completeDateOfServiceContext</code></td></tr>
+      <tr><td>Provider, setting, payer</td><td>Read from the organization&apos;s saved provider, location, practice charges, and the claim&apos;s claims administrator</td><td>Taken from the request only; no practice or payer context</td></tr>
+      <tr><td>Matches the saved bill</td><td>Yes: the same calculation MindBill runs when the treatment bill is saved, including LC 4604.5 visit counts from the claim</td><td>Statutory schedule only</td></tr>
+      <tr><td>Result extras</td><td>Per-line <code>displayNotes</code>, visit-wide <code>visitNotes</code>, <code>paymentAdjustment</code>, and <code>medicalLegalLineIds</code></td><td>Per-date <code>claimEdits</code> and <code>limitations</code></td></tr>
+      <tr><td>Component</td><td><Link href="/guides/treatment-billing#bill"><code>ConnectedTreatmentBillForm</code></Link></td><td><code>FeeScheduleCalculator</code> (below)</td></tr>
+    </tbody></table>
+    <p>Both require <code>bills:read</code> and the <code>treatmentBilling</code> capability. Specialty schedules have their own endpoints: <Link href="/api-reference/ca-claim-edits">PTP and MUE screening</Link>, <Link href="/api-reference/ca-copy-service-fee-quote">copy service</Link>, <Link href="/api-reference/ca-inpatient-fee-quote">inpatient hospital</Link>, <Link href="/api-reference/pharmacy-fee-quote">dispensed drugs</Link>, <Link href="/api-reference/compound-pharmacy-fee-quote">compounds</Link>, and federal <Link href="/api-reference/owcp-fee-quote">OWCP physician</Link> and <Link href="/api-reference/owcp-ancillary-fee-quote">ancillary</Link> maximums.</p>
     <h2 id="request-shapes">Put each pricing input in the right request</h2>
     <p>Automatic bill pricing and standalone fee quotes use the same underlying service facts, but their JSON shapes are intentionally different.</p>
     <div className="term-list">
@@ -84,7 +96,7 @@ export default function FeeSchedulesPage() {
     </div>
     <Callout title="Do not mix the shapes"><code>serviceZip</code> and <code>physicianContext.placeOfService</code> are quote fields. On a bill, use the parent <code>serviceLocation</code> and <code>renderingProvider</code> fields instead. MindBill derives the ordinary line context from that complete bill snapshot.</Callout>
     <h2 id="component">Embed the calculator</h2>
-    <CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@0.69.7 @mindbill/browser@0.43.5" />
+    <CodeBlock language="bash" filename="Terminal" code={installReactWithBrowser} />
     <CodeBlock language="tsx" filename="CaliforniaFees.tsx" code={calculator} />
     <p><code>FeeScheduleCalculator</code> accepts multiple service lines, units, modifiers, service dates, and location/provider information. It displays the calculation details, regulatory links, coding findings, and review reasons returned by the same claim quote API.</p>
     <p>Optional props are <code>initialLines</code> (typed as <code>CaClaimFeeQuoteInput[&quot;lines&quot;]</code>), <code>onQuote</code>, <code>appearance</code>, <code>className</code>, and <code>style</code>. The form provides professional-service and physical-therapy context fields. Supply other specialty context through <code>initialLines</code> when your workflow already collects it; the form does not provide every specialty input. Use <code>onQuote</code> to receive the complete <code>CaClaimFeeQuoteResult</code>; inspect its status before using any amount.</p>

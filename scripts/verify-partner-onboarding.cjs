@@ -3,6 +3,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
+const reactVersion = require('node:fs').readFileSync(require('node:path').join(__dirname, '../lib/sdk-versions.ts'), 'utf8').match(/react: "([^"]+)"/)[1];
 
 (async () => {
   const base = process.env.VERIFY_BASE_URL || 'http://127.0.0.1:3095';
@@ -49,7 +50,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
       assert.match(notificationText, /X-Notification-Request-Id/);
       assert.match(notificationText, /not MindBill exports/);
       assert.match(notificationText, /DELETE removed assignments first/);
-      assert.match(notificationText, /@mindbill\/react@0\.52\.0/);
+      assert.match(notificationText, /@mindbill\/react 0\.65\.0 or later/);
       assert.match(notificationText, /ConnectedNotificationRecipientsSettings/);
       assert.match(notificationText, /An administrator cannot opt someone else in/);
       assert.match(notificationText, /Scheduled billing-activity digests/);
@@ -96,7 +97,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
     await page.goto(`${base}/components/react`);
     await page.getByRole('heading', { name: 'Notification settings', exact: true }).waitFor();
     assert.match(await page.locator('body').innerText(), /copyable server adapter/);
-    assert.match(await page.locator('body').innerText(), /pnpm add @mindbill\/react@0\.52\.0/);
+    assert.match(await page.locator('body').innerText(), new RegExp(`npm install @mindbill/react@${reactVersion.replace(/\./g, '\\.')}`));
     assert.match(await page.locator('body').innerText(), /NotificationRecipientsSettings/);
     await page.goto(`${base}/learn/quickstart`);
     await page.locator('#settings > summary').click();

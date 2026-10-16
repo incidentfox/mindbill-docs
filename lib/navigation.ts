@@ -45,6 +45,13 @@ export const navigation: DocLink[] = [
     keywords: ["rfa", "walkthrough", "screenshots", "step by step", "status", "treatment", "history"],
   })),
   {
+    href: "/guides/videos",
+    label: "Feature videos",
+    description: "Short recordings of embedded MindBill workflows.",
+    group: "Walkthroughs", icon: Workflow,
+    keywords: ["video", "demo", "recording", "walkthrough"],
+  },
+  {
     href: "/guides/report-autofill",
     label: "Report autofill",
     description: "Review optional PDF suggestions and fill empty bill fields.",
@@ -57,6 +64,13 @@ export const navigation: DocLink[] = [
     description: "Save billing providers, rendering providers, locations, and W-9s for bill entry.",
     group: "Build", icon: Layers3,
     keywords: ["settings", "onboarding", "provider", "location", "w9", "dropdown", "permissions", "team", "claims administrator"],
+  },
+  {
+    href: "/guides/treatment-billing",
+    label: "Treatment billing and RFAs",
+    description: "Embed treatment bills with expected OMFS payment and the full RFA workflow.",
+    group: "Build", icon: ReceiptText,
+    keywords: ["treatment", "OMFS", "expected payment", "encounter", "RFA", "UR decision", "ConnectedTreatmentBillForm", "RfaClaimIndex", "BillUrDecisions", "treatmentBilling"],
   },
   {
     href: "/guides/rfas",
@@ -278,6 +292,13 @@ export const navigation: DocLink[] = [
     group: "Reference",
     icon: Activity,
     keywords: ["webhook", "events", "signature", "delivery"],
+  },
+  {
+    href: "/guides/webhooks",
+    label: "Webhook event types",
+    description: "Every bill, payment, organization, and RFA event, with the signed envelope.",
+    group: "Reference", icon: Activity,
+    keywords: ["webhook", "event types", "rfa.decision_recorded", "bill.paid", "payment.posted", "signature", "hmac"],
   },
   {
     href: "/pricing",

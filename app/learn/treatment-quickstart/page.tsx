@@ -4,6 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 import { DocPage } from "@/components/doc-page";
 import { ApiKeyStep, QuickstartNav } from "@/components/quickstart-layout";
 import { QuickstartTabs } from "@/components/quickstart-tabs";
+import { installAngular, installReact } from "@/lib/sdk-versions";
 
 export const metadata: Metadata = { title: "Treatment billing quickstart" };
 
@@ -134,8 +135,8 @@ export default function TreatmentQuickstartPage() {
       <section id="setup"><h2>2. Choose your setup</h2>
         <p>Use the same libraries and authentication as med-legal billing. Complete the setup once, then return here.</p>
         <QuickstartTabs label="Treatment setup" tabs={[
-          { label: "React", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/react@0.73.0" /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
-          { label: "Angular", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/angular@latest" /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
+          { label: "React", content: <><CodeBlock language="bash" filename="Terminal" code={installReact} /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
+          { label: "Angular", content: <><CodeBlock language="bash" filename="Terminal" code={installAngular} /><p>Add the <Link href="/learn/quickstart#auth">backend auth route</Link> for your signed-in users.</p></> },
           { label: "API", content: <><CodeBlock language="bash" filename="Terminal" code="npm install @mindbill/node@latest" /><p>Initialize the server client from <Link href="/learn/api-quickstart#install">API quickstart step 2</Link>.</p></> },
         ]} />
       </section>
@@ -155,6 +156,7 @@ export default function TreatmentQuickstartPage() {
         ]} />
         <p>For 97110, React 0.69.4 collects the actual therapy service facts before requesting an estimate. Preserve supplied context, include all same-day services, and keep unsupported cases in review. See <Link href="/guides/fee-schedules#therapy">therapy fields and calculation limits</Link>.</p>
         <p>Pass the authorized organization capability as <code>treatmentBilling</code>; the prop does not grant server access. React 0.69.2 collects documented personal-performance, medical-direction, and monitored-care facts for anesthesia lines. Keep anesthesia service quantity at one and supply elapsed minutes separately. See <Link href="/guides/fee-schedules#anesthesia">anesthesia fields and server review</Link>.</p>
+        <p>To show the expected OMFS payment for every line while the biller types, use <code>ConnectedTreatmentBillForm</code> with the saved rendering provider and service location IDs. See <Link href="/guides/treatment-billing#bill">treatment billing and RFAs</Link>.</p>
         <p>Use the returned bill ID with the <Link href="/learn/quickstart#bill">single-bill component</Link> or <Link href="/learn/api-quickstart#status">status API</Link>. Treatment bills use the same dashboard and lifecycle actions; show the actions available for each bill.</p>
       </section>
       <details id="rfa" className="quickstart-details"><summary>5. Add a Request for Authorization <small>Optional</small></summary>

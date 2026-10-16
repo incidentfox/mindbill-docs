@@ -2,6 +2,7 @@ import { reportAutofillEndpoints } from "./report-autofill-api";
 import { sharedApiEndpoints } from "./shared-api-endpoints";
 import { referenceDataEndpoints } from "./reference-data-api";
 import { feeScheduleEndpoints } from "./fee-schedule-api";
+import { rfaEndpoints } from "./rfa-api";
 import { organizationSettingsEndpoints, billSearchFields } from "./organization-settings-api";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -23,7 +24,9 @@ export type ApiExample = {
 
 export type ApiEndpoint = {
   slug: string;
-  group: "Bills" | "Documents" | "Reviews" | "Lifecycle" | "Platform" | "Directories";
+  group: "Bills" | "Fee quotes" | "Authorizations" | "Documents" | "Reviews" | "Lifecycle" | "Platform" | "Directories";
+  /** Organization capability that must be enabled, such as treatmentBilling. */
+  capability?: string;
   authentication?: "api-key" | "browser-session" | "api-key-or-browser-session";
   method: HttpMethod;
   path: string;
@@ -277,6 +280,7 @@ export const apiEndpoints: ApiEndpoint[] = [
   ...reportAutofillEndpoints,
   ...referenceDataEndpoints,
   ...feeScheduleEndpoints,
+  ...rfaEndpoints,
   ...organizationSettingsEndpoints,
   {
     slug: "create-bill",
@@ -758,10 +762,10 @@ export const apiEndpoints: ApiEndpoint[] = [
     responseFields: [
       { name: "events[].id", type: "string", required: true, description: "Stable event identifier for deduplication." },
       { name: "events[].sequence", type: "string", required: true, description: "Organization-ordering sequence." },
-      { name: "events[].type", type: "string", required: true, description: "Lifecycle event type." },
+      { name: "events[].type", type: "string", required: true, description: "Event type, such as bill.accepted, payment.posted, or rfa.decision_recorded. See the webhook events guide (/guides/webhooks) for every type." },
       { name: "events[].apiVersion", type: "string", required: true, description: "Event schema version." },
       { name: "events[].createdAt", type: "string", required: true, description: "ISO event timestamp." },
-      { name: "events[].data", type: "object", required: true, description: "Event-specific payload containing bill and transition identifiers." },
+      { name: "events[].data", type: "object", required: true, description: "Event-specific payload: billId with from/to for bill transitions, or rfaId with opaque IDs for RFA events." },
       { name: "nextCursor", type: "string | null", required: true, description: "Cursor to persist after processing the page." },
     ],
     examples: [{ label: "cURL", language: "bash", filename: "Read events", code: `curl "https://app.mindbill.org/partner/v2/events?cursor=$CURSOR&limit=100" \\
@@ -770,10 +774,10 @@ export const apiEndpoints: ApiEndpoint[] = [
   "events": [{
     "id": "evt_01J6Z2",
     "sequence": "1842",
-    "type": "bill.status.updated",
-    "apiVersion": "2026-08-29",
+    "type": "bill.accepted",
+    "apiVersion": "2026-08-16",
     "createdAt": "2026-08-29T18:42:11.000Z",
-    "data": { "billId": "bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D", "state": "processed" }
+    "data": { "billId": "bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D", "from": "submitted", "to": "accepted" }
   }],
   "nextCursor": "cursor_1842"
 }`,
@@ -1002,7 +1006,7 @@ export async function POST(request: Request) {
   },
 ];
 
-export const endpointGroups = ["Directories", "Bills", "Documents", "Reviews", "Lifecycle", "Platform"] as const;
+export const endpointGroups = ["Directories", "Bills", "Fee quotes", "Authorizations", "Documents", "Reviews", "Lifecycle", "Platform"] as const;
 
 export function endpointBySlug(slug: string) {
   return apiEndpoints.find((endpoint) => endpoint.slug === slug);

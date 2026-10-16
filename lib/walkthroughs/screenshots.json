@@ -154,5 +154,35 @@
     "original": "/walkthroughs/rfa/originals/tasks-05-completed-response-review.png",
     "width": 1026,
     "height": 906
+  },
+  "widget-rfa-claim-index": {
+    "src": "/screenshots/widgets/rfa-claim-index.png",
+    "original": "/screenshots/widgets/rfa-claim-index.png",
+    "width": 1440,
+    "height": 350
+  },
+  "widget-rfa-claim-treatments": {
+    "src": "/screenshots/widgets/rfa-claim-treatments.png",
+    "original": "/screenshots/widgets/rfa-claim-treatments.png",
+    "width": 1440,
+    "height": 481
+  },
+  "widget-related-authorization-records": {
+    "src": "/screenshots/widgets/related-authorization-records.png",
+    "original": "/screenshots/widgets/related-authorization-records.png",
+    "width": 1440,
+    "height": 245
+  },
+  "widget-bill-ur-decisions": {
+    "src": "/screenshots/widgets/bill-ur-decisions.png",
+    "original": "/screenshots/widgets/bill-ur-decisions.png",
+    "width": 1440,
+    "height": 354
+  },
+  "widget-treatment-bill-encounter-fees": {
+    "src": "/screenshots/widgets/treatment-bill-encounter-fees.png",
+    "original": "/screenshots/widgets/treatment-bill-encounter-fees.png",
+    "width": 1190,
+    "height": 1264
   }
 }

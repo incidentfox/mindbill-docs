@@ -116,6 +116,14 @@ button { color: inherit; }
 .doc-content a:not(.button-link) { color: var(--accent-text); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset: 3px; }
 .doc-content code:not(pre code) { padding: .12em .38em; border-radius: 5px; background: var(--surface-2); color: var(--text); font: 0.88em/1.4 "JetBrains Mono", ui-monospace, monospace; overflow-wrap: anywhere; }
 .doc-content ul { padding-left: 22px; }
+.doc-content table { width: 100%; margin: 20px 0 32px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; border-collapse: separate; border-spacing: 0; font-size: 14px; line-height: 1.55; }
+.doc-content th, .doc-content td { padding: 10px 14px; border-top: 1px solid var(--line); color: var(--muted); text-align: left; vertical-align: top; }
+.doc-content thead th { border-top: 0; background: var(--surface-2); color: var(--text); font-size: 12px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+.doc-content td[rowspan] { color: var(--text); font-weight: 600; border-right: 1px solid var(--line); }
+.callout > div { min-width: 0; overflow-wrap: anywhere; }
+.doc-content td code { overflow-wrap: normal; white-space: nowrap; }
+.doc-content thead th code { text-transform: none; letter-spacing: 0; }
+@media (max-width: 760px) { .doc-content table { display: block; overflow-x: auto; } .doc-content th, .doc-content td { padding: 9px 10px; } }
 .action-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 34px; }
 .button-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 19px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--text) !important; background: var(--surface-raised); font-weight: 750; text-decoration: none !important; }
 .button-link:hover { border-color: var(--accent); background: var(--accent-soft); }
@@ -220,6 +228,7 @@ button { color: inherit; }
 .api-method-path { display: flex; align-items: center; gap: 12px; margin: 26px 0 18px; padding: 16px 18px; overflow-x: auto; border: 1px solid var(--line-strong); border-radius: 11px; background: var(--surface); }
 .api-method-path code { white-space: nowrap; background: transparent !important; padding: 0 !important; }
 .api-meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 26px 0 36px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; }
+.api-meta-grid.with-capability { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .api-meta-grid > div { min-width: 0; padding: 16px 18px; border-left: 1px solid var(--line); background: var(--surface); }
 .api-meta-grid > div:first-child { border-left: 0; }
 .api-meta-grid small, .api-meta-grid strong { display: block; }
@@ -316,7 +325,7 @@ button { color: inherit; }
   .endpoint-row > :nth-child(3)::before { content: "Input"; }
   .endpoint-row > :nth-child(4)::before { content: "Output"; }
   .endpoint-row > :nth-child(5)::before { content: "Purpose"; }
-  .api-meta-grid { grid-template-columns: 1fr; }
+  .api-meta-grid, .api-meta-grid.with-capability { grid-template-columns: 1fr; }
   .api-meta-grid > div { border-left: 0; border-top: 1px solid var(--line); }
   .api-meta-grid > div:first-child { border-top: 0; }
   .api-endpoint-card { grid-template-columns: 1fr; gap: 7px; padding: 16px; }
