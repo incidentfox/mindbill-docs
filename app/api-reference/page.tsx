@@ -47,7 +47,7 @@ export default function ApiReferencePage() {
       <CodeBlock code={authenticate} language="bash" filename="Request" />
       <h3>Idempotency</h3>
       <p>For endpoints marked idempotent, send a stable <code>Idempotency-Key</code> on mutations. Reusing a key with the same request safely returns the original result; reusing it with a different request is rejected.</p>
-      <Callout title="Create and submit are atomic">The public API has no draft bill. Send the reviewed snapshot, delivery route, and payer packet together. Success creates an immutable bill whose first status is <code>submitted</code>; failure creates no public bill.</Callout>
+      <Callout title="Create and submit are atomic">A bill is created only by submission. Send the reviewed snapshot, delivery route, and payer packet together. Success creates an immutable bill whose first status is <code>submitted</code>; failure creates no public bill. Unfinished treatment bills can be kept as <Link href="/api-reference/create-bill-draft">bill drafts</Link>, which are never sent and are submitted through the same request.</Callout>
 
       {endpointGroups.map((group) => {
         const endpoints = apiEndpoints.filter((endpoint) => endpoint.group === group);

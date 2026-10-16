@@ -46,7 +46,7 @@ export default function WorkersCompBillingPage() {
         <li><b>Processed:</b> read the EOR, post payment, or inspect denial and adjustment reasons.</li>
         <li><b>Resolve:</b> close the bill or pursue Second Bill Review and, when eligible, IBR.</li>
       </ol>
-      <Callout tone="warning" title="Every bill is a submitted snapshot">The public API has no draft or update operation. Keep edits local before submission; use a new atomic bill for a corrected replacement so the original audit history remains intact.</Callout>
+      <Callout tone="warning" title="Every bill is a submitted snapshot">A bill cannot be edited after submission. Keep edits local before submission (treatment integrations can save unsent <Link href="/guides/treatment-billing#drafts">bill drafts</Link>, which are never sent); use a new atomic bill for a corrected replacement so the original audit history remains intact.</Callout>
 
       <h2 id="terms">Six terms you will see</h2>
       <div className="term-list compact">

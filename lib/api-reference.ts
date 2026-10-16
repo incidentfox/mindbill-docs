@@ -3,6 +3,7 @@ import { sharedApiEndpoints } from "./shared-api-endpoints";
 import { referenceDataEndpoints } from "./reference-data-api";
 import { feeScheduleEndpoints } from "./fee-schedule-api";
 import { rfaEndpoints } from "./rfa-api";
+import { billDraftEndpoints } from "./bill-draft-api";
 import { organizationSettingsEndpoints, billSearchFields } from "./organization-settings-api";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -303,6 +304,9 @@ export const apiEndpoints: ApiEndpoint[] = [
       { name: "documents[].contentBase64", type: "string", required: true, description: "Base64-encoded PDF bytes. Maximum 25 MB per document measured before encoding. The file must be a real PDF." },
       { name: "documents[].externalId", type: "string", description: "Your stable source-document identifier." },
       { name: "documents[].reportTypeCode", type: "string", description: "Optional PWK01 report-type code. Med-legal components default to J4." },
+      { name: "draft", type: "{ id: string; revision: number }", description: "Submit a saved treatment bill draft (POST /bill-drafts). Send the draft's bill as bill. The draft must still be unsent and at this revision. MindBill reserves it for this request, marks it submitted with the created bill's ID on success, and releases it for editing when no bill is created." },
+      { name: "draft.id", type: "string", required: true, description: "The saved draft's id." },
+      { name: "draft.revision", type: "integer", required: true, description: "The draft's current revision.", constraint: "≥ 1" },
     ],
     responseFields: billResponseFields,
     examples: [
@@ -351,7 +355,8 @@ export const apiEndpoints: ApiEndpoint[] = [
 }`,
     notes: [
       { title: "Snapshot, not synchronization", body: "Provider, location, patient, and claim values are frozen on the bill. You may keep your own canonical database, use MindBill profiles for repeated values, or mix both approaches." },
-      { title: "No public draft", body: "Pre-submission edits stay in your product. Success returns an immutable submitted bill; validation or packet-preparation failure creates no public bill." },
+      { title: "Drafts are not bills", body: "Success returns an immutable submitted bill; validation or packet-preparation failure creates no public bill. To let a biller save unfinished treatment work, use bill drafts (POST /bill-drafts): a draft is never validated, priced as final, or sent, and becomes a bill only through this request with draft: { id, revision }." },
+      { title: "Submitting a draft", body: "With draft set, a draft that is missing returns 404 bill_draft_not_found; a stale revision returns 409 bill_draft_revision_conflict; a draft already being submitted or submitted returns 409 bill_draft_not_editable. On success the draft's status becomes submitted and its submittedBillId is the new bill. If no bill is created, the draft returns to draft at the same revision so the biller can fix and resubmit it." },
     ],
   },
   {
@@ -401,6 +406,7 @@ export const apiEndpoints: ApiEndpoint[] = [
   --header "Authorization: Bearer $MINDBILL_API_KEY"` }],
     responseExample: `{ "id": "bill_01J6Y7F4Q4XK6P3J9G2C8A1B5D", "externalId": "report_9f7a", "state": "submitted", "billingMode": "med_legal", "documents": [], "amounts": { "charged": 2015, "paid": 0, "balance": 2015 } }`,
   },
+  ...billDraftEndpoints,
   {
     slug: "bill-status",
     group: "Lifecycle",

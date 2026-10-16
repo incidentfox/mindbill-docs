@@ -4,8 +4,8 @@
  * command on the site reads from here.
  */
 export const sdkVersions = {
-  react: "0.78.0",
-  browser: "0.51.0",
+  react: "0.79.0",
+  browser: "0.52.0",
   angular: "0.20.0",
 } as const;
 

@@ -10,8 +10,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
   const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', headless: true, args: ['--no-sandbox'] });
   const referenceSlugs = ['encounter-fee-quote', 'ca-claim-edits', 'ca-copy-service-fee-quote', 'ca-inpatient-fee-quote', 'pharmacy-fee-quote', 'compound-pharmacy-fee-quote', 'owcp-fee-quote', 'owcp-ancillary-fee-quote',
     'rfa-creation-context', 'rfa-provider-signature', 'rfa-draft-preview', 'rfa-form-preview', 'rfa-response-reading', 'rfa-related', 'bill-ur-decisions', 'attach-bill-ur-decisions',
-    'rfa-delivery-preview', 'rfa-submit', 'rfa-sent-outside', 'undo-rfa-sent-outside', 'rfa-forwards', 'rfa-export', 'rfa-treatment-closure', 'rfa-reconcile-fax'];
-  const pages = ['/guides/treatment-billing', '/guides/rfas', '/guides/webhooks', '/guides/videos', '/guides/fee-schedules', '/guides/upgrade', '/components/react', '/api-reference', '/api-reference/browser-api', '/api-reference/events', ...referenceSlugs.map(slug => `/api-reference/${slug}`)];
+    'rfa-delivery-preview', 'rfa-submit', 'rfa-sent-outside', 'undo-rfa-sent-outside', 'rfa-forwards', 'rfa-export', 'rfa-treatment-closure', 'rfa-reconcile-fax',
+    'list-bill-drafts', 'create-bill-draft', 'get-bill-draft', 'update-bill-draft', 'delete-bill-draft'];
+  const pages = ['/guides/treatment-billing', '/guides/rfas', '/guides/webhooks', '/guides/videos', '/guides/fee-schedules', '/guides/upgrade', '/components/react', '/api-reference', '/api-reference/browser-api', '/api-reference/events', '/api-reference/create-bill', '/guides/partner-integration', ...referenceSlugs.map(slug => `/api-reference/${slug}`)];
   try {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -32,7 +33,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
         }
         (await page.locator('.doc-article a[href^="/"]').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')))).forEach(h => links.add(h));
         if (path === '/guides/treatment-billing') {
-          for (const name of ['ConnectedTreatmentBillForm', 'RfaClaimIndex', 'RelatedAuthorizationRecords', 'BillUrDecisions', 'officialForm', 'treatment_billing_not_enabled', 'placeOfServiceId']) assert.match(text, new RegExp(name), name);
+          for (const name of ['ConnectedTreatmentBillForm', 'RfaClaimIndex', 'RelatedAuthorizationRecords', 'BillUrDecisions', 'officialForm', 'treatment_billing_not_enabled', 'placeOfServiceId',
+            'Save and resume drafts', 'draftId', 'onDraftSaved', 'createBillDraftsClient', 'bill_draft_revision_conflict', 'onSaveDraft']) assert.match(text, new RegExp(name), name);
+          await page.locator('#drafts').scrollIntoViewIfNeeded();
+          await page.screenshot({ path: `${output}/treatment-drafts-${width}.png` });
           const shots = page.locator('.walkthrough-image-button img');
           for (let i = 0; i < await shots.count(); i++) { await shots.nth(i).scrollIntoViewIfNeeded(); await shots.nth(i).evaluate(n => n.decode().catch(() => null)); }
           const images = await shots.evaluateAll(nodes => nodes.map(n => n.complete && n.naturalWidth > 0));
@@ -57,8 +61,17 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core')
           await page.locator('#encounter').scrollIntoViewIfNeeded();
           await page.screenshot({ path: `${output}/fee-encounter-${width}.png` });
         }
+        if (/^\/api-reference\/(list|create|get|update|delete)-bill-draft/.test(path)) {
+          for (const term of ['treatmentBilling', 'Idempotency|bills:read', 'billdraft_example']) assert.match(text, new RegExp(term), `${path} ${term}`);
+          await page.screenshot({ path: `${output}/${path.split('/').pop()}-${width}.png`, fullPage: true });
+        }
+        if (path === '/api-reference/create-bill') {
+          for (const term of ['draft.revision', 'bill_draft_not_editable', 'Drafts are not bills']) assert.match(text, new RegExp(term.replace('.', '\\.')), term);
+          assert.doesNotMatch(text, /No public draft/);
+        }
+        if (path === '/guides/partner-integration') assert.match(text, /bill draft/);
         if (path === '/api-reference/encounter-fee-quote') await page.screenshot({ path: `${output}/encounter-api-${width}.png`, fullPage: true });
-        if (path === '/guides/upgrade') { await page.locator('#v078').scrollIntoViewIfNeeded(); await page.screenshot({ path: `${output}/upgrade-${width}.png` }); }
+        if (path === '/guides/upgrade') { assert.match(text, /React 0\.79\.0, browser 0\.52\.0/); assert.match(text, /createBillDraftsClient/); await page.locator('#v079').scrollIntoViewIfNeeded(); await page.screenshot({ path: `${output}/upgrade-v079-${width}.png` }); await page.locator('#v078').scrollIntoViewIfNeeded(); await page.screenshot({ path: `${output}/upgrade-${width}.png` }); }
       }
     }
     for (const link of links) {
