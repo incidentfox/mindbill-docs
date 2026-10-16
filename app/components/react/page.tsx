@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { installReact, installReactWithBrowser, sdkVersions } from "@/lib/sdk-versions";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { Callout, DocPage } from "@/components/doc-page";
@@ -27,7 +28,7 @@ import {
 
 export const metadata: Metadata = { title: "React components" };
 
-const install = `pnpm add @mindbill/react@0.73.0`;
+const install = installReact;
 
 const connectedWorkspace = `import { ConnectedBillingWorkspace } from "@mindbill/react";
 
@@ -363,6 +364,12 @@ export default function ReactPage() {
         <div className="table-head"><b>Export</b><b>Use it when</b><b>Owns API calls</b></div>
         <div><code>FeeScheduleCalculator</code><span>Calculate multiple California treatment lines with modifiers, sources, and coding review. <Link href="/guides/fee-schedules">Integration guide</Link>.</span><span>Through your reference client</span></div>
         <div><code>BillSubmissionForm</code><span>You want the complete form, reference data, validation, attachments, and atomic Submit action.</span><span>Yes</span></div>
+        <div><code>ConnectedTreatmentBillForm</code><span>You want the treatment bill form with Charge, Expected (OMFS), and Difference per line, priced as one visit. <Link href="/guides/treatment-billing#bill">Guide</Link>.</span><span>Yes</span></div>
+        <div><code>RfaDashboard</code><span>You want the complete Request for Authorization workflow: list, create on the DWC Form RFA, sign, send, and record decisions.</span><span>Yes</span></div>
+        <div><code>RfaTaskBoard</code><span>You want the RFA follow-up queue and incoming response inbox on its own.</span><span>Yes</span></div>
+        <div><code>RfaClaimIndex</code><span>You want every RFA and requested treatment on one claim, with counts and Add RFA.</span><span>Yes</span></div>
+        <div><code>RelatedAuthorizationRecords</code><span>You want bills related to an RFA, or RFAs related to a bill, on the same claim.</span><span>Yes</span></div>
+        <div><code>BillUrDecisions</code><span>You want a bill&apos;s signed RFAs and UR decisions, and to attach letters while the bill is unsent.</span><span>Yes</span></div>
         <div><code>ReportAutofill</code><span>Review optional, capability-gated PDF suggestions before applying them to empty fields.</span><span>Yes, or through your adapter</span></div>
         <div><code>BillSubmission*Section</code><span>You want the same component-owned form state with individually composable sections.</span><span>Yes, through the parent</span></div>
         <div><code>ConnectedBillingWorkspace</code><span>You want Bill Tasks, All Bills, reports, settings, and per-bill lifecycle in one integrated surface.</span><span>Yes</span></div>
@@ -466,6 +473,7 @@ export default function ReactPage() {
       </details>
 
       <h2 id="rfas">Treatment and authorization requests</h2>
+      <p>React {sdkVersions.react} adds <code>ConnectedTreatmentBillForm</code>, which prices every line of a treatment visit through <code>POST /fee-quotes/encounter</code> and shows Charge, Expected (OMFS), and Difference. Pass the saved <code>encounter</code> IDs (<code>renderingProviderId</code>, <code>placeOfServiceId</code>, optional <code>claimId</code>). It also adds <code>RfaClaimIndex</code> for a claim page, <code>RelatedAuthorizationRecords</code> for RFA and bill pages, and <code>BillUrDecisions</code> for attaching UR decisions to an unsent bill. All require the organization&apos;s <code>treatmentBilling</code> capability. See <Link href="/guides/treatment-billing">treatment billing and RFAs</Link> for code and screenshots.</p>
       <p>Use <code>billingMode=&quot;professional&quot;</code> in the initial bill for treatment charges and per-line diagnosis selection. <code>RfaDashboard</code> provides authorization tracking, draft creation and revision-aware editing, clinical PDF upload, authorized signing, packet and cover-sheet review, directory destination selection, explicit fax sending, delivery evidence, receipt and information-request recording, item decisions, and a task board for no-response follow-up, matching incoming response faxes, and posting utilization review decisions. Supporting PDFs can be selected in the creation form. Use <code>RfaTaskBoard</code> to embed the work queue separately. Configure its role-matched permissions, human signer identity, and environment; it defaults to read-only sandbox. See the <Link href="/learn/treatment-quickstart">treatment quickstart</Link> and <Link href="/guides/rfas">RFA integration guide</Link>.</p>
 
       <h2 id="notifications">Notification settings</h2>
@@ -538,6 +546,9 @@ export default function ReactPage() {
       <h2 id="clients">Browser clients</h2>
       <p>Use the framework-neutral clients for submitted bill reads and lifecycle actions outside React rendering or inside your own state layer.</p>
       <CodeBlock code={clients} filename="billing-client.ts" />
+      <p>Treatment and RFA clients come from <code>@mindbill/browser</code> {sdkVersions.browser}: <code>createRfaClient</code> (including <code>previewForm</code>, <code>previewDraft</code>, <code>readResponse</code>, <code>listTemplates</code>, <code>saveTemplate</code>, and <code>exportCsv</code>), <code>createRfaRecordsClient</code> for claim RFAs, related records, and bill UR decisions, and <code>createEncounterQuoter</code> or <code>quoteEncounter</code> for expected OMFS payment. Install it alongside React when you call these directly:</p>
+      <CodeBlock code={installReactWithBrowser} language="bash" filename="Terminal" />
+      <Callout title={`Removed in React ${sdkVersions.react}`}><code>BillReviewForm</code>, <code>buildBillReviewSaveInput</code>, and <code>RfaTrackingPanel</code> were removed, along with browser <code>sanitizeBillReviewSaveInput</code> and several internal helpers. Use <code>BillSubmissionForm</code> for new bills, <code>ConnectedBillLifecycle</code> for corrections and review, and <code>RfaDashboard</code> for RFA tracking. See the <Link href="/guides/upgrade#v078">0.78.0 upgrade notes</Link>.</Callout>
 
       <h2 id="hosted">Hosted wrappers</h2>
       <p><code>MindBillBillReview</code> and <code>MindBillBillTimeline</code> wrap hosted post-submission surfaces when native composition is not practical.</p>

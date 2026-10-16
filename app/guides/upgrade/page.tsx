@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
-import { DocPage } from "@/components/doc-page";
+import { Callout, DocPage } from "@/components/doc-page";
+import { sdkVersions } from "@/lib/sdk-versions";
 
 export const metadata: Metadata = { title: "Partner upgrade guide" };
 
 const brief = `Upgrade the existing MindBill integration; preserve host authentication and saved data.
-1. Update @mindbill/react to 0.69.7 and any directly installed @mindbill/browser to 0.43.5.
-   Update the lockfile and rebuild the app.
+1. Update @mindbill/react to 0.78.0, any directly installed @mindbill/browser to 0.51.0,
+   and @mindbill/angular to 0.20.0. Update the lockfile and rebuild the app.
+   0.78.0 removes BillReviewForm, buildBillReviewSaveInput, RfaTrackingPanel, and
+   browser sanitizeBillReviewSaveInput: replace them with BillSubmissionForm (new bills),
+   ConnectedBillLifecycle (corrections/review), and RfaDashboard (RFA tracking).
+   Import bill-tasks, second-review, and status-contact helpers from @mindbill/browser.
+   See https://docs.mindbill.org/guides/upgrade#v078
    Keep ConnectedBillLifecycle / ConnectedBillingWorkspace; remove any nonexistent styles.css import.
 2. ConnectedBillingWorkspace and BillingDashboard include Settings by default in React 0.64.0.
    Set showSettings=false to hide it. Pass billingSettings for a dedicated administrator
@@ -55,10 +61,20 @@ storage/auth changes before making them. Never put permanent API keys in the bro
 
 export default function UpgradePage() {
   return <DocPage eyebrow="Start here" title="Upgrade an existing integration" description="A short checklist for existing MindBill integrations."
-    toc={[{ id: "packages", label: "Update packages" }, { id: "optional", label: "Optional settings" }, { id: "agent", label: "Copy for your agent" }]}>
+    toc={[{ id: "packages", label: "Update packages" }, { id: "v078", label: "0.78.0 changes" }, { id: "optional", label: "Optional settings" }, { id: "agent", label: "Copy for your agent" }]}>
     <h2 id="packages">Update packages, keep your integration</h2>
-    <p>Update <code>@mindbill/react</code> to <code>0.69.7</code> and any directly installed <code>@mindbill/browser</code> to <code>0.43.5</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
+    <p>Update <code>@mindbill/react</code> to <code>{sdkVersions.react}</code>, any directly installed <code>@mindbill/browser</code> to <code>{sdkVersions.browser}</code>, and <code>@mindbill/angular</code> to <code>{sdkVersions.angular}</code>, update your lockfile, and rebuild your app. Existing <code>ConnectedBillLifecycle</code> and <code>ConnectedBillingWorkspace</code> imports stay the same.</p>
     <p>Connected submission forms now load saved billing providers, rendering providers, and service locations automatically when profileOptions is omitted. Existing case values remain unchanged until the user selects a profile. Explicit profileOptions, including an empty object, override the automatic lookup.</p>
+    <h2 id="v078">React 0.78.0, browser 0.51.0, Angular 0.20.0</h2>
+    <p>This release adds treatment and authorization components and removes exports that had no supported use. Under 0.x versioning, a <code>^0.77</code> range does not install 0.78.0, so existing installs are unaffected until you upgrade. Component behavior is otherwise unchanged.</p>
+    <p><strong>New:</strong> <code>ConnectedTreatmentBillForm</code> (expected OMFS payment per line), <code>RfaClaimIndex</code>, <code>RelatedAuthorizationRecords</code>, and <code>BillUrDecisions</code>; browser <code>createRfaRecordsClient</code>, <code>quoteEncounter</code>, <code>createEncounterQuoter</code>, and RFA client <code>previewForm</code>, <code>previewDraft</code>, <code>readResponse</code>, <code>listTemplates</code>, <code>saveTemplate</code>, and <code>exportCsv</code>. <code>RfaDashboard</code> with <code>officialForm</code> now uses built-in previews, UR response reading, and saved templates when the host supplies no handler. <code>getCreationContext</code> and <code>saveProviderSignature</code> call the canonical <code>/partner/v2/rfas/creation-context</code> and <code>/partner/v2/rfas/providers/&#123;id&#125;/signature</code> routes. See <Link href="/guides/treatment-billing">treatment billing and RFAs</Link>.</p>
+    <table><thead><tr><th>Removed</th><th>Use instead</th></tr></thead><tbody>
+      <tr><td>React <code>BillReviewForm</code>, <code>buildBillReviewSaveInput</code>, types <code>BillReviewFormProps</code>, <code>BillReviewDraft</code></td><td><code>BillSubmissionForm</code> for new bills; <code>ConnectedBillLifecycle</code> for corrections, duplicates, and review</td></tr>
+      <tr><td>React <code>RfaTrackingPanel</code>, type <code>RfaTrackingPanelProps</code></td><td><code>RfaDashboard</code>; its request detail renders the same tracking cards</td></tr>
+      <tr><td>Browser <code>sanitizeBillReviewSaveInput</code></td><td>Not needed; it only served <code>BillReviewForm</code></td></tr>
+    </tbody></table>
+    <p><strong>No longer exported from React:</strong> internal bill-entry helpers (for example <code>chooseClaimsAdministrator</code>, <code>prepareBillSubmissionDocuments</code>, <code>formatBillSubmissionDate</code>), catalog constants such as <code>DEFAULT_BILL_SUBMISSION_PROCEDURES</code>, lifecycle and dashboard internals such as <code>billAgingBucket</code>, and RFA internals such as <code>applyRfaTemplate</code>. <code>BillSubmissionForm</code> applies these itself; use <code>validateBillSubmission</code> and <code>BILL_SUBMISSION_REQUIRED_FIELDS</code> for non-visual checks. React no longer re-exports <code>BILL_TASKS_AGING_BUCKETS</code>, <code>billTasksAgingBucketIndex</code>, <code>SECOND_REVIEW_REASON_TEMPLATE</code>, <code>SECOND_REVIEW_WINDOW_DAYS</code>, <code>secondReviewDeadline</code>, or <code>reportBillStatusContacts</code>: import them from <code>@mindbill/browser</code>. Angular 0.20.0 stops exporting internal helpers such as <code>MindBillComboBoxComponent</code> and <code>MindBillDateInputComponent</code>; its components keep working.</p>
+    <Callout title="Migrate in three steps">Search your code for the removed names and replace them as shown above; change helper imports to <code>@mindbill/browser</code>; then rebuild and test bill entry, corrections, and RFA tracking in sandbox. The <a href="https://github.com/incidentfox/mindbill-widgets/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">package changelog</a> lists every removed export.</Callout>
     <h2 id="optional">Configure the built-in Settings tab</h2>
     <p>React 0.64.0 adds Settings to <code>ConnectedBillingWorkspace</code> and <code>BillingDashboard</code> by default. Set <code>{"showSettings={false}"}</code> to hide the tab. Use <code>billingSettings</code> for a separate administrator-authorized session, or reuse the workspace session when it already has <code>organization:manage</code>. Without an override, <code>BillingDashboard</code> uses <code>/api/mindbill/session</code>. No permissions are added automatically. The workspace accepts <code>initialView=&quot;settings&quot;</code>; both dashboards support <code>onSettingsSaved(profile)</code> for refreshing host state.</p>
     <p>React 0.65.0 adds Billing profiles, Claims administrators, and Team inside settings. Team edits existing MindBill login accounts and needs explicitly delegated <code>team:manage</code>, backed by <code>orgs:team:write</code>; it does not provision host users. Bill search now matches every word across identifiers, people, administrators, statuses, procedure codes, and dates. Service-date and submission-date ranges are inclusive. See <Link href="/guides/practice-settings#team">settings access</Link> and <Link href="/components/react#operations">search behavior</Link>.</p>
