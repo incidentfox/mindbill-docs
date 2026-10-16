@@ -93,7 +93,7 @@ const encounterQuoteEndpoint: ApiEndpoint = {
     quoteAccess,
     { title: "Illustrative amounts", body: "The response amounts are synthetic and illustrate the shape only. Actual amounts depend on the date of service, the saved provider and location, and the claim." },
     { title: "Encounter quote vs claim quote", body: "Use this endpoint while entering a bill for a saved provider and location. Use POST /fee-quotes/ca/claim when you have the clinical context but no saved MindBill records (for example a stand-alone calculator)." },
-    { title: "SDK", body: "@mindbill/browser 0.51.0: client.quoteEncounter(encounterQuoteRequest(lines, ids)) on the bill reference or lifecycle client, or createEncounterQuoter(client, ids) for BillSubmissionForm's onQuoteEncounter." },
+    { title: "SDK", body: "@mindbill/browser 0.51.0 adds quoteEncounter to the bill reference and lifecycle clients (build the body with encounterQuoteRequest), and createEncounterQuoter for the onQuoteEncounter prop of BillSubmissionForm." },
   ],
 };
 
