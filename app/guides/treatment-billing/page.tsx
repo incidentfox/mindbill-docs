@@ -136,7 +136,7 @@ export default function TreatmentBillingPage() {
     <h2 id="session">Session permissions</h2>
     <p>Your server authenticates the user and mints a short-lived, exact-origin browser session. RFA and fee-quote routes need an organization-wide session; bill-scoped sessions are rejected.</p>
     <table><thead><tr><th>Capability</th><th>Browser permission</th><th>Server scope</th></tr></thead><tbody>
-      <tr><td>Expected OMFS payment, related records, UR decisions on a bill</td><td><code>bills:read</code> (+ <code>rfas:read</code> for related records)</td><td><code>bills:read</code></td></tr>
+      <tr><td>Expected OMFS payment, related records, UR decisions on a bill</td><td><code>bills:read</code> (+ <code>rfas:read</code> for related records)</td><td><code>bills:read</code> (+ <code>rfas:read</code>)</td></tr>
       <tr><td>Submit the treatment bill</td><td><code>bills:create</code></td><td><code>bills:write</code></td></tr>
       <tr><td>Attach UR decisions to an unsent bill</td><td><code>bills:act</code></td><td><code>bills:write</code></td></tr>
       <tr><td>List, view, export RFAs; form and packet previews</td><td><code>rfas:read</code> (+ <code>documents:read</code> for stored PDFs)</td><td><code>rfas:read</code></td></tr>
